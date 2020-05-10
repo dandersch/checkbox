@@ -2,7 +2,11 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
+
 #include <glm/glm.hpp>
+
+#include "imgui.h"
+#include "imgui-SFML.h"
 
 #include <iostream>
 
@@ -10,13 +14,14 @@ int main()
 {
     sf::RenderWindow window(sf::VideoMode(1280, 720), "SFML works!");
     window.setFramerateLimit(60);
-    window.setMouseCursorVisible(false);
     //window.setVerticalSyncEnabled(true);
+    ImGui::SFML::Init(window);
+    window.setMouseCursorVisible(false);
+
+    // TESTSHAPE
     sf::CircleShape shape(100.f);
     shape.setFillColor(sf::Color::Blue);
     shape.setPosition(500,500);
-
-    window.getSystemHandle();
 
 
     // TEXTURE (8x9)
@@ -41,6 +46,7 @@ int main()
     //sf::Vector2f rightstep(3.0f, 0);
     //sf::Vector2f leftstep(-3.0f, 0);
     double speed = 0.f;
+    float speedFactor = 1.f;
 
 
     // AUDIO
@@ -65,6 +71,7 @@ int main()
 	speed = 0.f;
 
         while (window.pollEvent(event)) {
+	    ImGui::SFML::ProcessEvent(event);
 	    // sf::Time elapsed = clock.restart();
 	    // updateGame(elapsed);
             if (event.type == sf::Event::Closed)
@@ -73,14 +80,14 @@ int main()
 	    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
 	        sprite.setTextureRect(sf::IntRect(7 * xstep, 0 * ystep,
 						  -xstep, ystep));
-		speed = -100.0f;
+		speed = -100.0f * speedFactor;
 		sfx.play();
 	    }
 
 	    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
 	        sprite.setTextureRect(sf::IntRect(5 * xstep, 7 * ystep,
 						  xstep, ystep));
-		speed = 100.0f;
+		speed = 100.0f * speedFactor;
 		sfx.play();
 	    }
 
@@ -100,10 +107,16 @@ int main()
         }
 
         // Get elapsed time
-        float delta = clock.restart().asSeconds();
+	sf::Time delta = clock.restart();
 
 	// Update sprite position
-        sprite.move(speed * delta, 0.f );
+        sprite.move(speed * delta.asSeconds(), 0.f );
+
+	// ImGui
+        ImGui::SFML::Update(window, delta);
+        ImGui::Begin("Hello, world!");
+        ImGui::SliderFloat("Set speed", &speedFactor, 0.1f, 10.f);
+        ImGui::End();
 
         window.clear(sf::Color(100,180,120,255));
 
@@ -112,6 +125,7 @@ int main()
 	window.draw(sprite);
 	window.draw(cursor);
 
+	ImGui::SFML::Render(window);
         window.display();
     }
 
