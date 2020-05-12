@@ -1,16 +1,3 @@
-#include <SFML/Audio.hpp>
-#include <SFML/Graphics.hpp>
-#include <glm/glm.hpp>
-
-#include "imgui-SFML.h"
-#include "imgui.h"
-
-#include <filesystem>
-#include <fstream>
-#include <iostream>
-#include <string>
-#include <vector>
-
 #include "animation.hpp"
 
 void findAssets(std::vector<std::string> exts,

@@ -35,13 +35,14 @@ file(GLOB imgui_src "deps/imgui-1.76/imgui.cpp"
 		    "deps/imgui-1.76/imgui-SFML.cpp")
 
 # Internal
-#include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/)
 include_directories("src/")
 file(GLOB src_files "src/*.cpp")
 file(GLOB inc_files "src/*.hpp")
 
 # Linking
 add_executable(game2d main.cpp ${src_files} ${inc_files})
+target_precompile_headers(game2d PRIVATE "pch.h")
 target_link_libraries(game2d sfml-graphics
 			     sfml-audio
 			     glm
