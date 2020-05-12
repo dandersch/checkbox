@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BUILD_TYPE DEBUG)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/../bin)
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DGAME_DEBUG")
 
 ########################
 # External dependencies
@@ -27,20 +28,21 @@ if (OPENGL_FOUND)
 endif()
 
 # imgui
-include_directories("deps/imgui-1.76")
+include_directories("deps/imgui-1.76/")
 file(GLOB imgui_src "deps/imgui-1.76/imgui.cpp"
 	            "deps/imgui-1.76/imgui_widgets.cpp"
 		    "deps/imgui-1.76/imgui_draw.cpp"
 		    "deps/imgui-1.76/imgui-SFML.cpp")
 
 # Internal
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+#include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories("src/")
 file(GLOB src_files "src/*.cpp")
+file(GLOB inc_files "src/*.hpp")
 
 # Linking
-add_executable(game2d main.cpp)
-target_link_libraries(game2d ${src_files}
-                             sfml-graphics
+add_executable(game2d main.cpp ${src_files} ${inc_files})
+target_link_libraries(game2d sfml-graphics
 			     sfml-audio
 			     glm
 			     ${OPENGL_LIBRARIES}
