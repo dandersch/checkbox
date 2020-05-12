@@ -2,8 +2,8 @@
 #include <SFML/Graphics.hpp>
 #include <glm/glm.hpp>
 
-#include "deps/imgui-1.76/imgui-SFML.h"
-#include "deps/imgui-1.76/imgui.h"
+#include "imgui-SFML.h"
+#include "imgui.h"
 
 #include <filesystem>
 #include <fstream>
@@ -11,17 +11,16 @@
 #include <string>
 #include <vector>
 
-#include "src/helper.h"
-#include "src/animation.hpp"
+#include "animation.hpp"
 
 void findAssets(std::vector<std::string> exts,
                 std::vector<std::string>& outfiles);
-
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(1280, 720), "SFML game",
                             sf::Style::Resize);
+
     window.setFramerateLimit(60);
     // window.setVerticalSyncEnabled(true);
     ImGui::SFML::Init(window);
@@ -51,11 +50,11 @@ int main()
         return -1;
     Animation playerAnim(playerTexture, 8, 9, 2);
     sf::Sprite sprite;
-    sprite.setOrigin(32,32);
+    sprite.setOrigin(32, 32);
     sprite.setTexture(playerTexture);
-    sprite.setPosition(sf::Vector2f(200,200));
-    //sf::IntRect sourceSprite(0 * xstep, 8 * ystep, xstep, ystep);
-    //sprite.setTextureRect(sourceSprite);
+    sprite.setPosition(sf::Vector2f(200, 200));
+    // sf::IntRect sourceSprite(0 * xstep, 8 * ystep, xstep, ystep);
+    // sprite.setTextureRect(sourceSprite);
 
     sf::Texture cursorSheet;
     if (!cursorSheet.loadFromFile("../assets/cursor.png")) return -1;
@@ -84,7 +83,9 @@ int main()
     music.play();
 
     sf::Clock clock; // starts the clock
-    sf::Time delta;
+
+    sf::Time deltaTime;
+    float delta;
 
     // GAMELOOP
     while (window.isOpen()) {
@@ -114,9 +115,11 @@ int main()
             }
 
             if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-                sf::Vector2f mousePos = (sf::Vector2f) sf::Mouse::getPosition(window);
-                sprite.setPosition(sprite.getPosition() * (1.0f - delta.asSeconds()) +
-                                   mousePos * delta.asSeconds());
+                sf::Vector2f mousePos = (sf::Vector2f)sf::Mouse::getPosition(window);
+
+                // lerp
+                sprite.setPosition(sprite.getPosition() * (1.0f - delta) +
+                                   mousePos * delta);
             }
 
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::F1))
@@ -132,21 +135,21 @@ int main()
 
             if (event.type == sf::Event::MouseButtonReleased)
                 cursor.setTextureRect(sf::IntRect(144, 0, 72, 72));
-
         }
 
-	// Idle Animation
-        sprite.setTextureRect(playerAnim.update(delta.asSeconds()));
+        // Idle Animation
+        sprite.setTextureRect(playerAnim.update(delta));
 
         // Get elapsed time
-        delta = clock.restart();
+        deltaTime = clock.restart();
+        delta = deltaTime.asSeconds();
 
         // Update sprite position
-        sprite.move(speed * delta.asSeconds(), 0.f);
+        sprite.move(speed * delta, 0.f);
 
         if (show_debug) {
             // ImGui
-            ImGui::SFML::Update(window, delta);
+            ImGui::SFML::Update(window, deltaTime);
             ImGui::Begin("F1 to hide debug menu");
             ImGui::SliderFloat("Set speed", &speedfactor, 0.1f, 10.f);
             ImGui::SliderInt("Cursor X-Offset", &x_offset, -10, 10);

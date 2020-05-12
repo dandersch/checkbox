@@ -11,9 +11,7 @@ Animation::Animation(sf::Texture& texture, uint xcount, uint ycount,
     texture.setRepeated(true);
 }
 
-Animation::~Animation()
-{
-}
+Animation::~Animation() {}
 
 sf::IntRect Animation::update(float deltatime)
 {
