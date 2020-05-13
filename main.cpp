@@ -9,7 +9,7 @@ int main()
                             sf::Style::Resize);
 
     window.setFramerateLimit(60);
-    window.setVerticalSyncEnabled(true);
+    // window.setVerticalSyncEnabled(true);
     ImGui::SFML::Init(window);
 
     // hide os mouse cursor
@@ -35,7 +35,23 @@ int main()
     sf::Texture playerTexture;
     if (!playerTexture.loadFromFile("../assets/platformer_sprites_base.png"))
         return -1;
-    Animation playerAnim(playerTexture, 8, 9, 2);
+    Animation idle(playerTexture, 8, 9);
+    idle.add(0, 2, 0.2f);
+    idle.add(1, 2, 0.2f);
+    idle.add(2, 2, 0.2f);
+    idle.add(3, 2, 0.2f);
+    idle.add(4, 2, 0.2f);
+    idle.add(5, 2, 0.2f);
+    idle.add(6, 2, 0.2f);
+    idle.add(7, 2, 0.2f);
+    idle.add(7, 2, 0.2f, true);
+    idle.add(6, 2, 0.2f, true);
+    idle.add(5, 2, 0.2f, true);
+    idle.add(4, 2, 0.2f, true);
+    idle.add(3, 2, 0.2f, true);
+    idle.add(2, 2, 0.2f, true);
+    idle.add(1, 2, 0.2f, true);
+
     sf::Sprite sprite;
     sprite.setOrigin(32, 32);
     sprite.setTexture(playerTexture);
@@ -125,7 +141,7 @@ int main()
         }
 
         // Idle Animation
-        sprite.setTextureRect(playerAnim.update(delta));
+        sprite.setTextureRect(idle.update(delta));
 
         // Get elapsed time
         deltaTime = clock.restart();

@@ -15,10 +15,10 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DGAME_DEBUG")
 find_package(SFML 2.5 COMPONENTS graphics audio REQUIRED)
 
 # glm
-find_package(glm REQUIRED)
-if (GLM_FOUND)
-    include_directories(${GLM_INCLUDE_DIRS})
-endif()
+#find_package(glm REQUIRED)
+#if (GLM_FOUND)
+#    include_directories(${GLM_INCLUDE_DIRS})
+#endif()
 
 # opengl
 set(OpenGL_GL_PREFERENCE GLVND)
@@ -45,6 +45,6 @@ add_executable(game2d main.cpp ${src_files} ${inc_files} ${imgui_src})
 target_precompile_headers(game2d PRIVATE "pch.h")
 target_link_libraries(game2d sfml-graphics
 			     sfml-audio
-			     glm
+			     #glm
 			     ${OPENGL_LIBRARIES}
 			     )
