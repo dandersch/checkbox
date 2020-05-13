@@ -1,11 +1,20 @@
-# Projektname
-...
+# Projektname (kommt noch)
 
-## Details
-...
+## Kurze Zusammenfassung
+Voraussichtlich wird's ein Platformer. Also mit gezielten Sprüngen und
+Ausweichen muss man an das Ziel von einem Level kommen. Dementsprechend grobe
+"Physiksimulation" in Form von Sprungverhalten und Kollisionserkennung.
 
-## Funktionalitaeten
-- ...
+## Detaillierte Beschreibung/Auflistung der Funktionalitaet
+- simple Platformer-Physik (Schwierigkeit B)
+- Einfache Animationen (B)
+- Betriebssystemunabhaengig (B)
+- Controllerunterstutzueng (B)
+- Sound (C)
+- Menue (C)
 
-## Optional
+## Optionale Funktionalitaeten
+- Leveleditor (Schwierigkeit B-A)
+- (richtige) Physiksimulation (A)
+- Partikeleffekte (A-S?)
 - ...
