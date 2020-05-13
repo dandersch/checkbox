@@ -1,16 +1,18 @@
-#include "animation.hpp"
+#include "pch.h"
 
-Animation::Animation(sf::Texture& texture, uint xcount, uint ycount)
+#include "animation.h"
+
+Animation::Animation(sf::Texture* texture, uint xcount, uint ycount)
 {
-    m_framewidth = texture.getSize().x / xcount;
-    m_frameheight = texture.getSize().y / ycount;
+    m_framewidth = texture->getSize().x / xcount;
+    m_frameheight = texture->getSize().y / ycount;
 }
 
 Animation::~Animation() {}
 
-sf::IntRect Animation::update(float deltatime)
+sf::IntRect Animation::update(float dtime)
 {
-    m_time += deltatime;
+    m_time += dtime;
 
     Frame& current = m_frames[m_index];
 

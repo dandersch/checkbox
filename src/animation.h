@@ -1,5 +1,7 @@
 #pragma once
 
+#include "pch.h"
+
 struct Frame
 {
     int x, y;
@@ -10,14 +12,14 @@ struct Frame
 class Animation
 {
 public:
-    Animation(sf::Texture& texture, uint xcount, uint ycount);
+    Animation(sf::Texture* texture, uint xcount, uint ycount);
     ~Animation();
 
-    sf::IntRect update(float deltatime);
+    sf::IntRect update(float dtime);
     void add(int x, int y, float duration, bool flipped = false);
 
 private:
-    float m_time;
+    float m_time = 0;
     uint m_framewidth;
     uint m_frameheight;
     std::vector<Frame> m_frames;
