@@ -35,7 +35,8 @@ int main()
         return -1;
 
     // Player
-    Player player(&playerTexture, 10.f);
+    Player player(&playerTexture);
+    player.speed = 2.f;
 
     // CURSOR
     sf::Texture cursorSheet;
@@ -57,6 +58,7 @@ int main()
     if (!music.openFromFile(musicfiles.front())) return -1;
     music.setLoop(true);
     music.play();
+    music.setVolume(5.f);
 
     sf::Clock clock; // starts the clock
     sf::Time deltaTime = clock.restart();

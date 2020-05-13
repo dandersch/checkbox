@@ -21,7 +21,10 @@ sf::IntRect Animation::update(float dtime)
         m_index++;
     }
 
-    if (m_index >= m_frames.size()) m_index = 0;
+    if (m_index >= m_frames.size()) {
+        if (looped) m_index = 0;
+        else m_index = m_frames.size() - 1;
+    }
 
     if (current.flipped)
         return sf::IntRect((current.x + 1) * m_framewidth,
