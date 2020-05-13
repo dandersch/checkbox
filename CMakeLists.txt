@@ -41,10 +41,10 @@ file(GLOB src_files "src/*.cpp")
 file(GLOB inc_files "src/*.hpp")
 
 # Linking
-add_executable(game2d main.cpp ${src_files} ${inc_files})
+add_executable(game2d main.cpp ${src_files} ${inc_files} ${imgui_src})
 target_precompile_headers(game2d PRIVATE "pch.h")
 target_link_libraries(game2d sfml-graphics
 			     sfml-audio
 			     glm
 			     ${OPENGL_LIBRARIES}
-			     ${imgui_src})
+			     )

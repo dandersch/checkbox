@@ -1,23 +1,25 @@
 #include "imgui-SFML.h"
 #include "imgui.h"
 
-#include <SFML/Config.hpp>
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/RenderTarget.hpp>
-#include <SFML/Graphics/RenderWindow.hpp>
-#include <SFML/Graphics/Sprite.hpp>
-#include <SFML/Graphics/Texture.hpp>
-#include <SFML/OpenGL.hpp>
-#include <SFML/Window/Clipboard.hpp>
-#include <SFML/Window/Cursor.hpp>
-#include <SFML/Window/Event.hpp>
-#include <SFML/Window/Touch.hpp>
-#include <SFML/Window/Window.hpp>
+// found in precompiled header
+//#include <SFML/Config.hpp>
+//#include <SFML/Graphics/Color.hpp>
+//#include <SFML/Graphics/RenderTarget.hpp>
+//#include <SFML/Graphics/RenderWindow.hpp>
+//#include <SFML/Graphics/Sprite.hpp>
+//#include <SFML/Graphics/Texture.hpp>
+//#include <SFML/OpenGL.hpp>
+//#include <SFML/Window/Clipboard.hpp>
+//#include <SFML/Window/Cursor.hpp>
+//#include <SFML/Window/Event.hpp>
+//#include <SFML/Window/Touch.hpp>
+//#include <SFML/Window/Window.hpp>
 
-#include <cassert>
-#include <cmath>    // abs
-#include <cstddef>  // offsetof, NULL
-#include <cstring>  // memcpy
+// found in precompiled header
+//#include <cassert>
+//#include <cmath>    // abs
+//#include <cstddef>  // offsetof, NULL
+//#include <cstring>  // memcpy
 
 #ifdef ANDROID
 #ifdef USE_JNI

@@ -109,8 +109,9 @@ namespace ImGui
 
 // Add this to your imconfig.h
 
-#include <SFML/System/Vector2.hpp>
-#include <SFML/Graphics/Color.hpp>
+// found in precompiled header
+//#include <SFML/System/Vector2.hpp>
+//#include <SFML/Graphics/Color.hpp>
 
 #include "imgui-SFML_export.h"
 

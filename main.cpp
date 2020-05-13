@@ -9,7 +9,7 @@ int main()
                             sf::Style::Resize);
 
     window.setFramerateLimit(60);
-    // window.setVerticalSyncEnabled(true);
+    window.setVerticalSyncEnabled(true);
     ImGui::SFML::Init(window);
 
     // hide os mouse cursor
