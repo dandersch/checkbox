@@ -93,6 +93,13 @@ int main()
             if (event.type == sf::Event::Closed) window.close();
 	    if (event.type == sf::Event::Resized) resizeView(window, view);
 
+	    // ZOOMING
+	    if (event.type == sf::Event::MouseWheelScrolled) {
+	        int scrolltick = event.mouseWheelScroll.delta;
+		if (scrolltick ==  1) view.zoom(0.9f);
+		if (scrolltick == -1) view.zoom(1.1f);
+	    }
+
 	    // CURSOR
             if (event.type == sf::Event::MouseMoved)
                 // TODO use cursor class
