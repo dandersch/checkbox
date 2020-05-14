@@ -31,6 +31,17 @@ int main()
     //exts.push_back(".wav");
     findAssets(exts, musicfiles);
 
+    // FONT & TEXT
+    sf::Font font;
+    font.loadFromFile("../assets/UbuntuMono-B.ttf");
+    sf::Text text;
+    text.setFont(font);
+    text.setString("Hello world");
+    text.setCharacterSize(24); // in pixels, not points!
+    text.setFillColor(sf::Color::Red);
+    // text.setStyle(sf::Text::Bold | sf::Text::Underlined);
+    text.setPosition(200,200);
+
     // TEXTURE (8x9)
     int xstep = 64;
     int ystep = 64;
@@ -129,7 +140,8 @@ int main()
         window.setView(view);
 
         // DRAW
-	player.draw(window);
+        player.draw(window);
+        window.draw(text);
         if (show_debug) ImGui::SFML::Render(window);
         window.draw(cursor);
 
