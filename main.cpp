@@ -3,16 +3,20 @@
 #include "animation.h"
 #include "player.h"
 
+#define VIEW_HEIGHT 1280
+#define VIEW_WIDTH  720
+
 void findAssets(std::vector<std::string> exts,
                 std::vector<std::string>& outfiles);
+void resizeView(const sf::RenderWindow& window, sf::View& view);
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(1280, 720), "SFML game",
-                            sf::Style::Resize);
+    sf::RenderWindow window(sf::VideoMode(1280, 720), "SFML game");
+    sf::View view(sf::Vector2f(640.f, 360.f), sf::Vector2f(VIEW_HEIGHT, VIEW_WIDTH));
 
-    window.setFramerateLimit(60);
-    // window.setVerticalSyncEnabled(true);
+    window.setVerticalSyncEnabled(true); // Don't use
+    // window.setFramerateLimit(60);     // both
     ImGui::SFML::Init(window);
 
     // hide os mouse cursor
@@ -71,6 +75,7 @@ int main()
         // Get elapsed time
         deltaTime = clock.restart();
         delta = deltaTime.asSeconds();
+        view.setCenter(player.m_body.getPosition());
 
         while (window.pollEvent(event)) {
             if (show_debug) ImGui::SFML::ProcessEvent(event);
@@ -121,6 +126,7 @@ int main()
         }
 
         window.clear(sf::Color(100, 180, 120, 255));
+        window.setView(view);
 
         // DRAW
 	player.draw(window);
@@ -149,4 +155,11 @@ void findAssets(std::vector<std::string> exts,
     }
 
     return;
+}
+
+void resizeView(const sf::RenderWindow& window, sf::View& view)
+{
+    float aspectratio_x = float(window.getSize().x) / float(window.getSize().y);
+    float aspectratio_y = float(window.getSize().y) / float(window.getSize().x);
+    view.setSize(VIEW_WIDTH * aspectratio_x, VIEW_HEIGHT * aspectratio_y);
 }
