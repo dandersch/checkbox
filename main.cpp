@@ -89,22 +89,17 @@ int main()
         while (window.pollEvent(event)) {
             if (show_debug) ImGui::SFML::ProcessEvent(event);
 
-	    // TODO use switch
+            // TODO use switch
             if (event.type == sf::Event::Closed) window.close();
-	    if (event.type == sf::Event::Resized) resizeView(window, view);
+            if (event.type == sf::Event::Resized) resizeView(window, view);
 
-	    // ZOOMING
-	    if (event.type == sf::Event::MouseWheelScrolled) {
-	        int scrolltick = event.mouseWheelScroll.delta;
-		if (scrolltick ==  1) view.zoom(0.9f);
-		if (scrolltick == -1) view.zoom(1.1f);
-	    }
+            // ZOOMING
+            if (event.type == sf::Event::MouseWheelScrolled) {
+                int scrolltick = event.mouseWheelScroll.delta;
+                if (scrolltick == 1) view.zoom(0.9f);
+                if (scrolltick == -1) view.zoom(1.1f);
+            }
 
-	    // CURSOR
-            if (event.type == sf::Event::MouseMoved)
-                // TODO use cursor class
-                cursor.setPosition(event.mouseMove.x + x_offset,
-                                   event.mouseMove.y + y_offset);
             // cursor.setPosition(sf::Mouse::getPosition(window).x,
             // sf::Mouse::getPosition(window).y);
             if (event.type == sf::Event::MouseButtonPressed)
@@ -112,9 +107,9 @@ int main()
             if (event.type == sf::Event::MouseButtonReleased)
                 cursor.setTextureRect(sf::IntRect(144, 0, 72, 72));
             if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-                sf::Vector2f mousePos = (sf::Vector2f)sf::Mouse::getPosition(window);
+                sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
 
-                // lerp
+                // lerp player to mousepos (wip)
                 player.m_body.setPosition(player.m_body.getPosition() *
 					  (1.0f - dtime) + mousePos * dtime);
             }
@@ -142,6 +137,11 @@ int main()
                 }
             ImGui::End();
         }
+
+        // TODO use cursor class (?)
+        // convert mousepos to world coordinates
+        cursor.setPosition(window.mapPixelToCoords(sf::Vector2i(sf::Mouse::getPosition(window).x + x_offset,
+                                                                sf::Mouse::getPosition(window).y + y_offset)));
 
         window.clear(sf::Color(100, 180, 120, 255));
         window.setView(view);
