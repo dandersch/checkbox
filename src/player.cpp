@@ -2,11 +2,16 @@
 
 #include "player.h"
 
+/*
+ *  TODO: show IDLE_LEFT after WALK_LEFT
+ */
+
 Player::Player(sf::Texture* texture)
   : m_tex(texture)
 {
-    m_body.setOrigin(32, 32);
-    m_body.setPosition(750, 500);
+    m_body.setOrigin(m_body.getTextureRect().height / 2.0f,
+                     m_body.getTextureRect().width / 2.0f);
+    m_body.setPosition(250, 400);
     m_body.setTexture(*texture);
 
     /* Idle */
@@ -73,6 +78,10 @@ Player::Player(sf::Texture* texture)
 
 Player::~Player() {}
 
+/*
+ * TODO: set/unset booleans w/ KeyPressed/KeyReleased ?
+ * TODO: don't read keyinputs if window not focused
+ */
 void Player::update(float dtime)
 {
     sf::Vector2f movement(0.f, 0.f);

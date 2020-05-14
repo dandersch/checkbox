@@ -76,49 +76,49 @@ int main()
     music.setVolume(5.f);
 
     sf::Clock clock; // starts the clock
-    sf::Time deltaTime = clock.restart();
-    float delta = 0;
+    float dtime = 0;
 
     // GAMELOOP
     while (window.isOpen()) {
         sf::Event event;
 
-        // Get elapsed time
-        deltaTime = clock.restart();
-        delta = deltaTime.asSeconds();
+        dtime = clock.restart().asSeconds(); // Get elapsed time
+        player.update(dtime);                // Update Game
         view.setCenter(player.m_body.getPosition());
 
         while (window.pollEvent(event)) {
             if (show_debug) ImGui::SFML::ProcessEvent(event);
 
+	    // TODO use switch
             if (event.type == sf::Event::Closed) window.close();
+	    if (event.type == sf::Event::Resized) resizeView(window, view);
 
-            if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-                sf::Vector2f mousePos = (sf::Vector2f)sf::Mouse::getPosition(window);
-
-                // lerp
-                //sprite.setPosition(sprite.getPosition() * (1.0f - delta) +
-                //                   mousePos * delta);
-            }
-
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::F1))
-                show_debug = !show_debug;
-
+	    // CURSOR
             if (event.type == sf::Event::MouseMoved)
+                // TODO use cursor class
                 cursor.setPosition(event.mouseMove.x + x_offset,
                                    event.mouseMove.y + y_offset);
+            // cursor.setPosition(sf::Mouse::getPosition(window).x,
+            // sf::Mouse::getPosition(window).y);
             if (event.type == sf::Event::MouseButtonPressed)
                 cursor.setTextureRect(sf::IntRect(72, 0, 72, 72));
             if (event.type == sf::Event::MouseButtonReleased)
                 cursor.setTextureRect(sf::IntRect(144, 0, 72, 72));
-        }
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+                sf::Vector2f mousePos = (sf::Vector2f)sf::Mouse::getPosition(window);
 
-        // Update Game
-	player.update(delta);
+                // lerp
+                player.m_body.setPosition(player.m_body.getPosition() *
+					  (1.0f - dtime) + mousePos * dtime);
+            }
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::F1))
+                show_debug = !show_debug;
+        }
 
         if (show_debug) {
             // ImGui
-            ImGui::SFML::Update(window, deltaTime);
+            ImGui::SFML::Update(window, sf::seconds(dtime));
             ImGui::Begin("F1 to hide debug menu");
             ImGui::SliderInt("Cursor X-Offset", &x_offset, -10, 10);
             ImGui::SliderInt("Cursor Y-Offset", &y_offset, -10, 10);
@@ -144,7 +144,6 @@ int main()
         window.draw(text);
         if (show_debug) ImGui::SFML::Render(window);
         window.draw(cursor);
-
         window.display();
     }
 

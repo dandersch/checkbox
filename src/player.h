@@ -21,9 +21,9 @@ private:
 
 public:
     float speed = 1.0f;
+    sf::Sprite m_body; // TODO private
 
 private:
-    sf::Sprite m_body;
     sf::Texture* m_tex;
     std::vector<Animation> m_anims;
 
