@@ -84,7 +84,7 @@ Player::~Player() {}
  */
 void Player::update(float dtime)
 {
-    sf::Vector2f movement(0.f, 0.f);
+    movement = sf::Vector2f(0.f, 0.f);
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
         movement.x = -speed * 1.0f;

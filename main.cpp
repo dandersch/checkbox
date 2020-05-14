@@ -53,6 +53,12 @@ int main()
     Player player(&playerTexture);
     player.speed = 2.f;
 
+    // Testshape
+    sf::RectangleShape box;
+    box.setSize(sf::Vector2f(100,100));
+    box.setPosition(400, 400);
+    box.setFillColor(sf::Color::Blue);
+
     // CURSOR
     sf::Texture cursorSheet;
     if (!cursorSheet.loadFromFile("../assets/cursor.png")) return -1;
@@ -86,38 +92,47 @@ int main()
         player.update(dtime);                // Update Game
         view.setCenter(player.m_body.getPosition());
 
+	/// Event loop /////////////////////////////////////////////////////////
         while (window.pollEvent(event)) {
             if (show_debug) ImGui::SFML::ProcessEvent(event);
 
             // TODO use switch
-            if (event.type == sf::Event::Closed) window.close();
-            if (event.type == sf::Event::Resized) resizeView(window, view);
+	    switch (event.type) {
+	    case (sf::Event::Closed): window.close(); break;
 
-            // ZOOMING
-            if (event.type == sf::Event::MouseWheelScrolled) {
+	    case (sf::Event::Resized): resizeView(window, view); break;
+
+            case (sf::Event::MouseButtonPressed):
+	        cursor.setTextureRect(sf::IntRect(72, 0, 72, 72));
+		break;
+
+            case (sf::Event::MouseButtonReleased):
+	        cursor.setTextureRect(sf::IntRect(144, 0, 72, 72));
+		break;
+
+            case (sf::Event::MouseWheelScrolled): {
+                // ZOOMING
                 int scrolltick = event.mouseWheelScroll.delta;
                 if (scrolltick == 1) view.zoom(0.9f);
                 if (scrolltick == -1) view.zoom(1.1f);
+		break;
+	    }
+
+	    default: break;
             }
 
-            // cursor.setPosition(sf::Mouse::getPosition(window).x,
-            // sf::Mouse::getPosition(window).y);
-            if (event.type == sf::Event::MouseButtonPressed)
-                cursor.setTextureRect(sf::IntRect(72, 0, 72, 72));
-            if (event.type == sf::Event::MouseButtonReleased)
-                cursor.setTextureRect(sf::IntRect(144, 0, 72, 72));
             if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-                sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-
                 // lerp player to mousepos (wip)
-                player.m_body.setPosition(player.m_body.getPosition() *
-					  (1.0f - dtime) + mousePos * dtime);
+                player.m_body.setPosition(player.m_body.getPosition() * (1.0f - dtime) +
+                                          window.mapPixelToCoords(sf::Mouse::getPosition(window)) * dtime);
             }
 
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::F1))
                 show_debug = !show_debug;
         }
+	////////////////////////////////////////////////////////////////////////
 
+	/// ImGUI //////////////////////////////////////////////////////////////
         if (show_debug) {
             // ImGui
             ImGui::SFML::Update(window, sf::seconds(dtime));
@@ -137,21 +152,30 @@ int main()
                 }
             ImGui::End();
         }
+	////////////////////////////////////////////////////////////////////////
+
+	// collision
+	if (player.m_body.getGlobalBounds().intersects(box.getGlobalBounds())) {
+	    player.m_body.move(-player.movement);
+	}
 
         // TODO use cursor class (?)
         // convert mousepos to world coordinates
         cursor.setPosition(window.mapPixelToCoords(sf::Vector2i(sf::Mouse::getPosition(window).x + x_offset,
                                                                 sf::Mouse::getPosition(window).y + y_offset)));
 
+        /// DRAW ///////////////////////////////////////////////////////////////
         window.clear(sf::Color(100, 180, 120, 255));
         window.setView(view);
 
-        // DRAW
         player.draw(window);
+	window.draw(box);
         window.draw(text);
+
         if (show_debug) ImGui::SFML::Render(window);
         window.draw(cursor);
         window.display();
+        ////////////////////////////////////////////////////////////////////////
     }
 
     return 0;

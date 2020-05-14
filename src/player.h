@@ -21,6 +21,7 @@ private:
 
 public:
     float speed = 1.0f;
+    sf::Vector2f movement = sf::Vector2f(0.f, 0.f);
     sf::Sprite m_body; // TODO private
 
 private:
