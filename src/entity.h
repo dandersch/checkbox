@@ -10,6 +10,12 @@ class ResourcePool;
 
 class Entity : public SceneNode
 {
+private:
+    virtual void updateCurrent(float dt)
+    {
+        move(m_velocity * dt);
+    }
+
 public:
     sf::Vector2f m_velocity = sf::Vector2f(0, 0);
 };

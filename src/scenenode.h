@@ -29,6 +29,12 @@ public:
         return result;
     }
 
+    void update(float dt)
+    {
+        updateCurrent(dt);
+        updateChildren(dt);
+    }
+
 private:
     virtual void draw(sf::RenderTarget& target,
                       sf::RenderStates states) const override final
@@ -38,12 +44,20 @@ private:
         drawCurrent(target, states);
 
         // draw children
-        for (const std::unique_ptr<SceneNode>& child : m_children)
+        for (const auto& child : m_children)
             child->draw(target, states);
     }
 
     virtual void drawCurrent(sf::RenderTarget& target,
                              sf::RenderStates states) const {}
+
+    virtual void updateCurrent(float dt) {}
+
+    void updateChildren(float dt)
+    {
+        for (auto& child : m_children)
+            child->update(dt);
+    }
 
 private:
     std::vector<std::unique_ptr<SceneNode>> m_children;

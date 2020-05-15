@@ -27,6 +27,8 @@ Game::Game()
     m_player.setTexture(m_texs.get("platformer_sprites_base.png"));
     m_player.speed = 2.f;
     m_player.body.setPosition(300, 400);
+    m_slave.setPosition(200, 400);
+    m_skeleton.setPosition(250, 400);
 
     m_cursor.setTexture(m_texs.get("cursor.png"));
     m_cursor.setTextureRect(sf::IntRect(144, 0, 72, 72));
