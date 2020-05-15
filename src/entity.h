@@ -4,20 +4,17 @@
 
 #include "scenenode.h"
 
-// forward declaration
+// forward declarations
 template<typename Resource>
 class ResourcePool;
 
 class Entity : public SceneNode
 {
 private:
-    virtual void updateCurrent(float dt)
-    {
-        move(m_velocity * dt);
-    }
+    virtual void updateCurrent(float dt) override { move(velocity * dt); }
 
 public:
-    sf::Vector2f m_velocity = sf::Vector2f(0, 0);
+    sf::Vector2f velocity = sf::Vector2f(0, 0);
 };
 
 class Enemy : public Entity

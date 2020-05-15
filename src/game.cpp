@@ -6,7 +6,7 @@ Game::Game()
   , m_texs(".png")
   , m_sfxs(".ogg")
   , m_fonts(".ttf")
-  , m_player()
+  , m_player(m_texs)
   , m_slave(Enemy::Type::Slave, m_texs)
   , m_skeleton(Enemy::Type::Skeleton, m_texs)
   , m_cursor()
@@ -24,7 +24,6 @@ Game::Game()
     m_window.setMouseCursorVisible(false);
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
 
-    m_player.setTexture(m_texs.get("platformer_sprites_base.png"));
     m_player.speed = 2.f;
     m_player.body.setPosition(300, 400);
     m_slave.setPosition(200, 400);
@@ -96,7 +95,7 @@ void Game::update(float dtime)
 
     // collision
     if (m_player.body.getGlobalBounds().intersects(m_collBox.getGlobalBounds())) {
-        m_player.body.move(-m_player.movement);
+        m_player.body.move(-m_player.velocity);
         m_sfx.play();
     }
 
@@ -117,7 +116,7 @@ void Game::render()
     m_window.clear(sf::Color(100, 180, 120, 255));
     m_window.setView(m_view);
 
-    m_player.draw(m_window);
+    m_window.draw(m_player);
     m_window.draw(m_collBox);
     m_window.draw(m_slave);
     m_window.draw(m_skeleton);

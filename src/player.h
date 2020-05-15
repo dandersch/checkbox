@@ -2,24 +2,28 @@
 
 #include "pch.h"
 
+#include "entity.h"
 #include "animation.h"
 
-class Player
+// forward declarations
+template<typename Resource>
+class ResourcePool;
+
+class Player : public Entity
 {
 public:
-    Player();
-    ~Player();
+    Player(ResourcePool<sf::Texture>& textures);
 
-    void update(float dtime);
-    void draw(sf::RenderWindow& window);
-    void setTexture(const sf::Texture& texture);
+    virtual void updateCurrent(float dtime) override;
+    //void draw(sf::RenderWindow& window);
+    void createAnimations();
 
 private:
     void restartAnimsExcept(int index);
+    void drawCurrent(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 public:
     float speed = 1.0f;
-    sf::Vector2f movement = sf::Vector2f(0.f, 0.f);
     sf::Sprite body;
 
 private:
