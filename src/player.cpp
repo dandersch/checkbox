@@ -6,76 +6,7 @@
  *  TODO: show IDLE_LEFT after WALK_LEFT
  */
 
-Player::Player(sf::Texture* texture)
-  : m_tex(texture)
-{
-    m_body.setOrigin(m_body.getTextureRect().height / 2.0f,
-                     m_body.getTextureRect().width / 2.0f);
-    m_body.setPosition(250, 400);
-    m_body.setTexture(*texture);
-
-    /* Idle */
-    m_anims.emplace_back(m_tex, 8, 9);
-    m_anims.back().add(0, 2, 0.4f);
-    m_anims.back().add(1, 2, 0.4f);
-
-    /* Walk right */
-    m_anims.emplace_back(m_tex, 8, 9);
-    m_anims.back().add(0, 4, 0.1f);
-    m_anims.back().add(1, 4, 0.1f);
-    m_anims.back().add(2, 4, 0.1f);
-    m_anims.back().add(3, 4, 0.1f);
-    m_anims.back().add(4, 4, 0.1f);
-    m_anims.back().add(5, 4, 0.1f);
-    m_anims.back().add(6, 4, 0.1f);
-    m_anims.back().add(7, 4, 0.1f);
-
-    /* Walk left */
-    m_anims.emplace_back(m_tex, 8, 9);
-    m_anims.back().add(0, 4, 0.1f, true);
-    m_anims.back().add(1, 4, 0.1f, true);
-    m_anims.back().add(2, 4, 0.1f, true);
-    m_anims.back().add(3, 4, 0.1f, true);
-    m_anims.back().add(4, 4, 0.1f, true);
-    m_anims.back().add(5, 4, 0.1f, true);
-    m_anims.back().add(6, 4, 0.1f, true);
-    m_anims.back().add(7, 4, 0.1f, true);
-
-    /* Death */
-    m_anims.emplace_back(m_tex, 8, 9);
-    m_anims.back().add(0, 2, 0.2f);
-    m_anims.back().add(1, 2, 0.2f);
-    m_anims.back().add(2, 2, 0.2f);
-    m_anims.back().add(3, 2, 0.2f);
-    m_anims.back().add(4, 2, 0.2f);
-    m_anims.back().add(5, 2, 0.2f);
-    m_anims.back().add(6, 2, 0.2f);
-    m_anims.back().add(7, 2, 0.2f);
-    m_anims.back().looped = false;
-
-    /* Run right */
-    m_anims.emplace_back(m_tex, 8, 9);
-    m_anims.back().add(4, 0, 0.1f);
-    m_anims.back().add(5, 0, 0.1f);
-    m_anims.back().add(6, 0, 0.1f);
-    m_anims.back().add(7, 0, 0.1f);
-    m_anims.back().add(0, 1, 0.1f);
-    m_anims.back().add(1, 1, 0.1f);
-    m_anims.back().add(2, 1, 0.1f);
-    m_anims.back().add(3, 1, 0.1f);
-
-    /* Run left */
-    m_anims.emplace_back(m_tex, 8, 9);
-    m_anims.back().add(4, 0, 0.1f, true);
-    m_anims.back().add(5, 0, 0.1f, true);
-    m_anims.back().add(6, 0, 0.1f, true);
-    m_anims.back().add(7, 0, 0.1f, true);
-    m_anims.back().add(0, 1, 0.1f, true);
-    m_anims.back().add(1, 1, 0.1f, true);
-    m_anims.back().add(2, 1, 0.1f, true);
-    m_anims.back().add(3, 1, 0.1f, true);
-}
-
+Player::Player() {}
 Player::~Player() {}
 
 /*
@@ -88,10 +19,10 @@ void Player::update(float dtime)
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
         movement.x = -speed * 1.0f;
-	m_state = WALKING_LEFT;
+        m_state = WALKING_LEFT;
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
         movement.x = speed * 1.0f;
-	m_state = WALKING_RIGHT;
+        m_state = WALKING_RIGHT;
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
         m_state = DEAD;
     } else {
@@ -111,13 +42,81 @@ void Player::update(float dtime)
 
     restartAnimsExcept(m_state);
 
-    m_body.move(movement);
-    m_body.setTextureRect(m_anims[m_state].update(dtime));
+    body.move(movement);
+    body.setTextureRect(m_anims[m_state].update(dtime));
+}
+
+void Player::setTexture(sf::Texture* texture)
+{
+    body.setTexture(*texture);
+    m_anims.clear();
+
+    // TODO crash w/o anims
+    /* Idle */
+    m_anims.emplace_back(texture, 8, 9);
+    m_anims.back().add(0, 2, 0.4f);
+    m_anims.back().add(1, 2, 0.4f);
+
+    /* Walk right */
+    m_anims.emplace_back(texture, 8, 9);
+    m_anims.back().add(0, 4, 0.1f);
+    m_anims.back().add(1, 4, 0.1f);
+    m_anims.back().add(2, 4, 0.1f);
+    m_anims.back().add(3, 4, 0.1f);
+    m_anims.back().add(4, 4, 0.1f);
+    m_anims.back().add(5, 4, 0.1f);
+    m_anims.back().add(6, 4, 0.1f);
+    m_anims.back().add(7, 4, 0.1f);
+
+    /* Walk left */
+    m_anims.emplace_back(texture, 8, 9);
+    m_anims.back().add(0, 4, 0.1f, true);
+    m_anims.back().add(1, 4, 0.1f, true);
+    m_anims.back().add(2, 4, 0.1f, true);
+    m_anims.back().add(3, 4, 0.1f, true);
+    m_anims.back().add(4, 4, 0.1f, true);
+    m_anims.back().add(5, 4, 0.1f, true);
+    m_anims.back().add(6, 4, 0.1f, true);
+    m_anims.back().add(7, 4, 0.1f, true);
+
+    /* Death */
+    m_anims.emplace_back(texture, 8, 9);
+    m_anims.back().add(0, 2, 0.2f);
+    m_anims.back().add(1, 2, 0.2f);
+    m_anims.back().add(2, 2, 0.2f);
+    m_anims.back().add(3, 2, 0.2f);
+    m_anims.back().add(4, 2, 0.2f);
+    m_anims.back().add(5, 2, 0.2f);
+    m_anims.back().add(6, 2, 0.2f);
+    m_anims.back().add(7, 2, 0.2f);
+    m_anims.back().looped = false;
+
+    /* Run right */
+    m_anims.emplace_back(texture, 8, 9);
+    m_anims.back().add(4, 0, 0.1f);
+    m_anims.back().add(5, 0, 0.1f);
+    m_anims.back().add(6, 0, 0.1f);
+    m_anims.back().add(7, 0, 0.1f);
+    m_anims.back().add(0, 1, 0.1f);
+    m_anims.back().add(1, 1, 0.1f);
+    m_anims.back().add(2, 1, 0.1f);
+    m_anims.back().add(3, 1, 0.1f);
+
+    /* Run left */
+    m_anims.emplace_back(texture, 8, 9);
+    m_anims.back().add(4, 0, 0.1f, true);
+    m_anims.back().add(5, 0, 0.1f, true);
+    m_anims.back().add(6, 0, 0.1f, true);
+    m_anims.back().add(7, 0, 0.1f, true);
+    m_anims.back().add(0, 1, 0.1f, true);
+    m_anims.back().add(1, 1, 0.1f, true);
+    m_anims.back().add(2, 1, 0.1f, true);
+    m_anims.back().add(3, 1, 0.1f, true);
 }
 
 void Player::draw(sf::RenderWindow& window)
 {
-    window.draw(m_body);
+    window.draw(body);
 }
 
 void Player::restartAnimsExcept(int index)

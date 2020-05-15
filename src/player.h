@@ -7,14 +7,12 @@
 class Player
 {
 public:
-    Player(sf::Texture* texture);
+    Player();
     ~Player();
 
     void update(float dtime);
     void draw(sf::RenderWindow& window);
-
-    // TODO
-    // void setTexture(...)
+    void setTexture(sf::Texture* texture);
 
 private:
     void restartAnimsExcept(int index);
@@ -22,19 +20,18 @@ private:
 public:
     float speed = 1.0f;
     sf::Vector2f movement = sf::Vector2f(0.f, 0.f);
-    sf::Sprite m_body; // TODO private
+    sf::Sprite body;
 
 private:
     sf::Texture* m_tex;
     std::vector<Animation> m_anims;
-
     enum PlayerState
     {
-	IDLE,
-	WALKING_RIGHT,
-	WALKING_LEFT,
-	DEAD,
-	RUN_RIGHT,
-	RUN_LEFT
+        IDLE,
+        WALKING_RIGHT,
+        WALKING_LEFT,
+        DEAD,
+        RUN_RIGHT,
+        RUN_LEFT
     } m_state;
 };
