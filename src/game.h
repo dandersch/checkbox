@@ -17,6 +17,7 @@ private:
     void processEvents();
     void update(float dtime);
     void render();
+    void debugGui(sf::Time time);
 
     // TODO
     // void handleInput(sf::Keyboard::Key key, bool pressed);

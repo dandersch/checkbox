@@ -111,16 +111,6 @@ void Game::update(float dtime)
         m_player.body.setPosition(m_player.body.getPosition() * (1.0f - dtime) +
                                   m_window.mapPixelToCoords(sf::Mouse::getPosition(m_window)) * dtime);
     }
-
-    /// ImGUI ///////////////////////
-    ImGui::SFML::Update(m_window, sf::seconds(dtime));
-    ImGui::Begin("Hello");
-    ImGui::SliderFloat("player speed", &m_player.speed, -10, 10);
-    if (ImGui::Button("Pause"))
-        m_music.getStatus() == m_music.Paused ? m_music.play()
-                                              : m_music.pause();
-    ImGui::End();
-    /////////////////////////////////
 }
 
 void Game::render()
@@ -135,16 +125,35 @@ void Game::render()
     m_window.display();
 }
 
+// can't be called more than once before render()
+void Game::debugGui(sf::Time time)
+{
+    ImGui::SFML::Update(m_window, time);
+    ImGui::Begin("Hello");
+    ImGui::SliderFloat("player speed", &m_player.speed, -10, 10);
+    if (ImGui::Button("Pause"))
+        m_music.getStatus() == m_music.Paused ? m_music.play()
+                                              : m_music.pause();
+    ImGui::End();
+}
+
+static const sf::Time TIME_PER_FRAME = sf::seconds(1.f/60.f);
 void Game::run()
 {
     sf::Clock clock; // starts the clock
-    float dtime = 0;
+    sf::Time accumulator = sf::Time::Zero;
 
     while (m_window.isOpen()) {
-        // TODO fixed timesteps
-        dtime = clock.restart().asSeconds();
         processEvents();
-        update(dtime);
+        accumulator += clock.restart();
+
+        debugGui(accumulator);
+
+        while (accumulator > TIME_PER_FRAME) {
+            accumulator -= TIME_PER_FRAME;
+            processEvents();
+            update(TIME_PER_FRAME.asSeconds());
+        }
         render();
     }
 }
