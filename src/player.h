@@ -12,7 +12,7 @@ public:
 
     void update(float dtime);
     void draw(sf::RenderWindow& window);
-    void setTexture(sf::Texture* texture);
+    void setTexture(const sf::Texture& texture);
 
 private:
     void restartAnimsExcept(int index);
@@ -23,7 +23,6 @@ public:
     sf::Sprite body;
 
 private:
-    sf::Texture* m_tex;
     std::vector<Animation> m_anims;
     enum PlayerState
     {

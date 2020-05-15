@@ -46,19 +46,19 @@ void Player::update(float dtime)
     body.setTextureRect(m_anims[m_state].update(dtime));
 }
 
-void Player::setTexture(sf::Texture* texture)
+void Player::setTexture(const sf::Texture& texture)
 {
-    body.setTexture(*texture);
+    body.setTexture(texture);
     m_anims.clear();
 
     // TODO crash w/o anims
     /* Idle */
-    m_anims.emplace_back(texture, 8, 9);
+    m_anims.emplace_back(texture.getSize(), 8, 9);
     m_anims.back().add(0, 2, 0.4f);
     m_anims.back().add(1, 2, 0.4f);
 
     /* Walk right */
-    m_anims.emplace_back(texture, 8, 9);
+    m_anims.emplace_back(texture.getSize(), 8, 9);
     m_anims.back().add(0, 4, 0.1f);
     m_anims.back().add(1, 4, 0.1f);
     m_anims.back().add(2, 4, 0.1f);
@@ -69,7 +69,7 @@ void Player::setTexture(sf::Texture* texture)
     m_anims.back().add(7, 4, 0.1f);
 
     /* Walk left */
-    m_anims.emplace_back(texture, 8, 9);
+    m_anims.emplace_back(texture.getSize(), 8, 9);
     m_anims.back().add(0, 4, 0.1f, true);
     m_anims.back().add(1, 4, 0.1f, true);
     m_anims.back().add(2, 4, 0.1f, true);
@@ -80,7 +80,7 @@ void Player::setTexture(sf::Texture* texture)
     m_anims.back().add(7, 4, 0.1f, true);
 
     /* Death */
-    m_anims.emplace_back(texture, 8, 9);
+    m_anims.emplace_back(texture.getSize(), 8, 9);
     m_anims.back().add(0, 2, 0.2f);
     m_anims.back().add(1, 2, 0.2f);
     m_anims.back().add(2, 2, 0.2f);
@@ -92,7 +92,7 @@ void Player::setTexture(sf::Texture* texture)
     m_anims.back().looped = false;
 
     /* Run right */
-    m_anims.emplace_back(texture, 8, 9);
+    m_anims.emplace_back(texture.getSize(), 8, 9);
     m_anims.back().add(4, 0, 0.1f);
     m_anims.back().add(5, 0, 0.1f);
     m_anims.back().add(6, 0, 0.1f);
@@ -103,7 +103,7 @@ void Player::setTexture(sf::Texture* texture)
     m_anims.back().add(3, 1, 0.1f);
 
     /* Run left */
-    m_anims.emplace_back(texture, 8, 9);
+    m_anims.emplace_back(texture.getSize(), 8, 9);
     m_anims.back().add(4, 0, 0.1f, true);
     m_anims.back().add(5, 0, 0.1f, true);
     m_anims.back().add(6, 0, 0.1f, true);

@@ -3,10 +3,10 @@
 #include "animation.h"
 
 // TODO pass size directly (?)
-Animation::Animation(sf::Texture* texture, uint xcount, uint ycount)
+Animation::Animation(sf::Vector2u textureSize, uint xcount, uint ycount)
 {
-    m_framewidth = texture->getSize().x / xcount;
-    m_frameheight = texture->getSize().y / ycount;
+    m_framewidth = textureSize.x / xcount;
+    m_frameheight = textureSize.y / ycount;
 }
 
 Animation::~Animation() {}

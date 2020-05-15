@@ -3,17 +3,17 @@
 Game::Game()
   : m_window(sf::VideoMode(1280, 720), "SFML game")
   , m_view(sf::Vector2f(640.f, 360.f), sf::Vector2f(VIEW_HEIGHT, VIEW_WIDTH))
-  , m_playerTexture()
   , m_player()
-  , m_cursorTexture()
   , m_cursor()
   , m_collBox()
-  , m_music()
-  , m_font()
   , m_text()
-  , m_sfxBuffer()
   , m_sfx()
+  , m_music()
+  , m_texs(".png")
+  , m_sfxs(".ogg")
+  , m_fonts(".ttf")
 {
+
     m_window.setVerticalSyncEnabled(true); // Don't use
     // m_window.setFramerateLimit(60);     // both
     ImGui::SFML::Init(m_window);
@@ -22,21 +22,16 @@ Game::Game()
     m_window.setMouseCursorVisible(false);
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
 
-    m_playerTexture.loadFromFile("../assets/platformer_sprites_base.png");
-    m_player.setTexture(&m_playerTexture);
+    m_player.setTexture(m_texs.get("platformer_sprites_base.png"));
     m_player.speed = 2.f;
     m_player.body.setPosition(300, 400);
 
-    m_cursorTexture.loadFromFile("../assets/cursor.png");
-    m_cursor.setTexture(m_cursorTexture);
+    m_cursor.setTexture(m_texs.get("cursor.png"));
     m_cursor.setTextureRect(sf::IntRect(144, 0, 72, 72));
 
-    m_font.loadFromFile("../assets/UbuntuMono-B.ttf");
-    m_text.setFont(m_font);
+    m_text.setFont(m_fonts.get("Boxy-Bold.ttf"));
     m_text.setString("Hello world");
-    m_text.setCharacterSize(24); // in pixels, not points!
-    m_text.setFillColor(sf::Color::Red);
-    // text.setStyle(sf::Text::Bold | sf::Text::Underlined);
+    m_text.setCharacterSize(28); // in pixels, not points!
     m_text.setPosition(200, 200);
 
     // Collision testshape
@@ -45,9 +40,9 @@ Game::Game()
     m_collBox.setTexture(&m_texs.get("stonefloor.png"));
 
     // AUDIO
-    m_sfxBuffer.loadFromFile("../assets/foom.wav");
-    m_sfx.setBuffer(m_sfxBuffer);
+    m_sfx.setBuffer(m_sfxs.get("foom.ogg"));
     m_sfx.setVolume(20.f);
+
     m_music.openFromFile("../assets/intro.ogg");
     m_music.setLoop(true);
     m_music.play();

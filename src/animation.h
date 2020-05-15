@@ -12,7 +12,7 @@ struct Frame
 class Animation
 {
 public:
-    Animation(sf::Texture* texture, uint xcount, uint ycount);
+    Animation(sf::Vector2u textureSize, uint xcount, uint ycount);
     ~Animation();
 
     sf::IntRect update(float dtime);

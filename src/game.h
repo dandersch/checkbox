@@ -28,18 +28,17 @@ private:
     sf::View m_view;
 
     Player m_player;
-    sf::Texture m_playerTexture;
     sf::Texture m_cursorTexture;
     sf::Sprite m_cursor;
-
     sf::RectangleShape m_collBox;
-    sf::Music m_music;
-    sf::Font m_font;
     sf::Text m_text;
-
-    sf::SoundBuffer m_sfxBuffer;
     sf::Sound m_sfx;
+    sf::Music m_music;
 
+    // Resources
     ResourcePool<sf::Texture> m_texs;
+    ResourcePool<sf::SoundBuffer> m_sfxs;
+    ResourcePool<sf::Font> m_fonts;
+
     // GameState m_state;
 };
