@@ -42,7 +42,7 @@ Game::Game()
     // Collision testshape
     m_collBox.setSize(sf::Vector2f(100, 100));
     m_collBox.setPosition(400, 400);
-    m_collBox.setFillColor(sf::Color::Blue);
+    m_collBox.setTexture(&m_texs.get("stonefloor.png"));
 
     // AUDIO
     m_sfxBuffer.loadFromFile("../assets/foom.wav");

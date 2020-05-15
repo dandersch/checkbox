@@ -3,6 +3,7 @@
 #include "pch.h"
 
 #include "player.h"
+#include "resourcepool.h"
 
 #define VIEW_HEIGHT 1280
 #define VIEW_WIDTH  720
@@ -39,6 +40,6 @@ private:
     sf::SoundBuffer m_sfxBuffer;
     sf::Sound m_sfx;
 
-    // ResourcePool<sf::Texture> m_texs
+    ResourcePool<sf::Texture> m_texs;
     // GameState m_state;
 };

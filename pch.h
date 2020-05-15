@@ -7,6 +7,7 @@
 #include <vector>
 #include <cassert>
 #include <unordered_map>
+#include <memory>
 #include <cmath>    // abs
 #include <cstddef>  // offsetof, NULL
 #include <cstring>  // memcpy
