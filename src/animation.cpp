@@ -2,6 +2,7 @@
 
 #include "animation.h"
 
+// TODO pass size directly (?)
 Animation::Animation(sf::Texture* texture, uint xcount, uint ycount)
 {
     m_framewidth = texture->getSize().x / xcount;
