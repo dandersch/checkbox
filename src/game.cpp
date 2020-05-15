@@ -9,6 +9,7 @@ Game::Game()
   , m_player(m_texs)
   , m_slave(Enemy::Type::Slave, m_texs)
   , m_skeleton(Enemy::Type::Skeleton, m_texs)
+  , m_world(m_window)
   , m_cursor()
   , m_collBox()
   , m_text()
@@ -114,6 +115,9 @@ void Game::update(float dtime)
 void Game::render()
 {
     m_window.clear(sf::Color(100, 180, 120, 255));
+
+    m_world.draw();
+
     m_window.setView(m_view);
 
     m_window.draw(m_player);

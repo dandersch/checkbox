@@ -4,8 +4,8 @@
 
 #include "player.h"
 #include "resourcepool.h"
-
 #include "entity.h"
+#include "world.h"
 
 #define VIEW_HEIGHT 1280
 #define VIEW_WIDTH  720
@@ -34,6 +34,8 @@ private:
     ResourcePool<sf::Texture> m_texs;
     ResourcePool<sf::SoundBuffer> m_sfxs;
     ResourcePool<sf::Font> m_fonts;
+
+    World m_world;
 
     Player m_player;
     Enemy m_slave;

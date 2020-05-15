@@ -14,7 +14,7 @@ public:
 
     ~ResourcePool() {}
 
-    const Resource& get(const std::string& file)
+    Resource& get(const std::string& file)
     {
         if (pool.find(file) != pool.end()) {
             // found
