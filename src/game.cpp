@@ -3,15 +3,17 @@
 Game::Game()
   : m_window(sf::VideoMode(1280, 720), "SFML game")
   , m_view(sf::Vector2f(640.f, 360.f), sf::Vector2f(VIEW_HEIGHT, VIEW_WIDTH))
+  , m_texs(".png")
+  , m_sfxs(".ogg")
+  , m_fonts(".ttf")
   , m_player()
+  , m_slave(Enemy::Type::Slave, m_texs)
+  , m_skeleton(Enemy::Type::Skeleton, m_texs)
   , m_cursor()
   , m_collBox()
   , m_text()
   , m_sfx()
   , m_music()
-  , m_texs(".png")
-  , m_sfxs(".ogg")
-  , m_fonts(".ttf")
 {
 
     m_window.setVerticalSyncEnabled(true); // Don't use
@@ -43,7 +45,7 @@ Game::Game()
     m_sfx.setBuffer(m_sfxs.get("foom.ogg"));
     m_sfx.setVolume(20.f);
 
-    m_music.openFromFile("../assets/intro.ogg");
+    m_music.openFromFile("../res/intro.ogg");
     m_music.setLoop(true);
     m_music.play();
     m_music.setVolume(5.f);
@@ -112,8 +114,12 @@ void Game::render()
 {
     m_window.clear(sf::Color(100, 180, 120, 255));
     m_window.setView(m_view);
+
     m_player.draw(m_window);
     m_window.draw(m_collBox);
+    m_window.draw(m_slave);
+    m_window.draw(m_skeleton);
+
     m_window.draw(m_text);
     ImGui::SFML::Render(m_window);
     m_window.draw(m_cursor);
