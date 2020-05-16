@@ -10,8 +10,8 @@ public:
       : m_sprite(texture)
     {
         // TODO keep (?)
-        m_sprite.setOrigin(texture.getSize().x / 2.0f,
-                           texture.getSize().y / 2.0f);
+        //m_sprite.setOrigin(texture.getSize().x / 2.0f,
+        //                   texture.getSize().y / 2.0f);
     };
 
     SpriteNode(const sf::Texture& texture, const sf::IntRect& rect)

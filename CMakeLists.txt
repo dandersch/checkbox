@@ -32,7 +32,9 @@ include_directories("deps/imgui-1.76/")
 file(GLOB imgui_src "deps/imgui-1.76/imgui.cpp"
 	            "deps/imgui-1.76/imgui_widgets.cpp"
 		    "deps/imgui-1.76/imgui_draw.cpp"
-		    "deps/imgui-1.76/imgui-SFML.cpp")
+		    "deps/imgui-1.76/imgui-SFML.cpp"
+		    "deps/imgui-1.76/imgui_demo.cpp"
+                    )
 
 # Internal
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/)

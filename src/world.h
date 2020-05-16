@@ -38,6 +38,8 @@ private:
     //ResourcePool<sf::SoundBuffer> m_sfxs;
     //ResourcePool<sf::Font> m_fonts;
 
+    std::unordered_map<char, sf::IntRect> textureMap;
+
     SceneNode m_scenegraph;
     std::array<SceneNode*, LayerCount> m_layerNodes;
     sf::Vector2f m_playerSpawn;

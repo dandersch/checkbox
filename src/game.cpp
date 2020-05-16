@@ -89,10 +89,10 @@ void Game::update(float dtime)
 void Game::render()
 {
     m_window.clear(sf::Color(100, 180, 120, 255));
-
     m_world.draw();
-    m_window.setView(m_window.getDefaultView());
 
+    // Everything drawn after setting the view will appear fixed on the screen
+    m_window.setView(m_window.getDefaultView());
     m_window.draw(m_text);
     ImGui::SFML::Render(m_window);
     m_window.draw(m_cursor);
