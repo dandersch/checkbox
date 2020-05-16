@@ -25,6 +25,10 @@ void Player::updateCurrent(float dtime)
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
         velocity.x = speed * 1.0f;
         m_state = WALKING_RIGHT;
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
+        velocity.y = speed * 1.0f;
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
+        velocity.y = -speed * 1.0f;
     } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
         m_state = DEAD;
     } else {

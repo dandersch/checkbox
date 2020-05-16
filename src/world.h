@@ -5,6 +5,8 @@
 #include "scenenode.h"
 #include "entity.h"
 
+// forward declarations
+class SpriteNode;
 class Player;
 
 class World : private sf::NonCopyable
@@ -38,4 +40,6 @@ private:
     std::array<SceneNode*, LayerCount> m_layerNodes;
     sf::Vector2f m_playerSpawn;
     Player* m_player;
+
+    SpriteNode* box;
 };

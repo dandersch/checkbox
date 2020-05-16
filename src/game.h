@@ -28,7 +28,6 @@ private:
 private:
     // rendering
     sf::RenderWindow m_window;
-    sf::View m_view;
 
     // resources
     ResourcePool<sf::Texture> m_texs;
@@ -37,7 +36,6 @@ private:
 
     World m_world;
 
-    Player m_player;
     Enemy m_slave;
     Enemy m_skeleton;
 
