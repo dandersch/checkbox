@@ -83,7 +83,6 @@ void World::buildScene()
     m_layerNodes[Middle]->attachChild(std::move(player));
 
     // Generation of map as image:
-    auto& lvlgentex = m_textures.get(tiletexfile);
 
     // lambda comparator to be able to create a map with sf::Color as key
     auto comparator = [](const sf::Color& c1, const sf::Color& c2) -> bool {
@@ -94,18 +93,21 @@ void World::buildScene()
     };
 
     std::map<sf::Color, sf::IntRect, decltype(comparator)> colorMap(comparator);
-    colorMap =
-        { { sf::Color(255, 255, 255), sf::IntRect() },  // empty
-          { sf::Color(255,   0, 255), sf::IntRect() },  // playerpos
-          { sf::Color(  0, 255,   0), sf::IntRect(6 * 32, 0 * 32, 32, 32) },  // grass
-          { sf::Color(  0,   0, 255), sf::IntRect(8 * 32, 0 * 32, 32, 32) },  // water
-          { sf::Color(255, 255,   0), sf::IntRect(3 * 32, 0 * 32, 32, 32) },  // wood
-          { sf::Color(255, 120,   0), sf::IntRect(2 * 32, 0 * 32, 32, 32) },  // rooftile
-          { sf::Color(100,  60,   0), sf::IntRect(1 * 32, 0 * 32, 32, 32) },  // dirt
-          { sf::Color(100, 100, 100), sf::IntRect(0 * 32, 0 * 32, 32, 32) }   // stone
-    };
 
+    auto& levelTex = m_textures.get(tiletexfile);
     auto& level0 = m_levels.get("level0.png");
+
+    // fill the colormap
+    int xCount = levelTex.getSize().x / 32;
+    int yCount = levelTex.getSize().y / 32;
+
+    for (int y = 0; y < yCount; y++) {
+        for (int x = 0; x < xCount; x++) {
+            colorMap[level0.getPixel(x, y)] = sf::IntRect(x * 32, y * 32, 32, 32);
+            level0.setPixel(x, y, sf::Color::White);
+        }
+    }
+
     for (int y = 0; y < level0.getSize().y; y++) {
         for (int x = 0; x < level0.getSize().x; x++) {
             sf::Color sample = level0.getPixel(x,y);
@@ -117,7 +119,7 @@ void World::buildScene()
 
             if (sample == sf::Color::White) continue; // whitespace
 
-            std::unique_ptr<SpriteNode> tile(new SpriteNode(lvlgentex,
+            std::unique_ptr<SpriteNode> tile(new SpriteNode(levelTex,
                                                             colorMap[sample]));
 
             tile->setPosition(x * 32, y * 32);
