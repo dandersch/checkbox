@@ -6,23 +6,13 @@
 #define VIEW_HEIGHT 1280
 #define VIEW_WIDTH  720
 
-static const int mapWidth = 17;
 static const char* tiletexfile = "simple_tiles_32x32.png";
-static const char* mapTiles = "        TTTT     "
-                              "      TTT  TTT   "
-                              "      P      P   "
-                              "             P   "
-                              "             P   "
-                              "GGGGGGSSSSSSSGWWW"
-                              "DDDDDDDDDDDDDDWWW"
-                              "DDDDDDDDDDDDDDWWW"
-                              "DDDDDDDDDDDDDDWWW"
-                              "DDDDDDDDDDDDDDWWW";
 
 World::World(sf::RenderWindow& window)
   : m_window(window)
   , m_view(sf::Vector2f(640.f, 360.f), sf::Vector2f(VIEW_HEIGHT, VIEW_WIDTH))
   , m_textures(".png")
+  , m_levels(".png")
   , m_playerSpawn(300, 400)
   , m_player(nullptr)
 {
@@ -92,24 +82,43 @@ void World::buildScene()
     m_view.setCenter(m_player->body.getPosition());
     m_layerNodes[Middle]->attachChild(std::move(player));
 
-    // Generation from map
-    textureMap['S'] = sf::IntRect(0 * 32, 0 * 32, 32, 32);
-    textureMap['D'] = sf::IntRect(1 * 32, 0 * 32, 32, 32);
-    textureMap['T'] = sf::IntRect(2 * 32, 0 * 32, 32, 32);
-    textureMap['P'] = sf::IntRect(3 * 32, 0 * 32, 32, 32);
-    textureMap['G'] = sf::IntRect(6 * 32, 0 * 32, 32, 32);
-    textureMap['W'] = sf::IntRect(8 * 32, 0 * 32, 32, 32);
+    // Generation of map as image:
+    auto& lvlgentex = m_textures.get(tiletexfile);
 
-    int mapHeight = strlen(mapTiles) / mapWidth;
-    for (int y = 0; y < mapHeight; y++) {
-        for (int x = 0; x < mapWidth; x++) {
-            char tileChar = mapTiles[x + y * mapWidth];
+    // lambda comparator to be able to create a map with sf::Color as key
+    auto comparator = [](const sf::Color& c1, const sf::Color& c2) -> bool {
+        if (c1.r < c2.r) return true;
+        else if (c1.r == c2.r && c1.g < c2.g) return true;
+        else if (c1.r == c2.r && c1.g == c2.g && c1.b < c2.b) return true;
+        return false;
+    };
 
-            // no creation for whitespace
-            if (tileChar == ' ') continue;
-            auto& lvlgentex = m_textures.get(tiletexfile);
+    std::map<sf::Color, sf::IntRect, decltype(comparator)> colorMap(comparator);
+    colorMap =
+        { { sf::Color(255, 255, 255), sf::IntRect() },  // empty
+          { sf::Color(255,   0, 255), sf::IntRect() },  // playerpos
+          { sf::Color(  0, 255,   0), sf::IntRect(6 * 32, 0 * 32, 32, 32) },  // grass
+          { sf::Color(  0,   0, 255), sf::IntRect(8 * 32, 0 * 32, 32, 32) },  // water
+          { sf::Color(255, 255,   0), sf::IntRect(3 * 32, 0 * 32, 32, 32) },  // wood
+          { sf::Color(255, 120,   0), sf::IntRect(2 * 32, 0 * 32, 32, 32) },  // rooftile
+          { sf::Color(100,  60,   0), sf::IntRect(1 * 32, 0 * 32, 32, 32) },  // dirt
+          { sf::Color(100, 100, 100), sf::IntRect(0 * 32, 0 * 32, 32, 32) }   // stone
+    };
+
+    auto& level0 = m_levels.get("level0.png");
+    for (int y = 0; y < level0.getSize().y; y++) {
+        for (int x = 0; x < level0.getSize().x; x++) {
+            sf::Color sample = level0.getPixel(x,y);
+
+            if (sample == sf::Color::Red) {
+                m_player->body.setPosition(x * 32, y * 32);
+                continue;
+            }
+
+            if (sample == sf::Color::White) continue; // whitespace
+
             std::unique_ptr<SpriteNode> tile(new SpriteNode(lvlgentex,
-                                                            textureMap[tileChar]));
+                                                            colorMap[sample]));
 
             tile->setPosition(x * 32, y * 32);
             m_layerNodes[Foreground]->attachChild(std::move(tile));

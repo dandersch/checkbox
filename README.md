@@ -7,6 +7,7 @@ Ausweichen muss man an das Ziel von einem Level kommen. Dementsprechend grobe
 
 ## Detaillierte Beschreibung/Auflistung der Funktionalitaet
 - simple Platformer-Physik (Schwierigkeit B)
+- Levelgeneration aus einer Bilddatei (B-A?)
 - Einfache Animationen (B)
 - Betriebssystemunabhaengig (B)
 - Controllerunterstutzueng (B)
@@ -15,6 +16,6 @@ Ausweichen muss man an das Ziel von einem Level kommen. Dementsprechend grobe
 
 ## Optionale Funktionalitaeten
 - Leveleditor (Schwierigkeit B-A)
-- (richtige) Physiksimulation (A)
+- (mehr) Physiksimulation (A)
 - Partikeleffekte (A-S?)
 - ...
