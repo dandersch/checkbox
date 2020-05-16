@@ -31,19 +31,14 @@ private:
 
     // resources
     ResourcePool<sf::Texture> m_texs;
-    ResourcePool<sf::SoundBuffer> m_sfxs;
+    //ResourcePool<sf::SoundBuffer> m_sfxs;
     ResourcePool<sf::Font> m_fonts;
 
     World m_world;
 
-    Enemy m_slave;
-    Enemy m_skeleton;
-
     sf::Texture m_cursorTexture;
     sf::Sprite m_cursor;
-    sf::RectangleShape m_collBox;
     sf::Text m_text;
-    sf::Sound m_sfx;
     sf::Music m_music;
 
     // GameState m_state;

@@ -3,18 +3,12 @@
 Game::Game()
   : m_window(sf::VideoMode(1280, 720), "SFML game")
   , m_texs(".png")
-  , m_sfxs(".ogg")
   , m_fonts(".ttf")
-  , m_slave(Enemy::Type::Slave, m_texs)
-  , m_skeleton(Enemy::Type::Skeleton, m_texs)
   , m_world(m_window)
   , m_cursor()
-  , m_collBox()
   , m_text()
-  , m_sfx()
   , m_music()
 {
-
     m_window.setVerticalSyncEnabled(true); // Don't use
     // m_window.setFramerateLimit(60);     // both
     ImGui::SFML::Init(m_window);
@@ -23,25 +17,13 @@ Game::Game()
     m_window.setMouseCursorVisible(false);
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
 
-    m_slave.setPosition(200, 400);
-    m_skeleton.setPosition(250, 400);
-
     m_cursor.setTexture(m_texs.get("cursor.png"));
     m_cursor.setTextureRect(sf::IntRect(144, 0, 72, 72));
 
     m_text.setFont(m_fonts.get("Boxy-Bold.ttf"));
-    m_text.setString("Hello world");
+    m_text.setString("Hello World");
     m_text.setCharacterSize(28); // in pixels, not points!
-    m_text.setPosition(200, 200);
-
-    // Collision testshape
-    m_collBox.setSize(sf::Vector2f(100, 100));
-    m_collBox.setPosition(400, 400);
-    m_collBox.setTexture(&m_texs.get("stonefloor.png"));
-
-    // AUDIO
-    m_sfx.setBuffer(m_sfxs.get("foom.ogg"));
-    m_sfx.setVolume(20.f);
+    m_text.setPosition(100, 900);
 
     m_music.openFromFile("../res/intro.ogg");
     m_music.setLoop(true);
@@ -60,8 +42,7 @@ void Game::processEvents()
         case (sf::Event::Resized): {
             float aspectratio = float(m_window.getSize().x) /
                                 float(m_window.getSize().y);
-            // TODO now in world
-            //m_view.setSize(VIEW_HEIGHT * aspectratio, VIEW_HEIGHT);
+            m_world.m_view.setSize(VIEW_HEIGHT * aspectratio, VIEW_HEIGHT);
             break;
         }
 
@@ -76,8 +57,8 @@ void Game::processEvents()
         case (sf::Event::MouseWheelScrolled): {
             // ZOOMING
             int scrolltick = event.mouseWheelScroll.delta;
-            //if (scrolltick == 1) m_view.zoom(0.9f);
-            //if (scrolltick == -1) m_view.zoom(1.1f);
+            if (scrolltick == 1) m_world.m_view.zoom(0.9f);
+            if (scrolltick == -1) m_world.m_view.zoom(1.1f);
             break;
         }
 
@@ -90,14 +71,6 @@ void Game::update(float dtime)
 {
     m_world.update(dtime);
     //m_view.setCenter(m_player.body.getPosition());
-
-    /*
-    // collision
-    if (m_player.body.getGlobalBounds().intersects(m_collBox.getGlobalBounds())) {
-        m_player.body.move(-m_player.velocity);
-        m_sfx.play();
-    }
-    */
 
     // TODO use cursor class (?)
     // convert mousepos to world coordinates
@@ -119,12 +92,6 @@ void Game::render()
 
     m_world.draw();
     m_window.setView(m_window.getDefaultView());
-
-    /*
-    m_window.draw(m_collBox);
-    m_window.draw(m_slave);
-    m_window.draw(m_skeleton);
-    */
 
     m_window.draw(m_text);
     ImGui::SFML::Render(m_window);

@@ -20,6 +20,9 @@ private:
     void loadTextures();
     void buildScene();
 
+public:
+    sf::View m_view; // TODO private
+
 private:
     enum Layer
     {
@@ -30,7 +33,6 @@ private:
     };
 
     sf::RenderWindow& m_window;
-    sf::View m_view;
 
     ResourcePool<sf::Texture> m_textures;
     //ResourcePool<sf::SoundBuffer> m_sfxs;
@@ -40,6 +42,4 @@ private:
     std::array<SceneNode*, LayerCount> m_layerNodes;
     sf::Vector2f m_playerSpawn;
     Player* m_player;
-
-    SpriteNode* box;
 };

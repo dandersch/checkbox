@@ -15,18 +15,26 @@ World::World(sf::RenderWindow& window)
 {
     // loadTextures();
     buildScene();
-
     //m_view.setCenter(m_playerSpawn);
 }
 
 void World::update(float dt)
 {
-    if (!m_player->body.getGlobalBounds().intersects(box->m_sprite.getGlobalBounds()))
-        // m_view.setCenter(m_player->body.getPosition());
-        m_view.move(m_player->velocity);
+    // VIEW UPDATE ///
+    // get player position on screen in pixels
+    sf::Vector2u pPixelPos = (sf::Vector2u)m_window.mapCoordsToPixel(m_player->body.getPosition(),
+                                                                     m_view);
+    // get player position on screen in [0-1]
+    sf::Vector2f pRelPos((float)pPixelPos.x / m_window.getSize().x,
+                         (float)pPixelPos.y / m_window.getSize().y);
 
-    //box->setPosition(m_player->body.getPosition());
-    box->m_sprite.setPosition(m_window.mapPixelToCoords(sf::Vector2i(640, 320), m_view));
+    // move view if player gets out of borders
+    // TODO breaks if player near border and zooming in/resizing
+    if (pRelPos.x < 0.2f) m_view.move(m_player->velocity);
+    if (pRelPos.x > 0.8f) m_view.move(m_player->velocity);
+    if (pRelPos.y < 0.2f) m_view.move(m_player->velocity);
+    if (pRelPos.y > 0.8f) m_view.move(m_player->velocity);
+
     m_scenegraph.update(dt);
 }
 
@@ -50,12 +58,6 @@ void World::buildScene()
         m_layerNodes[i] = layer.get();
         m_scenegraph.attachChild(std::move(layer));
     }
-
-    std::unique_ptr<SpriteNode> box(new SpriteNode(m_textures.get("simple_"
-                                                                  "tiles_32x32."
-                                                                  "png")));
-    this->box = box.get();
-    m_layerNodes[Background]->attachChild(std::move(box));
 
     auto& bgTex = m_textures.get("stonefloor_512x512.png");
     sf::IntRect bgTexRect(0,0,2048,2048);

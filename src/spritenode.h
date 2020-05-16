@@ -9,11 +9,12 @@ public:
     explicit SpriteNode(const sf::Texture& texture)
       : m_sprite(texture)
     {
+        // TODO keep (?)
         m_sprite.setOrigin(texture.getSize().x / 2.0f,
                            texture.getSize().y / 2.0f);
     };
 
-      SpriteNode(const sf::Texture& texture, const sf::IntRect& rect)
+    SpriteNode(const sf::Texture& texture, const sf::IntRect& rect)
       : m_sprite(texture, rect)
     {}
 
@@ -24,6 +25,6 @@ private:
         target.draw(m_sprite, states);
     }
 
-public:
+private:
     sf::Sprite m_sprite;
 };
