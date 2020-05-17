@@ -12,8 +12,6 @@ public:
         pool["missing"]->loadFromFile("../res/missing" + ext);
     }
 
-    ~ResourcePool() {}
-
     Resource& get(const std::string& file)
     {
         if (pool.find(file) != pool.end()) {

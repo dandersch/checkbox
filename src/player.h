@@ -1,8 +1,8 @@
 #pragma once
 
-#include "pch.h"
-#include "entity.h"
 #include "animation.h"
+#include "entity.h"
+#include "pch.h"
 
 // forward declarations
 template<typename Resource>
@@ -10,6 +10,25 @@ class ResourcePool;
 
 class Player : public Entity
 {
+public:
+    enum Action
+    {
+        MOVE_LEFT,
+        MOVE_RIGHT,
+        SPRINT,
+        ACTIONCOUNT
+    };
+
+    enum PlayerState
+    {
+        IDLE,
+        WALKING_RIGHT,
+        WALKING_LEFT,
+        DEAD,
+        RUNNING_RIGHT,
+        RUNNING_LEFT
+    };
+
 public:
     Player(ResourcePool<sf::Texture>& textures);
     virtual void updateCurrent(float dt) override;
@@ -20,24 +39,22 @@ public:
 
     virtual unsigned int getCategory() const override;
 
+    void assignKey(sf::Keyboard::Key key, Action action);
+    sf::Keyboard::Key getAssignedKey(Action action) const;
 
 private:
     void restartAnimsExcept(int index);
-    void drawCurrent(sf::RenderTarget& target, sf::RenderStates states) const override;
+    void drawCurrent(sf::RenderTarget& target,
+                     sf::RenderStates states) const override;
+    static bool isOneShot(Action action);
 
 public:
-    float speed = 10.0f;
+    float speed;
     sf::Sprite body;
 
 private:
     std::vector<Animation> m_anims;
-    enum PlayerState
-    {
-        IDLE,
-        WALKING_RIGHT,
-        WALKING_LEFT,
-        DEAD,
-        RUN_RIGHT,
-        RUN_LEFT
-    } m_state;
+    PlayerState m_state;
+    std::map<sf::Keyboard::Key, Action> m_keybinds;
+    std::map<Action, Command> m_actionbinds;
 };

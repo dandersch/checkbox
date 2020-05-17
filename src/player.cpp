@@ -2,14 +2,37 @@
 #include "resourcepool.h"
 #include "command.h"
 
+// functor for player movement
+struct PlayerMover
+{
+    PlayerMover(float vx, float vy) : velocity(vx, vy) {}
+    void operator()(Player& player, float) const
+    {
+        player.velocity += velocity;
+    }
+
+    sf::Vector2f velocity;
+};
+
+
 /*
  *  TODO: show IDLE_LEFT after WALK_LEFT
  */
 Player::Player(ResourcePool<sf::Texture>& textures)
-    : body(textures.get("platformer_sprites_base.png"))
+  : body(textures.get("platformer_sprites_base.png"))
+  , speed(75.f)
 {
     m_state = IDLE;
     createAnimations();
+
+    assignKey(sf::Keyboard::A, MOVE_LEFT);
+    assignKey(sf::Keyboard::D, MOVE_RIGHT);
+    assignKey(sf::Keyboard::LShift, SPRINT);
+
+    m_actionbinds[MOVE_LEFT].action  = derivedAction<Player>(PlayerMover(-speed, 0.f));
+    m_actionbinds[MOVE_RIGHT].action = derivedAction<Player>(PlayerMover(+speed, 0.f));
+
+    for (auto& i : m_actionbinds) i.second.category = Category::Player;
 }
 
 /*
@@ -107,28 +130,35 @@ void Player::drawCurrent(sf::RenderTarget& target, sf::RenderStates states) cons
 // For one-time actions (WHEN an event happens)
 void Player::handleEvent(const sf::Event& event, std::queue<Command>& commands)
 {
-}
-
-// functor for player movement
-struct PlayerMover
-{
-    PlayerMover(float vx, float vy) : velocity(vx, vy) {}
-    void operator()(Player& player, float) const
-    {
-        player.velocity += velocity;
+    // workaround to support modifiers
+    switch (event.type) {
+    case sf::Event::KeyPressed:
+        if (event.key.code == getAssignedKey(SPRINT)) {
+            m_actionbinds[MOVE_LEFT].action  = derivedAction<Player>(PlayerMover(-speed * 2, 0.f));
+            m_actionbinds[MOVE_RIGHT].action = derivedAction<Player>(PlayerMover(+speed * 2, 0.f));
+            for (auto& i : m_actionbinds) i.second.category = Category::Player;
+        }
+        break;
+    case sf::Event::KeyReleased:
+        if (event.key.code == getAssignedKey(SPRINT)) {
+            m_actionbinds[MOVE_LEFT].action  = derivedAction<Player>(PlayerMover(-speed, 0.f));
+            m_actionbinds[MOVE_RIGHT].action = derivedAction<Player>(PlayerMover(+speed, 0.f));
+            for (auto& i : m_actionbinds) i.second.category = Category::Player;
+        }
+        break;
+    default: break;
     }
-
-    sf::Vector2f velocity;
-};
+}
 
 // For continuous real-time actions (WHILE an event happens)
 void Player::handleInput(std::queue<Command>& commands)
 {
     m_state = IDLE;
 
+    /*
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) &&
         sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
-        m_state = RUN_RIGHT;
+        m_state = RUNNING_RIGHT;
         Command sprintRight;
         sprintRight.category = Category::Player;
         sprintRight.action = derivedAction<Player>(PlayerMover(speed * 2,
@@ -144,7 +174,7 @@ void Player::handleInput(std::queue<Command>& commands)
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) &&
         sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
-        m_state = RUN_LEFT;
+        m_state = RUNNING_LEFT;
         Command sprintLeft;
         sprintLeft.category = Category::Player;
         sprintLeft.action = derivedAction<Player>(PlayerMover(-speed * 2,
@@ -157,9 +187,44 @@ void Player::handleInput(std::queue<Command>& commands)
         walkLeft.action = derivedAction<Player>(PlayerMover(-speed, 0.0f));
         commands.push(walkLeft);
     }
+    */
+
+    for (auto i : m_keybinds)
+        if (sf::Keyboard::isKeyPressed(i.first) && !isOneShot(i.second))
+            commands.push(m_actionbinds[i.second]);
 }
 
 unsigned int Player::getCategory() const
 {
     return Category::Player;
+}
+
+bool Player::isOneShot(Action action)
+{
+    switch (action) {
+    case MOVE_LEFT:  // fallthrough
+    case MOVE_RIGHT: return false;
+
+    default: return true;
+    }
+}
+
+void Player::assignKey(sf::Keyboard::Key key, Action action)
+{
+    // Remove all keys that already map to action
+    for (auto it = m_keybinds.begin(); it != m_keybinds.end();) {
+        if (it->second == action) m_keybinds.erase(it++);
+        else ++it;
+    }
+
+    // Insert new binding
+    m_keybinds[key] = action;
+}
+
+sf::Keyboard::Key Player::getAssignedKey(Action action) const
+{
+    for (auto i : m_keybinds)
+        if (i.second == action) return i.first;
+
+    return sf::Keyboard::Unknown;
 }

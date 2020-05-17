@@ -13,12 +13,10 @@ World::World(sf::RenderWindow& window)
   , m_view(sf::Vector2f(640.f, 360.f), sf::Vector2f(VIEW_HEIGHT, VIEW_WIDTH))
   , m_textures(".png")
   , m_levels(".png")
-  , m_playerSpawn(300, 400)
   , m_player(nullptr)
 {
-    // loadTextures();
+    loadTextures();
     buildScene();
-    //m_view.setCenter(m_playerSpawn);
 }
 
 void World::update(float dt)
@@ -89,7 +87,6 @@ void World::buildScene()
     std::unique_ptr<Player> player(new Player(m_textures));
     m_player = player.get();
     m_player->body.setOrigin(32,32);
-    m_player->speed = 75.f;
     m_view.setCenter(m_player->getPosition());
     m_layerNodes[Middle]->attachChild(std::move(player));
 

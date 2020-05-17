@@ -44,5 +44,4 @@ private:
 
     SceneNode m_scenegraph;
     std::array<SceneNode*, LayerCount> m_layerNodes;
-    sf::Vector2f m_playerSpawn;
 };

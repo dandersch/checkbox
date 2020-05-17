@@ -31,7 +31,6 @@ void SceneNode::update(float dt)
 void SceneNode::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     states.transform *= getTransform();
-
     drawCurrent(target, states);
 
     // draw children
@@ -61,8 +60,7 @@ unsigned int SceneNode::getCategory() const
 
 void SceneNode::onCommand(const Command& command, float dt)
 {
-    if (command.category & getCategory())
-        command.action(*this, dt);
+    if (command.category & getCategory()) command.action(*this, dt);
 
     for (std::unique_ptr<SceneNode>& child : m_children)
         child->onCommand(command, dt);
