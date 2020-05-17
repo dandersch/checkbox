@@ -1,13 +1,14 @@
 #include "player.h"
 #include "resourcepool.h"
+#include "command.h"
 
 /*
  *  TODO: show IDLE_LEFT after WALK_LEFT
  */
-
 Player::Player(ResourcePool<sf::Texture>& textures)
     : body(textures.get("platformer_sprites_base.png"))
 {
+    m_state = IDLE;
     createAnimations();
 }
 
@@ -15,41 +16,11 @@ Player::Player(ResourcePool<sf::Texture>& textures)
  * TODO: set/unset booleans w/ KeyPressed/KeyReleased ?
  * TODO: don't read keyinputs if window not focused
  */
-void Player::updateCurrent(float dtime)
+void Player::updateCurrent(float dt)
 {
-    velocity = sf::Vector2f(0.f, 0.f);
-
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-        velocity.x = -speed * 1.0f;
-        m_state = WALKING_LEFT;
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-        velocity.x = speed * 1.0f;
-        m_state = WALKING_RIGHT;
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S)) {
-        velocity.y = speed * 1.0f;
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::W)) {
-        velocity.y = -speed * 1.0f;
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X)) {
-        m_state = DEAD;
-    } else {
-        m_state = IDLE;
-    }
-
-    // TODO modifier supposed to be used like this?
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) &&
-        sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-        velocity.x = speed * 2.5f;
-        m_state = RUN_RIGHT;
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) &&
-               sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-        velocity.x = -speed * 2.5f;
-        m_state = RUN_LEFT;
-    }
-
     restartAnimsExcept(m_state);
-
-    body.move(velocity);
-    body.setTextureRect(m_anims[m_state].update(dtime));
+    move(velocity * dt);
+    body.setTextureRect(m_anims[m_state].update(dt));
 }
 
 void Player::createAnimations()
@@ -131,4 +102,64 @@ void Player::restartAnimsExcept(int index)
 void Player::drawCurrent(sf::RenderTarget& target, sf::RenderStates states) const
 {
     target.draw(body, states);
+}
+
+// For one-time actions (WHEN an event happens)
+void Player::handleEvent(const sf::Event& event, std::queue<Command>& commands)
+{
+}
+
+// functor for player movement
+struct PlayerMover
+{
+    PlayerMover(float vx, float vy) : velocity(vx, vy) {}
+    void operator()(Player& player, float) const
+    {
+        player.velocity += velocity;
+    }
+
+    sf::Vector2f velocity;
+};
+
+// For continuous real-time actions (WHILE an event happens)
+void Player::handleInput(std::queue<Command>& commands)
+{
+    m_state = IDLE;
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) &&
+        sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
+        m_state = RUN_RIGHT;
+        Command sprintRight;
+        sprintRight.category = Category::Player;
+        sprintRight.action = derivedAction<Player>(PlayerMover(speed * 2,
+                                                               0.0f));
+        commands.push(sprintRight);
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
+        m_state = WALKING_RIGHT;
+        Command walkRight;
+        walkRight.category = Category::Player;
+        walkRight.action = derivedAction<Player>(PlayerMover(speed, 0.0f));
+        commands.push(walkRight);
+    }
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) &&
+        sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
+        m_state = RUN_LEFT;
+        Command sprintLeft;
+        sprintLeft.category = Category::Player;
+        sprintLeft.action = derivedAction<Player>(PlayerMover(-speed * 2,
+                                                              0.0f));
+        commands.push(sprintLeft);
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
+        m_state = WALKING_LEFT;
+        Command walkLeft;
+        walkLeft.category = Category::Player;
+        walkLeft.action = derivedAction<Player>(PlayerMover(-speed, 0.0f));
+        commands.push(walkLeft);
+    }
+}
+
+unsigned int Player::getCategory() const
+{
+    return Category::Player;
 }

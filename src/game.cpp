@@ -36,6 +36,9 @@ void Game::processEvents()
     sf::Event event;
     while (m_window.pollEvent(event)) {
         ImGui::SFML::ProcessEvent(event);
+
+        m_world.m_player->handleEvent(event, m_world.cmdQueue);
+
         switch (event.type) {
         case (sf::Event::Closed): m_window.close(); break;
 
@@ -64,7 +67,9 @@ void Game::processEvents()
 
         default: break;
         }
+
     }
+    m_world.m_player->handleInput(m_world.cmdQueue);
 }
 
 void Game::update(float dtime)

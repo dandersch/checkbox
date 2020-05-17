@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <cassert>
+#include <queue>
 #include <map>
 #include <unordered_map>
 #include <memory>

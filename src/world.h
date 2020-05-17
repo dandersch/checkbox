@@ -4,6 +4,7 @@
 #include "resourcepool.h"
 #include "scenenode.h"
 #include "entity.h"
+#include "command.h"
 
 // forward declarations
 class SpriteNode;
@@ -22,6 +23,8 @@ private:
 
 public:
     sf::View m_view; // TODO private
+    std::queue<Command> cmdQueue;
+    Player* m_player; // TODO private
 
 private:
     enum Layer
@@ -42,5 +45,4 @@ private:
     SceneNode m_scenegraph;
     std::array<SceneNode*, LayerCount> m_layerNodes;
     sf::Vector2f m_playerSpawn;
-    Player* m_player;
 };

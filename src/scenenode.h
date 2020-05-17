@@ -2,6 +2,8 @@
 
 #include "pch.h"
 
+struct Command;
+
 class SceneNode
   : public sf::Transformable
   , public sf::Drawable
@@ -12,6 +14,9 @@ public:
     std::unique_ptr<SceneNode> detachChild(const SceneNode& node);
     void update(float dt);
     sf::Transform getWorldTransform() const;
+    void onCommand(const Command& command, float dt);
+
+    virtual unsigned int getCategory() const;
 
 private:
     virtual void draw(sf::RenderTarget& target,

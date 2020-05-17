@@ -1,4 +1,5 @@
 #include "scenenode.h"
+#include "command.h"
 
 void SceneNode::attachChild(std::unique_ptr<SceneNode> child)
 {
@@ -51,4 +52,18 @@ sf::Transform SceneNode::getWorldTransform() const
         xform = node->getTransform() * xform;
 
     return xform;
+}
+
+unsigned int SceneNode::getCategory() const
+{
+    return Category::Scene;
+}
+
+void SceneNode::onCommand(const Command& command, float dt)
+{
+    if (command.category & getCategory())
+        command.action(*this, dt);
+
+    for (std::unique_ptr<SceneNode>& child : m_children)
+        child->onCommand(command, dt);
 }
