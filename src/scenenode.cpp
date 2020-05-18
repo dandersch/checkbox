@@ -78,6 +78,8 @@ void SceneNode::onCommand(const Command& command, float dt)
         child->onCommand(command, dt);
 }
 
+// check collisions of collider with every node and respond by pushing collider
+// out
 void SceneNode::checkCollisions(sf::FloatRect& collider,
                                 collisionInfo& movement)
 {
@@ -85,14 +87,27 @@ void SceneNode::checkCollisions(sf::FloatRect& collider,
 
     if (getCategory() != Category::Player && this->m_parent != nullptr &&
         collider.intersects(getBoundingRect(), collision)) {
-        movement.movement = collision;
-        movement.halfsize = sf::Vector2f(getBoundingRect().width / 2,
-                                         getBoundingRect().height / 2);
-        movement.position = getPosition();
-        movement.collided = true;
-
-    } else {
-        for (const auto& child : m_children)
-            child->checkCollisions(collider, movement);
+        float intersectx = std::abs(collision.width) -
+                           (getBoundingRect().width / 2 + collider.width / 2);
+        float intersecty = std::abs(collision.height) -
+                           (getBoundingRect().height / 2 + collider.height / 2);
+        if (intersectx < intersecty) {
+            // x-collision
+            if (collision.left > getPosition().x) {
+                collider.left += collision.width;
+            } else {
+                collider.left -= collision.width;
+            }
+        } else {
+            // y-collision
+            if (collision.top > getPosition().y) {
+                collider.top += collision.height;
+            } else {
+                collider.top -= collision.height;
+                movement.touchingGround = true;
+            }
+        }
     }
+
+    for (const auto& child : m_children) child->checkCollisions(collider, movement);
 }

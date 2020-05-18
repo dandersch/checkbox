@@ -34,7 +34,7 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     m_actionbinds[MOVE_LEFT].action  = derivedAction<Player>(PlayerMover(-speed, 0.f));
     m_actionbinds[MOVE_RIGHT].action = derivedAction<Player>(PlayerMover(+speed, 0.f));
     //m_actionbinds[MOVE_UP].action  = derivedAction<Player>(PlayerMover(0.f, -speed));
-    //m_actionbinds[MOVE_DOWN].action = derivedAction<Player>(PlayerMover(0.f, +speed));
+    //m_actionbinds[MOVE_DOWN].action = derivedAction<Player>(PlayerMover(0.f, +speed * 10));
     m_actionbinds[JUMP].action = derivedAction<Player>([](Player& p, float) {
         if (p.canJump) {
             p.velocity.y = -sqrtf(2.0f * 981.f * 120.f);

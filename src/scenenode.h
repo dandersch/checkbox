@@ -9,7 +9,7 @@ struct collisionInfo
     sf::FloatRect movement;
     sf::Vector2f halfsize;
     sf::Vector2f position;
-    bool collided = false;
+    bool touchingGround = false;
 };
 
 class SceneNode

@@ -47,11 +47,6 @@ void World::update(float dt)
     m_player->velocity.x = 0.f;
     //m_player->velocity.y = 0.f;
 
-    // TODO builds up and breaks things over time
-    m_player->velocity.y += 981.f * dt; // Gravity
-    if (m_player->velocity.y > 2000.f) // workaround
-        m_player->velocity.y = 2000.f;
-
     while (!cmdQueue.empty()) {
         Command cmd = cmdQueue.front();
         cmdQueue.pop();
@@ -61,33 +56,23 @@ void World::update(float dt)
     m_scenegraph.update(dt);
 
     // aabb collision detection & response for player
-    // TODO breaks when colliding with multiple boxes
     auto playerCollider = m_player->getBoundingRect();
     collisionInfo cinfo;
     m_scenegraph.checkCollisions(playerCollider, cinfo);
 
-    if (cinfo.collided) {
-        float intersectx = std::abs(cinfo.movement.width) -
-                           (cinfo.halfsize.x + (playerCollider.width / 2));
-        float intersecty = std::abs(cinfo.movement.height) -
-                           (cinfo.halfsize.y + (playerCollider.height / 2));
-        if (intersectx < intersecty) {
-            // x-collision
-            if (cinfo.movement.left > cinfo.position.x)
-                m_player->move(cinfo.movement.width, 0.f);
-            else
-                m_player->move(-cinfo.movement.width, 0.f);
-        } else {
-            // y-collision
-            if (cinfo.movement.top < cinfo.position.y) {
-                m_player->move(0.f, -cinfo.movement.height);
-                m_player->canJump = true;
-            }
-            else {
-                m_player->move(0.f, cinfo.movement.height);
-            }
-        }
-    }
+    // GRAVITY
+    // TODO builds up and breaks things over time
+    if (!cinfo.touchingGround)
+        m_player->velocity.y += 981.f * dt;
+    else // workaround
+        m_player->velocity.y = 10.f;
+
+    if (m_player->velocity.y > 2000.f) // workaround
+        m_player->velocity.y = 2000.f;
+
+    m_player->canJump = cinfo.touchingGround;
+    m_player->setPosition(playerCollider.left + playerCollider.width / 2,
+                          playerCollider.top + playerCollider.height / 2);
 }
 
 void World::draw()
