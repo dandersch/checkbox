@@ -27,10 +27,14 @@ Player::Player(ResourcePool<sf::Texture>& textures)
 
     assignKey(sf::Keyboard::A, MOVE_LEFT);
     assignKey(sf::Keyboard::D, MOVE_RIGHT);
+    assignKey(sf::Keyboard::W, MOVE_UP);
+    assignKey(sf::Keyboard::S, MOVE_DOWN);
     assignKey(sf::Keyboard::LShift, SPRINT);
 
     m_actionbinds[MOVE_LEFT].action  = derivedAction<Player>(PlayerMover(-speed, 0.f));
     m_actionbinds[MOVE_RIGHT].action = derivedAction<Player>(PlayerMover(+speed, 0.f));
+    m_actionbinds[MOVE_UP].action  = derivedAction<Player>(PlayerMover(0.f, -speed));
+    m_actionbinds[MOVE_DOWN].action = derivedAction<Player>(PlayerMover(0.f, +speed));
 
     for (auto& i : m_actionbinds) i.second.category = Category::Player;
 }
@@ -155,40 +159,6 @@ void Player::handleInput(std::queue<Command>& commands)
 {
     m_state = IDLE;
 
-    /*
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) &&
-        sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
-        m_state = RUNNING_RIGHT;
-        Command sprintRight;
-        sprintRight.category = Category::Player;
-        sprintRight.action = derivedAction<Player>(PlayerMover(speed * 2,
-                                                               0.0f));
-        commands.push(sprintRight);
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D)) {
-        m_state = WALKING_RIGHT;
-        Command walkRight;
-        walkRight.category = Category::Player;
-        walkRight.action = derivedAction<Player>(PlayerMover(speed, 0.0f));
-        commands.push(walkRight);
-    }
-
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) &&
-        sf::Keyboard::isKeyPressed(sf::Keyboard::LShift)) {
-        m_state = RUNNING_LEFT;
-        Command sprintLeft;
-        sprintLeft.category = Category::Player;
-        sprintLeft.action = derivedAction<Player>(PlayerMover(-speed * 2,
-                                                              0.0f));
-        commands.push(sprintLeft);
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A)) {
-        m_state = WALKING_LEFT;
-        Command walkLeft;
-        walkLeft.category = Category::Player;
-        walkLeft.action = derivedAction<Player>(PlayerMover(-speed, 0.0f));
-        commands.push(walkLeft);
-    }
-    */
-
     for (auto i : m_keybinds)
         if (sf::Keyboard::isKeyPressed(i.first) && !isOneShot(i.second))
             commands.push(m_actionbinds[i.second]);
@@ -203,7 +173,9 @@ bool Player::isOneShot(Action action)
 {
     switch (action) {
     case MOVE_LEFT:  // fallthrough
-    case MOVE_RIGHT: return false;
+    case MOVE_RIGHT: // fallthrough
+    case MOVE_UP:    // fallthrough
+    case MOVE_DOWN: return false;
 
     default: return true;
     }

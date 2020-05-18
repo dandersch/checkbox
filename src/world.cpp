@@ -54,6 +54,32 @@ void World::update(float dt)
     }
 
     m_scenegraph.update(dt);
+
+    // aabb collision detection & response for player
+    // TODO breaks when colliding with multiple boxes
+    auto playerCollider = m_player->getBoundingRect();
+    collisionInfo cinfo;
+    m_scenegraph.checkCollisions(playerCollider, cinfo);
+
+    if (cinfo.collided) {
+        float intersectx = std::abs(cinfo.movement.width) -
+                           (cinfo.halfsize.x + (playerCollider.width / 2));
+        float intersecty = std::abs(cinfo.movement.height) -
+                           (cinfo.halfsize.y + (playerCollider.height / 2));
+        if (intersectx < intersecty) {
+            // x-collision
+            if (cinfo.movement.left > cinfo.position.x)
+                m_player->move(cinfo.movement.width, 0.f);
+            else
+                m_player->move(-cinfo.movement.width, 0.f);
+        } else {
+            // y-collision
+            if (cinfo.movement.top < cinfo.position.y)
+                m_player->move(0.f, -cinfo.movement.height);
+            else
+                m_player->move(0.f, cinfo.movement.height);
+        }
+    }
 }
 
 void World::draw()
@@ -77,18 +103,22 @@ void World::buildScene()
         m_scenegraph.attachChild(std::move(layer));
     }
 
-    auto& bgTex = m_textures.get("stonefloor_512x512.png");
-    sf::IntRect bgTexRect(0,0,8192,8192);
-    bgTex.setRepeated(true);
-    std::unique_ptr<SpriteNode> bgSprite(new SpriteNode(bgTex, bgTexRect));
-    bgSprite->setPosition(-4096, -4096);
-    m_layerNodes[Background]->attachChild(std::move(bgSprite));
+//  auto& bgTex = m_textures.get("stonefloor_512x512.png");
+//  sf::IntRect bgTexRect(0,0,8192,8192);
+//  bgTex.setRepeated(true);
+//  std::unique_ptr<SpriteNode> bgSprite(new SpriteNode(bgTex, bgTexRect));
+//  bgSprite->setPosition(-4096, -4096);
+//  m_layerNodes[Background]->attachChild(std::move(bgSprite));
 
     std::unique_ptr<Player> player(new Player(m_textures));
     m_player = player.get();
     m_player->body.setOrigin(32,32);
     m_view.setCenter(m_player->getPosition());
     m_layerNodes[Middle]->attachChild(std::move(player));
+
+    std::unique_ptr<SpriteNode> test(new SpriteNode(m_textures.get("as")));
+    test->setPosition(5 * 32, 7 * 32);
+    m_layerNodes[Foreground]->attachChild(std::move(test));
 
     //////////////////////////////////////////////////
     // Generation of level from image:

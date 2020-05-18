@@ -15,6 +15,8 @@ public:
     {
         MOVE_LEFT,
         MOVE_RIGHT,
+        MOVE_UP,
+        MOVE_DOWN,
         SPRINT,
         ACTIONCOUNT
     };
@@ -41,6 +43,11 @@ public:
 
     void assignKey(sf::Keyboard::Key key, Action action);
     sf::Keyboard::Key getAssignedKey(Action action) const;
+
+    virtual sf::FloatRect getBoundingRect() const override
+    {
+        return getWorldTransform().transformRect(body.getGlobalBounds());
+    };
 
 private:
     void restartAnimsExcept(int index);
