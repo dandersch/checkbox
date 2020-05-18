@@ -18,6 +18,7 @@ public:
         MOVE_UP,
         MOVE_DOWN,
         SPRINT,
+        JUMP,
         ACTIONCOUNT
     };
 
@@ -56,6 +57,7 @@ private:
     static bool isOneShot(Action action);
 
 public:
+    bool canJump = false;
     float speed;
     sf::Sprite body;
 

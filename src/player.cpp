@@ -14,7 +14,6 @@ struct PlayerMover
     sf::Vector2f velocity;
 };
 
-
 /*
  *  TODO: show IDLE_LEFT after WALK_LEFT
  */
@@ -30,11 +29,18 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     assignKey(sf::Keyboard::W, MOVE_UP);
     assignKey(sf::Keyboard::S, MOVE_DOWN);
     assignKey(sf::Keyboard::LShift, SPRINT);
+    assignKey(sf::Keyboard::Space, JUMP);
 
     m_actionbinds[MOVE_LEFT].action  = derivedAction<Player>(PlayerMover(-speed, 0.f));
     m_actionbinds[MOVE_RIGHT].action = derivedAction<Player>(PlayerMover(+speed, 0.f));
-    m_actionbinds[MOVE_UP].action  = derivedAction<Player>(PlayerMover(0.f, -speed));
-    m_actionbinds[MOVE_DOWN].action = derivedAction<Player>(PlayerMover(0.f, +speed));
+    //m_actionbinds[MOVE_UP].action  = derivedAction<Player>(PlayerMover(0.f, -speed));
+    //m_actionbinds[MOVE_DOWN].action = derivedAction<Player>(PlayerMover(0.f, +speed));
+    m_actionbinds[JUMP].action = derivedAction<Player>([](Player& p, float) {
+        if (p.canJump) {
+            p.velocity.y = -sqrtf(2.0f * 981.f * 120.f);
+            p.canJump = false;
+        }
+    });
 
     for (auto& i : m_actionbinds) i.second.category = Category::Player;
 }
@@ -135,6 +141,8 @@ void Player::drawCurrent(sf::RenderTarget& target, sf::RenderStates states) cons
 void Player::handleEvent(const sf::Event& event, std::queue<Command>& commands)
 {
     // workaround to support modifiers
+    // TODO crashes after pressing sprint for 2nd time...
+    /*
     switch (event.type) {
     case sf::Event::KeyPressed:
         if (event.key.code == getAssignedKey(SPRINT)) {
@@ -152,6 +160,11 @@ void Player::handleEvent(const sf::Event& event, std::queue<Command>& commands)
         break;
     default: break;
     }
+    */
+
+    for (auto i : m_keybinds)
+        if (sf::Keyboard::isKeyPressed(i.first) && isOneShot(i.second))
+            commands.push(m_actionbinds[i.second]);
 }
 
 // For continuous real-time actions (WHILE an event happens)

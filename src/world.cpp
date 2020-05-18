@@ -45,7 +45,12 @@ void World::update(float dt)
 
     // reset velocity
     m_player->velocity.x = 0.f;
-    m_player->velocity.y = 0.f;
+    //m_player->velocity.y = 0.f;
+
+    // TODO builds up and breaks things over time
+    m_player->velocity.y += 981.f * dt; // Gravity
+    if (m_player->velocity.y > 2000.f) // workaround
+        m_player->velocity.y = 2000.f;
 
     while (!cmdQueue.empty()) {
         Command cmd = cmdQueue.front();
@@ -74,10 +79,13 @@ void World::update(float dt)
                 m_player->move(-cinfo.movement.width, 0.f);
         } else {
             // y-collision
-            if (cinfo.movement.top < cinfo.position.y)
+            if (cinfo.movement.top < cinfo.position.y) {
                 m_player->move(0.f, -cinfo.movement.height);
-            else
+                m_player->canJump = true;
+            }
+            else {
                 m_player->move(0.f, cinfo.movement.height);
+            }
         }
     }
 }
@@ -103,12 +111,12 @@ void World::buildScene()
         m_scenegraph.attachChild(std::move(layer));
     }
 
-//  auto& bgTex = m_textures.get("stonefloor_512x512.png");
-//  sf::IntRect bgTexRect(0,0,8192,8192);
-//  bgTex.setRepeated(true);
-//  std::unique_ptr<SpriteNode> bgSprite(new SpriteNode(bgTex, bgTexRect));
-//  bgSprite->setPosition(-4096, -4096);
-//  m_layerNodes[Background]->attachChild(std::move(bgSprite));
+    auto& bgTex = m_textures.get("stonefloor_512x512.png");
+    sf::IntRect bgTexRect(0,0,8192,8192);
+    bgTex.setRepeated(true);
+    std::unique_ptr<SpriteNode> bgSprite(new SpriteNode(bgTex, bgTexRect));
+    bgSprite->setPosition(-4096, -4096);
+    m_layerNodes[Background]->attachChild(std::move(bgSprite));
 
     std::unique_ptr<Player> player(new Player(m_textures));
     m_player = player.get();
@@ -116,7 +124,7 @@ void World::buildScene()
     m_view.setCenter(m_player->getPosition());
     m_layerNodes[Middle]->attachChild(std::move(player));
 
-    std::unique_ptr<SpriteNode> test(new SpriteNode(m_textures.get("as")));
+    std::unique_ptr<SpriteNode> test(new SpriteNode(m_textures.get("as"), sf::IntRect(0,0,300,300)));
     test->setPosition(5 * 32, 7 * 32);
     m_layerNodes[Foreground]->attachChild(std::move(test));
 
@@ -166,4 +174,6 @@ void World::buildScene()
             m_layerNodes[Foreground]->attachChild(std::move(tile));
         }
     }
+
+    m_player->setPosition(3 * 32, 0); // for testing
 }
