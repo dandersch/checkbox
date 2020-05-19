@@ -8,8 +8,6 @@ Animation::Animation(sf::Vector2u textureSize, uint xcount, uint ycount)
     m_frameheight = textureSize.y / ycount;
 }
 
-Animation::~Animation() {}
-
 sf::IntRect Animation::update(float dtime)
 {
     m_time += dtime;
@@ -26,7 +24,7 @@ sf::IntRect Animation::update(float dtime)
         else m_index = m_frames.size() - 1;
     }
 
-    if (current.flipped)
+    if (flipped)
         return sf::IntRect((current.x + 1) * m_framewidth,
                            current.y * m_frameheight, -m_framewidth,
                            m_frameheight);
@@ -37,5 +35,5 @@ sf::IntRect Animation::update(float dtime)
 
 void Animation::add(int x, int y, float duration, bool flipped)
 {
-    m_frames.push_back({ x, y, duration, flipped });
+    m_frames.push_back({ x, y, duration });
 }

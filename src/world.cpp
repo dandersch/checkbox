@@ -31,16 +31,16 @@ void World::update(float dt)
 
     // move view if player gets out of borders
     // TODO breaks if player near border and zooming in/resizing
-    if (pRelPos.x < 0.2f) m_view.move(m_player->velocity * dt);
-    if (pRelPos.x > 0.8f) m_view.move(m_player->velocity * dt);
-    if (pRelPos.y < 0.2f) m_view.move(m_player->velocity * dt);
-    if (pRelPos.y > 0.8f) m_view.move(m_player->velocity * dt);
+    if (pRelPos.x < 0.3f) m_view.move(m_player->velocity * dt);
+    if (pRelPos.x > 0.7f) m_view.move(m_player->velocity * dt);
+    if (pRelPos.y < 0.3f) m_view.move(m_player->velocity * dt);
+    if (pRelPos.y > 0.7f) m_view.move(m_player->velocity * dt);
 
     // workaround to let player not get stuck outside of viewborders
-    if (pRelPos.x < 0.19f) m_view.setCenter(m_player->getPosition());
-    if (pRelPos.x > 0.81f) m_view.setCenter(m_player->getPosition());
-    if (pRelPos.y < 0.19f) m_view.setCenter(m_player->getPosition());
-    if (pRelPos.y > 0.81f) m_view.setCenter(m_player->getPosition());
+    if (pRelPos.x < 0.28f) m_view.setCenter(m_player->getPosition());
+    if (pRelPos.x > 0.72f) m_view.setCenter(m_player->getPosition());
+    if (pRelPos.y < 0.28f) m_view.setCenter(m_player->getPosition());
+    if (pRelPos.y > 0.72f) m_view.setCenter(m_player->getPosition());
     ////////////////////////////////////////////////////////////////////////////
 
     // reset velocity
@@ -105,7 +105,6 @@ void World::buildScene()
 
     std::unique_ptr<Player> player(new Player(m_textures));
     m_player = player.get();
-    m_player->body.setOrigin(32,32);
     m_view.setCenter(m_player->getPosition());
     m_layerNodes[Middle]->attachChild(std::move(player));
 

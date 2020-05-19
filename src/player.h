@@ -25,11 +25,12 @@ public:
     enum PlayerState
     {
         IDLE,
-        WALKING_RIGHT,
-        WALKING_LEFT,
-        DEAD,
-        RUNNING_RIGHT,
-        RUNNING_LEFT
+        WALKING,
+        RUNNING,
+        JUMPING,
+        FALLING,
+        //DEAD,
+        STATECOUNT
     };
 
 public:
@@ -59,12 +60,14 @@ private:
 public:
     bool canJump = false;
     bool running = false;
+    bool facingRight = true;
     float speed;
+    PlayerState m_state;
     sf::Sprite body;
 
 private:
-    std::vector<Animation> m_anims;
-    PlayerState m_state;
+    //std::vector<Animation> m_anims;
+    std::map<PlayerState, Animation> m_anims;
     std::map<sf::Keyboard::Key, Action> m_keybinds;
     std::map<Action, Command> m_actionbinds;
 };

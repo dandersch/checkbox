@@ -6,14 +6,14 @@ struct Frame
 {
     int x, y;
     float duration; // time after frame changes;
-    bool flipped = false;
+    // individual flipped frames not supported right now
+    // bool flipped = false; // frame is flipped vertically
 };
 
 class Animation
 {
 public:
     Animation(sf::Vector2u textureSize, uint xcount, uint ycount);
-    ~Animation();
 
     sf::IntRect update(float dtime);
     void add(int x, int y, float duration, bool flipped = false);
@@ -22,6 +22,7 @@ public:
 
 public:
     bool looped = true;
+    bool flipped = false; // whole animation is flipped vertically
 
 private:
     float m_time = 0;
