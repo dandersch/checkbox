@@ -58,6 +58,7 @@ private:
 
 public:
     bool canJump = false;
+    bool running = false;
     float speed;
     sf::Sprite body;
 

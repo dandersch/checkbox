@@ -8,7 +8,10 @@ struct PlayerMover
     PlayerMover(float vx, float vy) : velocity(vx, vy) {}
     void operator()(Player& player, float) const
     {
-        player.velocity += velocity;
+        if (player.running)
+            player.velocity += (2.f * velocity);
+        else
+            player.velocity += velocity;
     }
 
     sf::Vector2f velocity;
@@ -35,6 +38,9 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     m_actionbinds[MOVE_RIGHT].action = derivedAction<Player>(PlayerMover(+speed, 0.f));
     //m_actionbinds[MOVE_UP].action  = derivedAction<Player>(PlayerMover(0.f, -speed));
     //m_actionbinds[MOVE_DOWN].action = derivedAction<Player>(PlayerMover(0.f, +speed * 10));
+    m_actionbinds[SPRINT].action = derivedAction<Player>([](Player& p, float) {
+        p.running = !p.running;
+    });
     m_actionbinds[JUMP].action = derivedAction<Player>([](Player& p, float) {
         if (p.canJump) {
             p.velocity.y = -sqrtf(2.0f * 981.f * 120.f);
@@ -141,30 +147,19 @@ void Player::drawCurrent(sf::RenderTarget& target, sf::RenderStates states) cons
 void Player::handleEvent(const sf::Event& event, std::queue<Command>& commands)
 {
     // workaround to support modifiers
-    // TODO crashes after pressing sprint for 2nd time...
-    /*
     switch (event.type) {
     case sf::Event::KeyPressed:
         if (event.key.code == getAssignedKey(SPRINT)) {
-            m_actionbinds[MOVE_LEFT].action  = derivedAction<Player>(PlayerMover(-speed * 2, 0.f));
-            m_actionbinds[MOVE_RIGHT].action = derivedAction<Player>(PlayerMover(+speed * 2, 0.f));
-            for (auto& i : m_actionbinds) i.second.category = Category::Player;
+            commands.push(m_actionbinds[SPRINT]);
         }
         break;
     case sf::Event::KeyReleased:
         if (event.key.code == getAssignedKey(SPRINT)) {
-            m_actionbinds[MOVE_LEFT].action  = derivedAction<Player>(PlayerMover(-speed, 0.f));
-            m_actionbinds[MOVE_RIGHT].action = derivedAction<Player>(PlayerMover(+speed, 0.f));
-            for (auto& i : m_actionbinds) i.second.category = Category::Player;
+            commands.push(m_actionbinds[SPRINT]);
         }
         break;
     default: break;
     }
-    */
-
-    for (auto i : m_keybinds)
-        if (sf::Keyboard::isKeyPressed(i.first) && isOneShot(i.second))
-            commands.push(m_actionbinds[i.second]);
 }
 
 // For continuous real-time actions (WHILE an event happens)
@@ -188,7 +183,9 @@ bool Player::isOneShot(Action action)
     case MOVE_LEFT:  // fallthrough
     case MOVE_RIGHT: // fallthrough
     case MOVE_UP:    // fallthrough
-    case MOVE_DOWN: return false;
+    case JUMP:       // fallthrough
+    case MOVE_DOWN:
+        return false;
 
     default: return true;
     }
