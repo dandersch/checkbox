@@ -1,8 +1,8 @@
 #pragma once
 
+#include "pch.h"
 #include "animation.h"
 #include "entity.h"
-#include "pch.h"
 
 // forward declarations
 template<typename Resource>
@@ -48,7 +48,7 @@ public:
 
     virtual sf::FloatRect getBoundingRect() const override
     {
-        return getWorldTransform().transformRect(body.getGlobalBounds());
+        return getWorldTransform().transformRect(m_sprite.getGlobalBounds());
     };
 
 private:
@@ -63,10 +63,10 @@ public:
     bool facingRight = true;
     float speed;
     PlayerState m_state;
-    sf::Sprite body;
 
 private:
     std::map<PlayerState, Animation> m_anims;
     std::map<sf::Keyboard::Key, Action> m_keybinds;
     std::map<Action, Command> m_actionbinds;
+    sf::Sprite m_sprite;
 };

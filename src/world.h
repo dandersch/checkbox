@@ -5,6 +5,7 @@
 #include "scenenode.h"
 #include "entity.h"
 #include "command.h"
+#include "physics.h"
 
 // forward declarations
 class SpriteNode;
@@ -20,6 +21,9 @@ public:
 private:
     void loadTextures();
     void buildScene();
+
+    b2Body* createBox(b2World& world, int posX, int posY, int sizeX, int sizeY,
+                      b2BodyType type, void* userData);
 
 public:
     sf::View m_view; // TODO private
@@ -41,6 +45,10 @@ private:
     ResourcePool<sf::Image> m_levels;
     //ResourcePool<sf::SoundBuffer> m_sfxs;
     //ResourcePool<sf::Font> m_fonts;
+
+    // physics
+    b2World world;
+    PlayerContactListener playerTileContact;
 
     SceneNode m_scenegraph;
     std::array<SceneNode*, LayerCount> m_layerNodes;

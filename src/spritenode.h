@@ -2,6 +2,7 @@
 
 #include "pch.h"
 #include "scenenode.h"
+#include "physics.h"
 
 class SpriteNode : public SceneNode
 {
@@ -26,12 +27,17 @@ public:
         return getWorldTransform().transformRect(m_sprite.getGlobalBounds());
     };
 
-    /*
+    virtual void updateCurrent(float dt) override
+    {
+        setRotation(radToDeg(body->GetAngle()));
+        setPosition(metersToPixels(body->GetPosition().x),
+                    metersToPixels(body->GetPosition().y));
+    };
+
     unsigned int getCategory() const override
     {
         return Category::Scene;
     }
-    */
 
 private:
     virtual void drawCurrent(sf::RenderTarget& target,
@@ -39,6 +45,9 @@ private:
     {
         target.draw(m_sprite, states);
     }
+
+public:
+    b2Body* body = nullptr;
 
 private:
     sf::Sprite m_sprite;

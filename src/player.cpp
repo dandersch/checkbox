@@ -1,11 +1,12 @@
 #include "player.h"
 #include "resourcepool.h"
 #include "command.h"
+#include "physics.h"
 
 // functor for player movement
 struct PlayerMover
 {
-    PlayerMover(float vx, float vy, bool rightDir)
+    PlayerMover(float vx, float vy, bool rightDir = false)
       : velocity(vx, vy)
       , rightDir(rightDir)
     {}
@@ -30,12 +31,12 @@ struct PlayerMover
  *  TODO: show IDLE_LEFT after WALK_LEFT
  */
 Player::Player(ResourcePool<sf::Texture>& textures)
-  : body(textures.get("platformer_sprites_base.png"))
+  : m_sprite(textures.get("platformer_sprites_base.png"))
   , speed(75.f)
 {
     m_state = IDLE;
-    body.setTextureRect(sf::IntRect(0, 0, 64, 64));
-    body.setOrigin(32,32);
+    m_sprite.setTextureRect(sf::IntRect(0, 0, 64, 64));
+    m_sprite.setOrigin(32,32);
     createAnimations();
 
     assignKey(sf::Keyboard::A, MOVE_LEFT);
@@ -48,7 +49,7 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     m_actionbinds[MOVE_LEFT].action  = derivedAction<Player>(PlayerMover(-speed, 0.f, false));
     m_actionbinds[MOVE_RIGHT].action = derivedAction<Player>(PlayerMover(+speed, 0.f, true));
     //m_actionbinds[MOVE_UP].action  = derivedAction<Player>(PlayerMover(0.f, -speed));
-    //m_actionbinds[MOVE_DOWN].action = derivedAction<Player>(PlayerMover(0.f, +speed * 10));
+    //m_actionbinds[MOVE_DOWN].action = derivedAction<Player>(PlayerMover(0.f, +speed));
     m_actionbinds[SPRINT].action = derivedAction<Player>([](Player& p, float) {
         p.running = !p.running;
     });
@@ -69,21 +70,24 @@ Player::Player(ResourcePool<sf::Texture>& textures)
  */
 void Player::updateCurrent(float dt)
 {
-    move(velocity * dt);
+    //move(velocity * dt);
 
-    if (velocity.y > 30.f) m_state = FALLING;
+    if (velocity.y > 100.f) m_state = FALLING;
 
     // only update texture if animation was found
     if (m_anims.find(m_state) != m_anims.end()) {
         restartAnimsExcept(m_state);
         m_anims.at(m_state).flipped = !facingRight;
-        body.setTextureRect(m_anims.at(m_state).update(dt));
+        m_sprite.setTextureRect(m_anims.at(m_state).update(dt));
     }
+
+    //setRotation(radToDeg(body->GetAngle()));
+    setPosition(metersToPixels(body->GetPosition().x), metersToPixels(body->GetPosition().y));
 }
 
 void Player::createAnimations()
 {
-    sf::Vector2u texSize = body.getTexture()->getSize();
+    sf::Vector2u texSize = m_sprite.getTexture()->getSize();
     m_anims.clear();
 
     /* Idle */
@@ -152,7 +156,7 @@ void Player::restartAnimsExcept(int index)
 
 void Player::drawCurrent(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    target.draw(body, states);
+    target.draw(m_sprite, states);
 }
 
 // For one-time actions (WHEN an event happens)

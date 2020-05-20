@@ -14,9 +14,19 @@ World::World(sf::RenderWindow& window)
   , m_textures(".png")
   , m_levels(".png")
   , m_player(nullptr)
+    //, world(b2Vec2(0.f, 9.81f))
+  , world(b2Vec2(0.f, 25.f)) // TODO keep using higher gravity (?)
 {
     loadTextures();
     buildScene();
+
+    m_player->body = createBox(world, m_player->getPosition().x,
+                               m_player->getPosition().y, 64, 64,
+                               b2_dynamicBody, m_player);
+    m_player->body->SetFixedRotation(true);
+
+    //at global scope
+    world.SetContactListener(&playerTileContact);
 }
 
 void World::update(float dt)
@@ -67,8 +77,17 @@ void World::update(float dt)
         m_scenegraph.onCommand(cmd, dt);
     }
 
+    // set player velocity
+    m_player->velocity.y += metersToPixels(world.GetGravity().y) * dt;
+    m_player->body->SetLinearVelocity(b2Vec2(pixelsToMeters(m_player->velocity.x),
+                                             pixelsToMeters(m_player->velocity.y)));
+    world.Step(dt, int32(8), int32(3)); // physics update
     m_scenegraph.update(dt);
 
+    if (m_player->velocity.y > 2000.f) // workaround
+        m_player->velocity.y = 2000.f;
+
+    /*
     // aabb collision detection & response for player
     auto playerCollider = m_player->getBoundingRect();
     collisionInfo cinfo;
@@ -87,6 +106,9 @@ void World::update(float dt)
     m_player->canJump = cinfo.touchingGround;
     m_player->setPosition(playerCollider.left + playerCollider.width / 2,
                           playerCollider.top + playerCollider.height / 2);
+    */
+
+
 }
 
 void World::draw()
@@ -165,7 +187,43 @@ void World::buildScene()
                                                             colorMap[sample]));
 
             tile->setPosition(x * 32, y * 32);
+            tile->body = createBox(world, x * 32, y * 32, 32, 32, b2_staticBody,
+                                   tile.get());
             m_layerNodes[Foreground]->attachChild(std::move(tile));
         }
     }
+
+    std::unique_ptr<SpriteNode> box(new SpriteNode(levelTex, sf::IntRect(0,0,32,32)));
+    box->body = createBox(world, 18 * 32, 9 * 32, 32 , 32, b2_dynamicBody, box.get());
+    m_layerNodes[Foreground]->attachChild(std::move(box));
+    std::unique_ptr<SpriteNode> box2(new SpriteNode(levelTex, sf::IntRect(0,0,32,32)));
+    box2->body = createBox(world, 18 * 32, 9 * 32, 32 , 32, b2_dynamicBody, box2.get());
+    box2->body->SetFixedRotation(true);
+    m_layerNodes[Foreground]->attachChild(std::move(box2));
+}
+
+b2Body* World::createBox(b2World& world, int posX, int posY, int sizeX,
+                         int sizeY, b2BodyType type, void* userData)
+{
+    b2BodyDef bodyDef;
+    bodyDef.position.Set(pixelsToMeters<double>(posX),
+                         pixelsToMeters<double>(posY));
+    bodyDef.type = type;
+
+    b2PolygonShape b2shape;
+    b2shape.SetAsBox(pixelsToMeters<double>(sizeX / 2.f),
+                     pixelsToMeters<double>(sizeY / 2.f));
+
+    b2FixtureDef fixtureDef;
+    fixtureDef.density = 1.0f;
+    fixtureDef.friction = 0.4f;
+    fixtureDef.restitution = 0.5f;
+    fixtureDef.shape = &b2shape;
+
+    b2Body* body = world.CreateBody(&bodyDef);
+    body->CreateFixture(&fixtureDef);
+
+    body->SetUserData(userData);
+
+    return body;
 }
