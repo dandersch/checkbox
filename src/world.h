@@ -17,6 +17,7 @@ public:
     explicit World(sf::RenderWindow& window);
     void update(float dt);
     void draw();
+    void spawnBox(sf::Vector2f pos);
 
 private:
     void loadTextures();

@@ -50,9 +50,13 @@ void Game::processEvents()
             break;
         }
 
-        case (sf::Event::MouseButtonPressed):
+        case (sf::Event::MouseButtonPressed): {
             m_cursor.setTextureRect(sf::IntRect(72, 0, 72, 72));
+            auto pos = m_window.mapPixelToCoords(sf::Vector2i(sf::Mouse::getPosition(m_window).x - 9,
+                                                              sf::Mouse::getPosition(m_window).y - 4));
+            m_world.spawnBox(pos);
             break;
+        }
 
         case (sf::Event::MouseButtonReleased):
             m_cursor.setTextureRect(sf::IntRect(144, 0, 72, 72));
