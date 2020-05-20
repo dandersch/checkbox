@@ -54,10 +54,11 @@ class PlayerContactListener : public b2ContactListener
                                normalLength * worldManifold.normal;
 
             b2Vec2 normal = normalStart - normalEnd;
-            std::cout << normal.x << std::endl;
-            std::cout << normal.y << std::endl;
 
             Player* player = static_cast<Player*>(body1);
+
+            std::cout << normal.x << std::endl;
+            std::cout << normal.y << std::endl;
 
             // coming from left
             if (normal.x > 0)
@@ -71,12 +72,17 @@ class PlayerContactListener : public b2ContactListener
 
             // touching ground
             if (normal.y > 0) {
+                std::cout << "touched ground" << std::endl;
                 player->canJump = true;
                 player->velocity.y = 0;
             }
 
             // touching bottom
             if (normal.y < 0) {
+                // TODO temporary
+                std::cout << "touched ground" << std::endl;
+                player->canJump = true;
+                player->velocity.y = 0;
             }
         }
 
@@ -110,6 +116,7 @@ class PlayerContactListener : public b2ContactListener
 
             // touching ground
             if (normal.y > 0) {
+                std::cout << "touched ground" << std::endl;
                 player->canJump = true;
                 player->velocity.y = 0;
             }

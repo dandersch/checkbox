@@ -54,7 +54,10 @@ void Game::processEvents()
             m_cursor.setTextureRect(sf::IntRect(72, 0, 72, 72));
             auto pos = m_window.mapPixelToCoords(sf::Vector2i(sf::Mouse::getPosition(m_window).x - 9,
                                                               sf::Mouse::getPosition(m_window).y - 4));
-            m_world.spawnBox(pos);
+            if (event.key.code == sf::Mouse::Left)
+                m_world.spawnBox(pos);
+            if (event.key.code == sf::Mouse::Right)
+                m_world.spawnBox(pos, true);
             break;
         }
 

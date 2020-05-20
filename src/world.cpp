@@ -228,12 +228,16 @@ b2Body* World::createBox(b2World& world, int posX, int posY, int sizeX,
     return body;
 }
 
-void World::spawnBox(sf::Vector2f pos)
+void World::spawnBox(sf::Vector2f pos, bool isStatic)
 {
+    b2BodyType type = b2_dynamicBody;
+    if (isStatic) type = b2_staticBody;
+
     std::unique_ptr<SpriteNode> box(new SpriteNode(m_textures.get(tiletexfile),
                                                    sf::IntRect(2 * 32, 0 * 32,
                                                                32, 32)));
+    box->setPosition((int)pos.x, (int)pos.y);
 
-    box->body = createBox(world, (int)pos.x, (int) pos.y, 32, 32, b2_dynamicBody, box.get());
+    box->body = createBox(world, (int) pos.x, (int) pos.y, 32, 32, type, box.get());
     m_layerNodes[Foreground]->attachChild(std::move(box));
 }

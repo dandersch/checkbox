@@ -17,7 +17,7 @@ public:
     explicit World(sf::RenderWindow& window);
     void update(float dt);
     void draw();
-    void spawnBox(sf::Vector2f pos);
+    void spawnBox(sf::Vector2f pos, bool isStatic = false);
 
 private:
     void loadTextures();
