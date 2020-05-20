@@ -4,7 +4,9 @@
 SceneNode::SceneNode()
   : m_children()
   , m_parent(nullptr)
-{}
+{
+    m_children.reserve(5);
+}
 
 void SceneNode::attachChild(std::unique_ptr<SceneNode> child)
 {

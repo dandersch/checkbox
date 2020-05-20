@@ -18,8 +18,7 @@ public:
       : m_sprite(texture, rect)
     {
         // TODO keep (?)
-        m_sprite.setOrigin(rect.width / 2.0f,
-                           rect.height / 2.0f);
+        m_sprite.setOrigin(rect.width / 2.0f, rect.height / 2.0f);
     }
 
     virtual sf::FloatRect getBoundingRect() const override

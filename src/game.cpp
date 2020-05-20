@@ -45,7 +45,8 @@ void Game::processEvents()
         case (sf::Event::Resized): {
             float aspectratio = float(m_window.getSize().x) /
                                 float(m_window.getSize().y);
-            m_world.m_view.setSize(VIEW_HEIGHT * aspectratio, VIEW_HEIGHT);
+            // TODO breaks pixelperfect rendering
+            //m_world.m_view.setSize(VIEW_HEIGHT * aspectratio, VIEW_HEIGHT);
             break;
         }
 
@@ -60,8 +61,13 @@ void Game::processEvents()
         case (sf::Event::MouseWheelScrolled): {
             // ZOOMING
             int scrolltick = event.mouseWheelScroll.delta;
-            if (scrolltick == 1) m_world.m_view.zoom(0.9f);
-            if (scrolltick == -1) m_world.m_view.zoom(1.1f);
+            // TODO breaks pixelperfect rendering
+            if (scrolltick == 1)
+                m_world.m_view.setSize((int)m_world.m_view.getSize().x / 2,
+                                       (int)m_world.m_view.getSize().y / 2);
+            if (scrolltick == -1)
+                m_world.m_view.setSize((int)m_world.m_view.getSize().x * 1.5f,
+                                       (int)m_world.m_view.getSize().y * 1.5f);
             break;
         }
 
@@ -91,11 +97,14 @@ void Game::update(float dtime)
 
 void Game::render()
 {
-    m_window.clear(sf::Color(100, 180, 120, 255));
+    m_window.clear(sf::Color(140, 170, 200, 255));
     m_world.draw();
 
     // Everything drawn after setting the view will appear fixed on the screen
-    m_window.setView(m_window.getDefaultView());
+    //m_window.setView(m_window.getDefaultView());
+    //std::cout << m_window.getDefaultView().getCenter().x << std::endl;
+    //std::cout << m_window.getDefaultView().getCenter().y << std::endl;
+
     m_window.draw(m_text);
     ImGui::SFML::Render(m_window);
     m_window.draw(m_cursor);

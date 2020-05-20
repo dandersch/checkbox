@@ -66,7 +66,6 @@ public:
     sf::Sprite body;
 
 private:
-    //std::vector<Animation> m_anims;
     std::map<PlayerState, Animation> m_anims;
     std::map<sf::Keyboard::Key, Action> m_keybinds;
     std::map<Action, Command> m_actionbinds;

@@ -31,10 +31,22 @@ void World::update(float dt)
 
     // move view if player gets out of borders
     // TODO breaks if player near border and zooming in/resizing
-    if (pRelPos.x < 0.3f) m_view.move(m_player->velocity * dt);
-    if (pRelPos.x > 0.7f) m_view.move(m_player->velocity * dt);
-    if (pRelPos.y < 0.3f) m_view.move(m_player->velocity * dt);
-    if (pRelPos.y > 0.7f) m_view.move(m_player->velocity * dt);
+    if (pRelPos.x < 0.3f && m_player->velocity.x < 0.f) {
+        m_view.move(m_player->velocity.x * dt, 0.f);
+        m_view.setCenter(std::floor(m_view.getCenter().x), m_view.getCenter().y);
+    }
+    if (pRelPos.x > 0.7f && m_player->velocity.x > 0.f) {
+        m_view.move(m_player->velocity.x * dt, 0.f);
+        m_view.setCenter(std::ceil(m_view.getCenter().x), m_view.getCenter().y);
+    }
+    if (pRelPos.y < 0.3f && m_player->velocity.y < 0.f) {
+        m_view.move(0.f, m_player->velocity.y * dt);
+        m_view.setCenter(m_view.getCenter().x, std::ceil(m_view.getCenter().y));
+    }
+    if (pRelPos.y > 0.7f && m_player->velocity.y > 0.f) {
+        m_view.move(0.f, m_player->velocity.y * dt);
+        m_view.setCenter(m_view.getCenter().x, std::floor(m_view.getCenter().y));
+    }
 
     // workaround to let player not get stuck outside of viewborders
     if (pRelPos.x < 0.28f) m_view.setCenter(m_player->getPosition());
@@ -42,6 +54,8 @@ void World::update(float dt)
     if (pRelPos.y < 0.28f) m_view.setCenter(m_player->getPosition());
     if (pRelPos.y > 0.72f) m_view.setCenter(m_player->getPosition());
     ////////////////////////////////////////////////////////////////////////////
+
+    //m_view.setCenter(std::round(m_view.getCenter().x), std::round(m_view.getCenter().y));
 
     // reset velocity
     m_player->velocity.x = 0.f;
@@ -96,21 +110,17 @@ void World::buildScene()
         m_scenegraph.attachChild(std::move(layer));
     }
 
-    auto& bgTex = m_textures.get("stonefloor_512x512.png");
-    sf::IntRect bgTexRect(0,0,8192,8192);
-    bgTex.setRepeated(true);
-    std::unique_ptr<SpriteNode> bgSprite(new SpriteNode(bgTex, bgTexRect));
-    bgSprite->setPosition(-4096, -4096);
-    m_layerNodes[Background]->attachChild(std::move(bgSprite));
+//  auto& bgTex = m_textures.get("stonefloor_512x512.png");
+//  sf::IntRect bgTexRect(0,0,8192,8192);
+//  bgTex.setRepeated(true);
+//  std::unique_ptr<SpriteNode> bgSprite(new SpriteNode(bgTex, bgTexRect));
+//  bgSprite->setPosition(-4096, -4096);
+//  m_layerNodes[Background]->attachChild(std::move(bgSprite));
 
     std::unique_ptr<Player> player(new Player(m_textures));
     m_player = player.get();
     m_view.setCenter(m_player->getPosition());
     m_layerNodes[Middle]->attachChild(std::move(player));
-
-    std::unique_ptr<SpriteNode> test(new SpriteNode(m_textures.get("as"), sf::IntRect(0,0,300,300)));
-    test->setPosition(5 * 32, 7 * 32);
-    m_layerNodes[Foreground]->attachChild(std::move(test));
 
     //////////////////////////////////////////////////
     // Generation of level from image:
@@ -158,6 +168,4 @@ void World::buildScene()
             m_layerNodes[Foreground]->attachChild(std::move(tile));
         }
     }
-
-    m_player->setPosition(3 * 32, 0); // for testing
 }

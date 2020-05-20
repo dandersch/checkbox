@@ -71,7 +71,7 @@ void Player::updateCurrent(float dt)
 {
     move(velocity * dt);
 
-    if (velocity.y > 90.f) m_state = FALLING;
+    if (velocity.y > 30.f) m_state = FALLING;
 
     // only update texture if animation was found
     if (m_anims.find(m_state) != m_anims.end()) {
