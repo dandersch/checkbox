@@ -40,6 +40,7 @@
 - build-up/anticipation for jump
 
 * Collision
+- decouple physics
 - don't collide with nodes in foreground/background
 - implement simple collision pairing
 - add weight factor (moveable boxes)

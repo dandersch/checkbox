@@ -43,10 +43,10 @@ void Game::processEvents()
         case (sf::Event::Closed): m_window.close(); break;
 
         case (sf::Event::Resized): {
-            float aspectratio = float(m_window.getSize().x) /
-                                float(m_window.getSize().y);
+            f32 aspectratio = (f32)m_window.getSize().x /
+                              (f32)m_window.getSize().y;
             // TODO breaks pixelperfect rendering
-            //m_world.m_view.setSize(VIEW_HEIGHT * aspectratio, VIEW_HEIGHT);
+            // m_world.m_view.setSize(VIEW_HEIGHT * aspectratio, VIEW_HEIGHT);
             break;
         }
 
@@ -67,14 +67,14 @@ void Game::processEvents()
 
         case (sf::Event::MouseWheelScrolled): {
             // ZOOMING
-            int scrolltick = event.mouseWheelScroll.delta;
+            i32 scrolltick = event.mouseWheelScroll.delta;
             // TODO breaks pixelperfect rendering
             if (scrolltick == 1)
-                m_world.m_view.setSize((int)m_world.m_view.getSize().x / 2,
-                                       (int)m_world.m_view.getSize().y / 2);
+                m_world.m_view.setSize((i32)m_world.m_view.getSize().x / 2,
+                                       (i32)m_world.m_view.getSize().y / 2);
             if (scrolltick == -1)
-                m_world.m_view.setSize((int)m_world.m_view.getSize().x * 1.5f,
-                                       (int)m_world.m_view.getSize().y * 1.5f);
+                m_world.m_view.setSize((i32)m_world.m_view.getSize().x * 1.5f,
+                                       (i32)m_world.m_view.getSize().y * 1.5f);
             break;
         }
 
@@ -85,7 +85,7 @@ void Game::processEvents()
     m_world.m_player->handleInput(m_world.cmdQueue);
 }
 
-void Game::update(float dtime)
+void Game::update(f32 dtime)
 {
     m_world.update(dtime);
 

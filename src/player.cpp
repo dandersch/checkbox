@@ -1,16 +1,15 @@
 #include "player.h"
 #include "resourcepool.h"
-#include "command.h"
 #include "physics.h"
 
 // functor for player movement
 struct PlayerMover
 {
-    PlayerMover(float vx, float vy, bool rightDir = false)
+    PlayerMover(f32 vx, f32 vy, b32 rightDir = false)
       : velocity(vx, vy)
       , rightDir(rightDir)
     {}
-    void operator()(Player& player, float) const
+    void operator()(Player& player, f32) const
     {
         if (player.running) {
             player.velocity += (2.f * velocity);
@@ -24,7 +23,7 @@ struct PlayerMover
     }
 
     sf::Vector2f velocity;
-    bool rightDir;
+    b32 rightDir;
 };
 
 /*
@@ -50,10 +49,10 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     m_actionbinds[MOVE_RIGHT].action = derivedAction<Player>(PlayerMover(+speed, 0.f, true));
     //m_actionbinds[MOVE_UP].action  = derivedAction<Player>(PlayerMover(0.f, -speed));
     //m_actionbinds[MOVE_DOWN].action = derivedAction<Player>(PlayerMover(0.f, +speed));
-    m_actionbinds[SPRINT].action = derivedAction<Player>([](Player& p, float) {
+    m_actionbinds[SPRINT].action = derivedAction<Player>([](Player& p, f32) {
         p.running = !p.running;
     });
-    m_actionbinds[JUMP].action = derivedAction<Player>([](Player& p, float) {
+    m_actionbinds[JUMP].action = derivedAction<Player>([](Player& p, f32) {
         if (p.canJump) {
             p.velocity.y = -sqrtf(2.0f * 981.f * 120.f);
             p.m_state = JUMPING;
@@ -68,7 +67,7 @@ Player::Player(ResourcePool<sf::Texture>& textures)
  * TODO: set/unset booleans w/ KeyPressed/KeyReleased ?
  * TODO: don't read keyinputs if window not focused
  */
-void Player::updateCurrent(float dt)
+void Player::updateCurrent(f32 dt)
 {
     //move(velocity * dt);
 
@@ -147,7 +146,7 @@ void Player::createAnimations()
                   << std::endl;
 }
 
-void Player::restartAnimsExcept(int index)
+void Player::restartAnimsExcept(i32 index)
 {
     for (auto& i : m_anims)
         // check if needs restart (?)
@@ -188,12 +187,7 @@ void Player::handleInput(std::queue<Command>& commands)
             commands.push(m_actionbinds[i.second]);
 }
 
-unsigned int Player::getCategory() const
-{
-    return Category::Player;
-}
-
-bool Player::isOneShot(Action action)
+b32 Player::isOneShot(Action action)
 {
     switch (action) {
     case MOVE_LEFT:  // fallthrough

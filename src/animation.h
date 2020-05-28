@@ -4,8 +4,8 @@
 
 struct Frame
 {
-    int x, y;
-    float duration; // time after frame changes;
+    i32 x, y;
+    f32 duration; // time after frame changes;
     // individual flipped frames not supported right now
     // bool flipped = false; // frame is flipped vertically
 };
@@ -13,21 +13,21 @@ struct Frame
 class Animation
 {
 public:
-    Animation(sf::Vector2u textureSize, uint xcount, uint ycount);
+    Animation(sf::Vector2u textureSize, u32 xcount, u32 ycount);
 
-    sf::IntRect update(float dtime);
-    void add(int x, int y, float duration, bool flipped = false);
+    sf::IntRect update(f32 dtime);
+    void add(i32 x, i32 y, f32 duration, b32 flipped = false);
 
     inline void restart() { m_index = 0; };
 
 public:
-    bool looped = true;
-    bool flipped = false; // whole animation is flipped vertically
+    b32 looped = true;
+    b32 flipped = false; // whole animation is flipped vertically
 
 private:
-    float m_time = 0;
-    uint m_framewidth;
-    uint m_frameheight;
+    f32 m_time = 0;
+    u32 m_framewidth;
+    u32 m_frameheight;
     std::vector<Frame> m_frames;
-    uint m_index = 0;
+    u32 m_index = 0;
 };

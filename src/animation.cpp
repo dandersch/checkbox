@@ -2,13 +2,13 @@
 
 #include "animation.h"
 
-Animation::Animation(sf::Vector2u textureSize, uint xcount, uint ycount)
+Animation::Animation(sf::Vector2u textureSize, u32 xcount, u32 ycount)
 {
     m_framewidth = textureSize.x / xcount;
     m_frameheight = textureSize.y / ycount;
 }
 
-sf::IntRect Animation::update(float dtime)
+sf::IntRect Animation::update(f32 dtime)
 {
     m_time += dtime;
 
@@ -33,7 +33,7 @@ sf::IntRect Animation::update(float dtime)
                            m_framewidth, m_frameheight);
 }
 
-void Animation::add(int x, int y, float duration, bool flipped)
+void Animation::add(i32 x, i32 y, f32 duration, b32 flipped)
 {
     m_frames.push_back({ x, y, duration });
 }

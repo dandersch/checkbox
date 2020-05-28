@@ -2,28 +2,27 @@
 
 #include "pch.h"
 #include "resourcepool.h"
-#include "scenenode.h"
+//#include "scenenode.h"
 #include "entity.h"
 #include "command.h"
 #include "physics.h"
 
 // forward declarations
-class SpriteNode;
 class Player;
 
 class World : private sf::NonCopyable
 {
 public:
     explicit World(sf::RenderWindow& window);
-    void update(float dt);
+    void update(f32 dt);
     void draw();
-    void spawnBox(sf::Vector2f pos, bool isStatic = false);
+    void spawnBox(sf::Vector2f pos, b32 isStatic = false);
 
 private:
     void loadTextures();
     void buildScene();
 
-    b2Body* createBox(b2World& world, int posX, int posY, int sizeX, int sizeY,
+    b2Body* createBox(b2World& world, i32 posX, i32 posY, i32 sizeX, i32 sizeY,
                       b2BodyType type, void* userData);
 
 public:
@@ -51,6 +50,6 @@ private:
     b2World world;
     PlayerContactListener playerTileContact;
 
-    SceneNode m_scenegraph;
-    std::array<SceneNode*, LayerCount> m_layerNodes;
+    Entity m_scenegraph;
+    std::array<Entity*, LayerCount> m_layerNodes;
 };

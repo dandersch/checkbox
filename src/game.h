@@ -18,12 +18,9 @@ public:
 
 private:
     void processEvents();
-    void update(float dtime);
+    void update(f32 dtime);
     void render();
     void debugGui(sf::Time time);
-
-    // TODO
-    // void handleInput(sf::Keyboard::Key key, bool pressed);
 
 private:
     // rendering

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "pch.h"
-#include "scenenode.h"
+#include "entity.h"
 #include "command.h"
 #include "player.h"
 
@@ -37,8 +37,8 @@ class PlayerContactListener : public b2ContactListener
 {
     void BeginContact(b2Contact* contact) override
     {
-        SceneNode* body1 = (SceneNode*) contact->GetFixtureA()->GetBody()->GetUserData();
-        SceneNode* body2 = (SceneNode*) contact->GetFixtureB()->GetBody()->GetUserData();
+        Entity* body1 = (Entity*) contact->GetFixtureA()->GetBody()->GetUserData();
+        Entity* body2 = (Entity*) contact->GetFixtureB()->GetBody()->GetUserData();
 
         // TODO this can be done better
         if (body1->getCategory() == Category::Player &&
@@ -47,7 +47,7 @@ class PlayerContactListener : public b2ContactListener
             b2WorldManifold worldManifold;
             contact->GetWorldManifold(&worldManifold);
 
-            float normalLength = 0.1f;
+            f32 normalLength = 0.1f;
             b2Vec2 normalStart = worldManifold.points[0] -
                                  normalLength * worldManifold.normal;
             b2Vec2 normalEnd = worldManifold.points[0] +
@@ -92,7 +92,7 @@ class PlayerContactListener : public b2ContactListener
             b2WorldManifold worldManifold;
             contact->GetWorldManifold(&worldManifold);
 
-            float normalLength = 0.1f;
+            f32 normalLength = 0.1f;
             b2Vec2 normalStart = worldManifold.points[0] -
                                  normalLength * worldManifold.normal;
             b2Vec2 normalEnd = worldManifold.points[0] +

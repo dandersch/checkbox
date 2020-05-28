@@ -2,7 +2,7 @@
 
 #include "pch.h"
 
-class SceneNode;
+class Entity;
 
 namespace Category {
 enum Type
@@ -16,15 +16,15 @@ enum Type
 
 struct Command
 {
-    std::function<void(SceneNode&, float)> action;
-    unsigned int category;
+    std::function<void(Entity&, f32)> action;
+    u32 category;
 };
 
 // To avoid having to downcast from scenenode in action functions
 template<typename GameObject, typename Function>
-std::function<void(SceneNode&, float)> derivedAction(Function fn)
+std::function<void(Entity&, f32)> derivedAction(Function fn)
 {
-    return [=](SceneNode& node, float dt) {
+    return [=](Entity& node, f32 dt) {
         // Check if cast is safe
         assert(dynamic_cast<GameObject*>(&node) != nullptr);
 

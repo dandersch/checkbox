@@ -3,10 +3,10 @@
 #include "pch.h"
 #include "animation.h"
 #include "entity.h"
+#include "command.h"
 
 // forward declarations
-template<typename Resource>
-class ResourcePool;
+template<typename Resource> class ResourcePool;
 
 class Player : public Entity
 {
@@ -35,13 +35,13 @@ public:
 
 public:
     Player(ResourcePool<sf::Texture>& textures);
-    virtual void updateCurrent(float dt) override;
+    virtual void updateCurrent(f32 dt) override;
     void createAnimations();
 
     void handleEvent(const sf::Event& event, std::queue<Command>& commands);
     void handleInput(std::queue<Command>& commands);
 
-    virtual unsigned int getCategory() const override;
+    inline u32 getCategory() const override { return Category::Player; }
 
     void assignKey(sf::Keyboard::Key key, Action action);
     sf::Keyboard::Key getAssignedKey(Action action) const;
@@ -52,16 +52,17 @@ public:
     };
 
 private:
-    void restartAnimsExcept(int index);
+    void restartAnimsExcept(i32 index);
     void drawCurrent(sf::RenderTarget& target,
                      sf::RenderStates states) const override;
-    static bool isOneShot(Action action);
+    static b32 isOneShot(Action action);
 
 public:
-    bool canJump = false;
-    bool running = false;
-    bool facingRight = true;
-    float speed;
+    sf::Vector2f velocity = sf::Vector2f(0, 0);
+    b32 canJump = false;
+    b32 running = false;
+    b32 facingRight = true;
+    f32 speed;
     PlayerState m_state;
 
 private:

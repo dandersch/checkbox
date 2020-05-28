@@ -1,5 +1,7 @@
 #pragma once
 
+#include "mytypes.h"
+
 #include <filesystem>
 #include <fstream>
 #include <iostream>

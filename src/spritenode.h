@@ -1,10 +1,10 @@
 #pragma once
 
 #include "pch.h"
-#include "scenenode.h"
+#include "entity.h"
 #include "physics.h"
 
-class SpriteNode : public SceneNode
+class SpriteNode : public Entity
 {
 public:
     explicit SpriteNode(const sf::Texture& texture)
@@ -27,17 +27,14 @@ public:
         return getWorldTransform().transformRect(m_sprite.getGlobalBounds());
     };
 
-    virtual void updateCurrent(float dt) override
+    virtual void updateCurrent(f32 dt) override
     {
         setRotation(radToDeg(body->GetAngle()));
         setPosition(metersToPixels(body->GetPosition().x),
                     metersToPixels(body->GetPosition().y));
     };
 
-    unsigned int getCategory() const override
-    {
-        return Category::Scene;
-    }
+    inline u32 getCategory() const override { return Category::Scene; }
 
 private:
     virtual void drawCurrent(sf::RenderTarget& target,
