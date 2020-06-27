@@ -1,14 +1,20 @@
 #pragma once
-
 #include "pch.h"
 #include "resourcepool.h"
-//#include "scenenode.h"
 #include "entity.h"
 #include "command.h"
 #include "physics.h"
 
 // forward declarations
 class Player;
+
+enum Layer
+{
+    LAYER_BACK,
+    LAYER_MID,
+    LAYER_FORE,
+    LAYER_COUNT
+};
 
 class World : private sf::NonCopyable
 {
@@ -31,14 +37,6 @@ public:
     Player* m_player; // TODO private
 
 private:
-    enum Layer
-    {
-        Background,
-        Middle,
-        Foreground,
-        LayerCount
-    };
-
     sf::RenderWindow& m_window;
 
     ResourcePool<sf::Texture> m_textures;
@@ -51,5 +49,5 @@ private:
     PlayerContactListener playerTileContact;
 
     Entity m_scenegraph;
-    std::array<Entity*, LayerCount> m_layerNodes;
+    std::array<Entity*, LAYER_COUNT> m_layerNodes;
 };

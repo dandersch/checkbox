@@ -34,7 +34,6 @@ private:
     void updateChildren(f32 dt);
 
 public:
-    //sf::Vector2f velocity = sf::Vector2f(0, 0);
     b2Body* body = nullptr;
 
     // scene graph

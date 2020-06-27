@@ -9,24 +9,23 @@
 
 static const char* tiletexfile = "simple_tiles_32x32.png";
 
+struct LayerRect
+{
+    sf::IntRect rect;
+    Layer layer;
+};
+
 World::World(sf::RenderWindow& window)
   : m_window(window)
   , m_view(sf::Vector2f(640.f, 360.f), sf::Vector2f(VIEW_HEIGHT, VIEW_WIDTH))
   , m_textures(".png")
   , m_levels(".png")
   , m_player(nullptr)
-    //, world(b2Vec2(0.f, 9.81f))
+  , playerTileContact() // collision response
   , world(b2Vec2(0.f, 25.f)) // TODO keep using higher gravity (?)
 {
     loadTextures();
     buildScene();
-
-    m_player->body = createBox(world, m_player->getPosition().x,
-                               m_player->getPosition().y, 64, 64,
-                               b2_dynamicBody, m_player);
-    m_player->body->SetFixedRotation(true);
-
-    //at global scope
     world.SetContactListener(&playerTileContact);
 }
 
@@ -42,6 +41,7 @@ void World::update(f32 dt)
 
     // move view if player gets out of borders
     // TODO breaks if player near border and zooming in/resizing
+    // TODO(dan): camera class/.cpp?
     if (pRelPos.x < 0.3f && m_player->velocity.x < 0.f) {
         m_view.move(m_player->velocity.x * dt, 0.f);
         m_view.setCenter(std::floor(m_view.getCenter().x), m_view.getCenter().y);
@@ -78,38 +78,16 @@ void World::update(f32 dt)
         m_scenegraph.onCommand(cmd, dt);
     }
 
-    // set player velocity
+    // Physics
     m_player->velocity.y += metersToPixels(world.GetGravity().y) * dt;
     m_player->body->SetLinearVelocity(b2Vec2(pixelsToMeters(m_player->velocity.x),
                                              pixelsToMeters(m_player->velocity.y)));
-    world.Step(dt, (i32) 8, (i32) 3); // physics update
+    world.Step(dt, (i32) 8, (i32) 3);
+
     m_scenegraph.update(dt);
 
-    if (m_player->velocity.y > 2000.f) // workaround
-        m_player->velocity.y = 2000.f;
-
-    /*
-    // aabb collision detection & response for player
-    auto playerCollider = m_player->getBoundingRect();
-    collisionInfo cinfo;
-    m_scenegraph.checkCollisions(playerCollider, cinfo);
-
-    // GRAVITY
-    // TODO builds up and breaks things over time
-    if (!cinfo.touchingGround)
-        m_player->velocity.y += 981.f * dt;
-    else // workaround
-        m_player->velocity.y = 10.f;
-
-    if (m_player->velocity.y > 2000.f) // workaround
-        m_player->velocity.y = 2000.f;
-
-    m_player->canJump = cinfo.touchingGround;
-    m_player->setPosition(playerCollider.left + playerCollider.width / 2,
-                          playerCollider.top + playerCollider.height / 2);
-    */
-
-
+    // workaround
+    if (m_player->velocity.y > 2000.f) m_player->velocity.y = 2000.f;
 }
 
 void World::draw()
@@ -118,32 +96,19 @@ void World::draw()
     m_window.draw(m_scenegraph);
 }
 
+// sort of a "preload"
 void World::loadTextures()
 {
-    // sort of a "preload"
-    m_textures.get("stonefloor_512x512.png");
 }
 
 void World::buildScene()
 {
     // initialize nodes for every layer of the scene
-    for (std::size_t i = 0; i < LayerCount; i++) {
+    for (std::size_t i = 0; i < LAYER_COUNT; i++) {
         std::unique_ptr<Entity> layer(new Entity());
         m_layerNodes[i] = layer.get();
         m_scenegraph.attachChild(std::move(layer));
     }
-
-//  auto& bgTex = m_textures.get("stonefloor_512x512.png");
-//  sf::IntRect bgTexRect(0,0,8192,8192);
-//  bgTex.setRepeated(true);
-//  std::unique_ptr<SpriteNode> bgSprite(new SpriteNode(bgTex, bgTexRect));
-//  bgSprite->setPosition(-4096, -4096);
-//  m_layerNodes[Background]->attachChild(std::move(bgSprite));
-
-    std::unique_ptr<Player> player(new Player(m_textures));
-    m_player = player.get();
-    m_view.setCenter(m_player->getPosition());
-    m_layerNodes[Middle]->attachChild(std::move(player));
 
     //////////////////////////////////////////////////
     // Generation of level from image:
@@ -157,50 +122,68 @@ void World::buildScene()
         return false;
     };
 
-    std::map<sf::Color, sf::IntRect, decltype(comparator)> colorMap(comparator);
+    std::map<sf::Color, LayerRect, decltype(comparator)> colorMap(comparator);
 
     auto& levelTex = m_textures.get(tiletexfile);
-    auto& level0 = m_levels.get("level0.png");
+    auto& level0 = m_levels.get("level1.png");
 
     // fill the colormap
     i32 xCount = levelTex.getSize().x / 32;
     i32 yCount = levelTex.getSize().y / 32;
-
     for (i32 y = 0; y < yCount; y++) {
         for (i32 x = 0; x < xCount; x++) {
-            colorMap[level0.getPixel(x, y)] = sf::IntRect(x * 32, y * 32, 32, 32);
+            // decide on foreground/background
+            if (y == 0)
+                colorMap[level0.getPixel(x, y)] = {sf::IntRect(x * 32, y * 32, 32, 32), LAYER_MID};
+            else if (y == 1)
+                colorMap[level0.getPixel(x, y)] = {sf::IntRect(x * 32, y * 32, 32, 32), LAYER_BACK};
+
+            // remove metadata
             level0.setPixel(x, y, sf::Color::White);
         }
     }
 
+    i32 playercount = 0;
     for (i32 y = 0; y < level0.getSize().y; y++) {
         for (i32 x = 0; x < level0.getSize().x; x++) {
             sf::Color sample = level0.getPixel(x,y);
 
+            // Player generation
             if (sample == sf::Color::Red) {
+                playercount++;
+                std::unique_ptr<Player> player(new Player(m_textures));
+                m_player = player.get();
+                m_view.setCenter(m_player->getPosition());
+                m_layerNodes[LAYER_MID]->attachChild(std::move(player));
                 m_player->setPosition(x * 32, y * 32);
+                m_player->body = createBox(world, m_player->getPosition().x,
+                                           m_player->getPosition().y, 32, 64,
+                                           b2_dynamicBody, m_player);
+                m_player->body->SetFixedRotation(true);
                 continue;
             }
 
             if (sample == sf::Color::White) continue; // whitespace
 
+            auto& layer_and_rect = colorMap[sample];
             std::unique_ptr<SpriteNode> tile(new SpriteNode(levelTex,
-                                                            colorMap[sample]));
-
+                                                            layer_and_rect.rect));
             tile->setPosition(x * 32, y * 32);
-            tile->body = createBox(world, x * 32, y * 32, 32, 32, b2_staticBody,
-                                   tile.get());
-            m_layerNodes[Foreground]->attachChild(std::move(tile));
+
+            if (layer_and_rect.layer == LAYER_MID) {
+                tile->body = createBox(world, x * 32, y * 32, 32, 32,
+                                       b2_staticBody, tile.get());
+                m_layerNodes[LAYER_MID]->attachChild(std::move(tile));
+            } else if (layer_and_rect.layer == LAYER_BACK) {
+                tile->body = createBox(world, x * 32, y * 32, 32, 32,
+                                       b2_staticBody, tile.get());
+                tile->body->SetActive(false);
+                m_layerNodes[LAYER_BACK]->attachChild(std::move(tile));
+            }
         }
     }
 
-    std::unique_ptr<SpriteNode> box(new SpriteNode(levelTex, sf::IntRect(0,0,32,32)));
-    box->body = createBox(world, 18 * 32, 9 * 32, 32 , 32, b2_dynamicBody, box.get());
-    m_layerNodes[Foreground]->attachChild(std::move(box));
-    std::unique_ptr<SpriteNode> box2(new SpriteNode(levelTex, sf::IntRect(0,0,32,32)));
-    box2->body = createBox(world, 18 * 32, 9 * 32, 32 , 32, b2_dynamicBody, box2.get());
-    box2->body->SetFixedRotation(true);
-    m_layerNodes[Foreground]->attachChild(std::move(box2));
+    assert(playercount == 1);
 }
 
 b2Body* World::createBox(b2World& world, i32 posX, i32 posY, i32 sizeX,
