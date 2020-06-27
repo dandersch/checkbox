@@ -3,7 +3,7 @@
 
 // #define internal        static
 #define local_persist   static
-// only true when using 1 translation unit
+// only true when using 1 translation unit:
 // #define global_variable static
 
 typedef int8_t   i8;

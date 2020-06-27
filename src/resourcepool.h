@@ -1,5 +1,4 @@
 #pragma once
-
 #include "pch.h"
 
 template<typename Resource>
@@ -14,15 +13,21 @@ public:
 
     Resource& get(const std::string& file)
     {
-        if (pool.find(file) != pool.end()) {
+        if (pool.find(file) != pool.end())
+        {
             // found
             return *(pool[file].get());
-        } else {
+        }
+        else
+        {
             // not found
             pool[file] = std::unique_ptr<Resource>(new Resource);
-            if (!pool[file]->loadFromFile("../res/" + file)) {
+            if (!pool[file]->loadFromFile("../res/" + file))
+            {
                 return *(pool["missing"].get());
-            } else {
+            }
+            else
+            {
                 return *(pool[file].get());
             }
         }

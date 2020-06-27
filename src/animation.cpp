@@ -1,5 +1,4 @@
 #include "pch.h"
-
 #include "animation.h"
 
 Animation::Animation(sf::Vector2u textureSize, u32 xcount, u32 ycount)

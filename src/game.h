@@ -1,7 +1,5 @@
 #pragma once
-
 #include "pch.h"
-
 #include "player.h"
 #include "resourcepool.h"
 #include "entity.h"

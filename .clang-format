@@ -1,0 +1,23 @@
+﻿---
+BasedOnStyle: Mozilla
+AccessModifierOffset: '-4'
+AllowShortCaseLabelsOnASingleLine: 'true'
+AllowShortIfStatementsOnASingleLine: Always
+AllowShortLambdasOnASingleLine: Inline
+AllowShortLoopsOnASingleLine: 'true'
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterReturnType: None
+BinPackArguments: 'true'
+BinPackParameters: 'true'
+BreakBeforeBraces: Allman
+ColumnLimit: '80'
+CompactNamespaces: 'false'
+ContinuationIndentWidth: '80'
+IndentCaseLabels: 'false'
+IndentWidth: '4'
+Language: Cpp
+SpaceAfterCStyleCast: 'true'
+TabWidth: '4'
+UseTab: Never
+
+...

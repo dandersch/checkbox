@@ -4,6 +4,7 @@
 #include "entity.h"
 #include "physics.h"
 
+// TODO(dan): rename to tile
 class SpriteNode : public Entity
 {
 public:
@@ -15,6 +16,7 @@ public:
                            texture.getSize().y / 2.0f);
     };
 
+    // TODO(dan): rename rect to something better
     SpriteNode(const sf::Texture& texture, const sf::IntRect& rect)
       : m_sprite(texture, rect)
     {
