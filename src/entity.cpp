@@ -3,7 +3,6 @@
 
 Entity::Entity()
   : m_children()
-  , m_parent(nullptr)
 {
     m_children.reserve(5);
 }
@@ -35,6 +34,7 @@ void Entity::update(f32 dt)
     updateChildren(dt);
 }
 
+// TODO(dan): why does this break when removed
 sf::FloatRect Entity::getBoundingRect() const
 {
     sf::FloatRect test;
@@ -67,14 +67,14 @@ sf::Transform Entity::getWorldTransform() const
     return xform;
 }
 
-u32 Entity::getCategory() const
+u32 Entity::getType() const
 {
-    return Category::Scene;
+    return ENTITY_NONE;
 }
 
 void Entity::onCommand(const Command& command, f32 dt)
 {
-    if (command.category & getCategory()) command.action(*this, dt);
+    if (command.category & getType()) command.action(*this, dt);
 
     for (std::unique_ptr<Entity>& child : m_children)
         child->onCommand(command, dt);

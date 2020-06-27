@@ -1,5 +1,4 @@
 #pragma once
-
 #include "pch.h"
 #include "animation.h"
 #include "entity.h"
@@ -41,7 +40,7 @@ public:
     void handleEvent(const sf::Event& event, std::queue<Command>& commands);
     void handleInput(std::queue<Command>& commands);
 
-    inline u32 getCategory() const override { return Category::Player; }
+    inline u32 getType() const override { return ENTITY_PLAYER; }
 
     void assignKey(sf::Keyboard::Key key, Action action);
     sf::Keyboard::Key getAssignedKey(Action action) const;

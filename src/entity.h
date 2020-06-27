@@ -1,5 +1,4 @@
 #pragma once
-
 #include "pch.h"
 
 struct Command;
@@ -18,7 +17,7 @@ public:
     sf::Transform getWorldTransform() const;
     void onCommand(const Command& command, f32 dt);
 
-    virtual u32 getCategory() const;
+    virtual u32 getType() const;
 
     virtual sf::FloatRect getBoundingRect() const;
 
@@ -40,5 +39,5 @@ public:
 
     // scene graph
     std::vector<std::unique_ptr<Entity>> m_children;
-    Entity* m_parent;
+    Entity* m_parent = nullptr;
 };

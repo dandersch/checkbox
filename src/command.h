@@ -1,18 +1,16 @@
 #pragma once
-
 #include "pch.h"
 
 class Entity;
 
-namespace Category {
-enum Type
+// TODO(dan): move to entity
+enum EntityType
 {
-    None = 0,
-    Scene = 1 << 0,
-    Player = 1 << 1,
-    Enemy = 1 << 2,
+    ENTITY_NONE       = 0,
+    ENTITY_PLAYER     = 1 << 0,
+    ENTITY_ENEMY      = 1 << 1,
+    ENTITY_TILE       = 1 << 2
 };
-}
 
 struct Command
 {

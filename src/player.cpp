@@ -26,9 +26,6 @@ struct PlayerMover
     b32 rightDir;
 };
 
-/*
- *  TODO: show IDLE_LEFT after WALK_LEFT
- */
 Player::Player(ResourcePool<sf::Texture>& textures)
   : m_sprite(textures.get("platformer_sprites_base.png"))
   , speed(75.f)
@@ -60,7 +57,7 @@ Player::Player(ResourcePool<sf::Texture>& textures)
         }
     });
 
-    for (auto& i : m_actionbinds) i.second.category = Category::Player;
+    for (auto& i : m_actionbinds) i.second.category = ENTITY_PLAYER;
 }
 
 /*
@@ -141,9 +138,8 @@ void Player::createAnimations()
 //  m_anims.back().add(7, 2, 0.2f);
 //  m_anims.back().looped = false;
 
-    if (STATECOUNT != m_anims.size())
-        std::cout << "Not all or too many animation states defined!"
-                  << std::endl;
+    // Not all or too many animation states defined
+    assert(STATECOUNT == m_anims.size());
 }
 
 void Player::restartAnimsExcept(i32 index)

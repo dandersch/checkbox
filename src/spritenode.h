@@ -1,5 +1,4 @@
 #pragma once
-
 #include "pch.h"
 #include "entity.h"
 #include "physics.h"
@@ -36,7 +35,7 @@ public:
                     metersToPixels(body->GetPosition().y));
     };
 
-    inline u32 getCategory() const override { return Category::Scene; }
+    inline u32 getType() const override { return typeflags; }
 
 private:
     virtual void drawCurrent(sf::RenderTarget& target,
@@ -47,6 +46,7 @@ private:
 
 public:
     b2Body* body = nullptr;
+    u32 typeflags = ENTITY_TILE;
 
 private:
     sf::Sprite m_sprite;
