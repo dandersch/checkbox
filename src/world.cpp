@@ -220,8 +220,13 @@ void World::spawnBox(sf::Vector2f pos, b32 isStatic)
     std::unique_ptr<SpriteNode> box(new SpriteNode(m_textures.get(tiletexfile),
                                                    sf::IntRect(2 * 32, 0 * 32,
                                                                32, 32)));
-    box->setPosition((i32)pos.x, (i32)pos.y);
+    // clamp boxes to tileraster
+    auto xpos = std::round(pos.x / 32) * 32;
+    auto ypos = std::round(pos.y / 32) * 32;
+    box->setPosition(xpos, ypos);
+    box->typeflags = ENTITY_TILE | ENTITY_ENEMY;
 
-    box->body = createBox(world, (i32) pos.x, (i32) pos.y, 32, 32, type, box.get());
-    m_layerNodes[Foreground]->attachChild(std::move(box));
+    box->body = createBox(world, xpos, ypos, 32, 32, type, box.get());
+    box->body->SetFixedRotation(true);
+    m_layerNodes[LAYER_MID]->attachChild(std::move(box));
 }
