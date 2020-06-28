@@ -41,6 +41,7 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     assignKey(sf::Keyboard::S, MOVE_DOWN);
     assignKey(sf::Keyboard::LShift, SPRINT);
     assignKey(sf::Keyboard::Space, JUMP);
+    assignKey(sf::Keyboard::X, DYING);
 
     m_actionbinds[MOVE_LEFT].action  = derivedAction<Player>(PlayerMover(-speed, 0.f, false));
     m_actionbinds[MOVE_RIGHT].action = derivedAction<Player>(PlayerMover(+speed, 0.f, true));
@@ -56,6 +57,7 @@ Player::Player(ResourcePool<sf::Texture>& textures)
             p.canJump = false;
         }
     });
+    m_actionbinds[DYING].action = derivedAction<Player>([](Player& p, f32) { p.m_state = DEAD; });
 
     for (auto& i : m_actionbinds) i.second.category = ENTITY_PLAYER;
 }
@@ -70,6 +72,7 @@ void Player::updateCurrent(f32 dt)
 
     if (velocity.y > 100.f) m_state = FALLING;
 
+    // Animation:
     // only update texture if animation was found
     if (m_anims.find(m_state) != m_anims.end()) {
         restartAnimsExcept(m_state);
@@ -126,17 +129,17 @@ void Player::createAnimations()
     m_anims.at(FALLING).add(7, 5, 0.1f);
     m_anims.at(FALLING).looped = false;
 
-//  /* Death */
-//  m_anims.emplace_back(texSize, 8, 9);
-//  m_anims.back().add(0, 2, 0.2f);
-//  m_anims.back().add(1, 2, 0.2f);
-//  m_anims.back().add(2, 2, 0.2f);
-//  m_anims.back().add(3, 2, 0.2f);
-//  m_anims.back().add(4, 2, 0.2f);
-//  m_anims.back().add(5, 2, 0.2f);
-//  m_anims.back().add(6, 2, 0.2f);
-//  m_anims.back().add(7, 2, 0.2f);
-//  m_anims.back().looped = false;
+    /* Death */
+    m_anims.emplace(DEAD, Animation(texSize, 8, 9));
+    m_anims.at(DEAD).add(0, 2, 0.1f);
+    m_anims.at(DEAD).add(1, 2, 0.1f);
+    m_anims.at(DEAD).add(2, 2, 0.1f);
+    m_anims.at(DEAD).add(3, 2, 0.1f);
+    m_anims.at(DEAD).add(4, 2, 0.1f);
+    m_anims.at(DEAD).add(5, 2, 0.1f);
+    m_anims.at(DEAD).add(6, 2, 0.1f);
+    m_anims.at(DEAD).add(7, 2, 0.1f);
+    m_anims.at(DEAD).looped = false;
 
     // Not all or too many animation states defined
     assert(STATECOUNT == m_anims.size());
@@ -191,6 +194,7 @@ b32 Player::isOneShot(Action action)
     case MOVE_UP:    // fallthrough
     case JUMP:       // fallthrough
     case MOVE_DOWN:
+    case DYING:
         return false;
 
     default: return true;

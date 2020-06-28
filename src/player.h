@@ -18,6 +18,7 @@ public:
         MOVE_DOWN,
         SPRINT,
         JUMP,
+        DYING,
         ACTIONCOUNT
     };
 
@@ -28,7 +29,7 @@ public:
         RUNNING,
         JUMPING,
         FALLING,
-        //DEAD,
+        DEAD,
         STATECOUNT
     };
 
