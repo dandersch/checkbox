@@ -41,12 +41,20 @@ private:
     virtual void drawCurrent(sf::RenderTarget& target,
                              sf::RenderStates states) const override
     {
-        target.draw(m_sprite, states);
+        // bad (?) tilemap culling
+        if (shouldDraw)
+        {
+            target.draw(m_sprite, states);
+            if (!moving) shouldDraw = false;
+        }
     }
 
 public:
     b2Body* body = nullptr;
     u32 typeflags = ENTITY_TILE;
+    //u32 tileID = 0;
+    mutable b32 shouldDraw = false;
+    b32 moving = false;
 
 private:
     sf::Sprite m_sprite;
