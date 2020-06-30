@@ -32,6 +32,7 @@
     using a texture atlas containing 8x8 artwork, it was suggested to use 1.0 -
     0.0625 = 0.9375 at the bottom right corner of the texture float rect"
 - 3d effect w/ views
+- Background parallaxing
 
 * Movement
 - Stop jump if hitting box upwards

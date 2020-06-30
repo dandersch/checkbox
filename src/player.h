@@ -4,6 +4,9 @@
 #include "entity.h"
 #include "command.h"
 
+#define PLAYER_WIDTH  64
+#define PLAYER_HEIGHT 64
+
 // forward declarations
 template<typename Resource> class ResourcePool;
 
@@ -62,6 +65,7 @@ public:
     b32 canJump = false;
     b32 running = false;
     b32 facingRight = true;
+    b32 goToCheckpoint = false;
     f32 speed;
     PlayerState m_state;
 

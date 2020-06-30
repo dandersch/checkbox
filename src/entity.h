@@ -3,6 +3,8 @@
 
 struct Command;
 
+// TODO(dan): completely get rid of scenegraph, instead use array of entities &
+// draw tiles first then rest
 class Entity
   : public sf::Transformable
   , public sf::Drawable

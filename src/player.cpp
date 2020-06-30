@@ -27,11 +27,12 @@ struct PlayerMover
 };
 
 Player::Player(ResourcePool<sf::Texture>& textures)
-  : m_sprite(textures.get("platformer_sprites_base.png"))
+    : m_sprite(textures.get("platformer_sprites_base.png"))
+//: m_sprite(textures.get("test32.png"))
   , speed(75.f)
 {
     m_state = IDLE;
-    m_sprite.setTextureRect(sf::IntRect(0, 0, 64, 64));
+    m_sprite.setTextureRect(sf::IntRect(0, 0, PLAYER_WIDTH, PLAYER_HEIGHT));
     m_sprite.setOrigin(32,32);
     createAnimations();
 
@@ -78,6 +79,14 @@ void Player::updateCurrent(f32 dt)
         restartAnimsExcept(m_state);
         m_anims.at(m_state).flipped = !facingRight;
         m_sprite.setTextureRect(m_anims.at(m_state).update(dt));
+    }
+
+    // TODO(dan): hardcoded
+    // player needs to respawn
+    if (goToCheckpoint)
+    {
+        body->SetTransform(b2Vec2(130.f, 70.f), 0);
+        goToCheckpoint = !goToCheckpoint;
     }
 
     //setRotation(radToDeg(body->GetAngle()));

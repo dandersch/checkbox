@@ -57,11 +57,13 @@ class PlayerContactListener : public b2ContactListener
         if (body1 == e1) normal = normal1 - normal2;
         else normal = normal2 - normal1;
 
+        // TODO(dan): playerOnTile(e1,e2,normal)
         Player* player = static_cast<Player*>(e1);
 
         if (e2->getType() & ENTITY_ENEMY)
         {
             // TODO(dan): make player die or sth similar
+            player->goToCheckpoint = true;
         }
 
         if (e2->getType() & ENTITY_TILE)

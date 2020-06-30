@@ -4,6 +4,9 @@
 #include "physics.h"
 
 // TODO(dan): rename to tile
+// TODO(dan): dynamic bodys shouldn't be considered tiles, then the update
+// function can be empty
+// NOTE(dan): tiles shouldn't be entities (?)
 class SpriteNode : public Entity
 {
 public:
@@ -31,8 +34,7 @@ public:
     virtual void updateCurrent(f32 dt) override
     {
         setRotation(radToDeg(body->GetAngle()));
-        setPosition(metersToPixels(body->GetPosition().x),
-                    metersToPixels(body->GetPosition().y));
+        setPosition(metersToPixels(body->GetPosition().x), metersToPixels(body->GetPosition().y));
     };
 
     inline u32 getType() const override { return typeflags; }
@@ -41,7 +43,7 @@ private:
     virtual void drawCurrent(sf::RenderTarget& target,
                              sf::RenderStates states) const override
     {
-        // bad (?) tilemap culling
+        // tilemap culling
         if (shouldDraw)
         {
             target.draw(m_sprite, states);

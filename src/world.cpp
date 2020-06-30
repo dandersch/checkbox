@@ -10,9 +10,10 @@
 // TODO(dan): tilemap.cpp
 static const char* tiletexfile = "simple_tiles_32x32.png";
 u32 tileIDfromCoords(const u32 x, const u32 y);
+//std::unordered_map<u32, SpriteNode*> tilemap;
 std::map<u32, SpriteNode*> tilemap;
 sf::Vector2u maxMapSize;
-struct Tile
+struct TileInfo
 {
     sf::IntRect rect;
     Layer layer;
@@ -92,7 +93,8 @@ void World::update(f32 dt)
     while (!cmdQueue.empty()) {
         Command cmd = cmdQueue.front();
         cmdQueue.pop();
-        m_scenegraph.onCommand(cmd, dt);
+        //m_scenegraph.onCommand(cmd, dt); // bad performance w/ large scenegraphs
+        m_player->onCommand(cmd, dt);
     }
 
     // Physics
@@ -127,6 +129,16 @@ void World::draw()
                 if (tilemap.find(id) != tilemap.end())
                 {
                     tilemap[id]->shouldDraw = true;
+
+                    /*
+                    // collision filtering (doesn't seem to improve performance)
+                    // NOTE(dan): also doesn't set back maskbits when tile is
+                    // out of view
+                    b2Fixture* fixt = tile->body->GetFixtureList();
+                    b2Filter filter = fixt->GetFilterData();
+                    filter.maskBits = 0xFFFF;
+                    fixt->SetFilterData(filter);
+                    */
                 }
             }
         }
@@ -161,10 +173,10 @@ void World::buildScene()
         return false;
     };
 
-    std::map<sf::Color, Tile, decltype(comparator)> colorMap(comparator);
+    std::map<sf::Color, TileInfo, decltype(comparator)> colorMap(comparator);
 
     auto& levelTex = m_textures.get(tiletexfile);
-    auto& level0 = m_levels.get("level1.png");
+    auto& level0 = m_levels.get("level0_overload.png");
 
     maxMapSize = level0.getSize();
 
@@ -211,23 +223,20 @@ void World::buildScene()
 
             if (sample == sf::Color::White) continue; // whitespace
 
-            auto& layer_and_rect = colorMap[sample];
+            TileInfo& tInfo = colorMap[sample];
             std::unique_ptr<SpriteNode> tile(new SpriteNode(levelTex,
-                                                            layer_and_rect.rect));
+                                                            tInfo.rect));
             tile->setPosition(x * 32, y * 32);
             u32 id = tileIDfromCoords(x * 32, y * 32);
             tilemap[id] = tile.get();
+            tile->body = createBox(world, x * 32, y * 32, 32, 32, b2_staticBody,
+                                   tile.get());
 
-            if (layer_and_rect.layer == LAYER_MID) {
-                tile->body = createBox(world, x * 32, y * 32, 32, 32,
-                                       b2_staticBody, tile.get());
-                m_layerNodes[LAYER_MID]->attachChild(std::move(tile));
-            } else if (layer_and_rect.layer == LAYER_BACK) {
-                tile->body = createBox(world, x * 32, y * 32, 32, 32,
-                                       b2_staticBody, tile.get());
+            // make background tiles non-collidable
+            if (tInfo.layer == LAYER_BACK)
                 tile->body->SetActive(false);
-                m_layerNodes[LAYER_BACK]->attachChild(std::move(tile));
-            }
+
+            m_layerNodes[tInfo.layer]->attachChild(std::move(tile));
         }
     }
 
@@ -247,6 +256,7 @@ b2Body* World::createBox(b2World& world, i32 posX, i32 posY, i32 sizeX,
                      pixelsToMeters<double>(sizeY / 2.f));
 
     b2FixtureDef fixtureDef;
+    //if (userData != m_player) fixtureDef.filter.maskBits = 0x0000;
     fixtureDef.density = 1.0f;
     fixtureDef.friction = 0.4f;
     fixtureDef.restitution = 0.5f;

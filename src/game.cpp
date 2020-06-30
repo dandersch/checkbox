@@ -28,7 +28,8 @@ Game::Game()
     m_music.openFromFile("../res/intro.ogg");
     m_music.setLoop(true);
     m_music.play();
-    m_music.setVolume(5.f);
+    m_music.pause();
+    m_music.setVolume(1.f);
 }
 
 void Game::processEvents()
@@ -81,6 +82,25 @@ void Game::processEvents()
         default: break;
         }
 
+        // TODO(dan): overload for debugging
+        if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Middle))
+        {
+            m_world.spawnBox(m_window.mapPixelToCoords(sf::Vector2i(sf::Mouse::getPosition(m_window).x - 9,
+                                                                    sf::Mouse::getPosition(m_window).y - 4)),
+                                                       true);
+            m_world.spawnBox(m_window.mapPixelToCoords(sf::Vector2i(sf::Mouse::getPosition(m_window).x - 8,
+                                                                    sf::Mouse::getPosition(m_window).y - 4)),
+                                                       true);
+            m_world.spawnBox(m_window.mapPixelToCoords(sf::Vector2i(sf::Mouse::getPosition(m_window).x - 10,
+                                                                    sf::Mouse::getPosition(m_window).y - 4)),
+                                                       true);
+            m_world.spawnBox(m_window.mapPixelToCoords(sf::Vector2i(sf::Mouse::getPosition(m_window).x - 9,
+                                                                    sf::Mouse::getPosition(m_window).y - 3)),
+                                                       true);
+            m_world.spawnBox(m_window.mapPixelToCoords(sf::Vector2i(sf::Mouse::getPosition(m_window).x - 9,
+                                                                    sf::Mouse::getPosition(m_window).y - 5)),
+                                                       true);
+        }
     }
     m_world.m_player->handleInput(m_world.cmdQueue);
 }
@@ -102,6 +122,15 @@ void Game::update(f32 dtime)
     */
 }
 
+// for FPS
+sf::Clock g_fps_clock;
+f32 g_fps_last_time = 0;
+f32 g_fps = 0;
+// for ticks per second
+sf::Clock g_tps_clock;
+f32 g_tps_last_time = 0;
+f32 g_tps = 0;
+
 void Game::render()
 {
     m_window.clear(sf::Color(140, 170, 200, 255));
@@ -112,7 +141,11 @@ void Game::render()
     //std::cout << m_window.getDefaultView().getCenter().x << std::endl;
     //std::cout << m_window.getDefaultView().getCenter().y << std::endl;
 
-    m_window.draw(m_text);
+    f32 current_time = g_fps_clock.restart().asSeconds();
+    g_fps = 1.f / current_time;
+    g_fps_last_time = current_time;
+
+    m_window.draw(m_text); // TODO(dan): testing text
     ImGui::SFML::Render(m_window);
     m_window.draw(m_cursor);
     m_window.display();
@@ -127,6 +160,9 @@ void Game::debugGui(sf::Time time)
     if (ImGui::Button("Pause"))
         m_music.getStatus() == m_music.Paused ? m_music.play()
                                               : m_music.pause();
+    ImGui::Text("FPS: %.3f", g_fps); ImGui::SameLine();
+    ImGui::Text("TPS: %.3f", g_tps);
+
     ImGui::End();
 }
 
@@ -146,6 +182,10 @@ void Game::run()
             accumulator -= TIME_PER_FRAME;
             processEvents();
             update(TIME_PER_FRAME.asSeconds());
+
+            f32 current_time = g_tps_clock.restart().asSeconds();
+            g_tps = 1.f / current_time;
+            g_tps_last_time = current_time;
         }
         render();
     }

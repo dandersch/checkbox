@@ -72,6 +72,7 @@ u32 Entity::getType() const
     return ENTITY_NONE;
 }
 
+// TODO(dan): improve performance by getting tiles out of the scenegraph
 void Entity::onCommand(const Command& command, f32 dt)
 {
     if (command.category & getType()) command.action(*this, dt);
