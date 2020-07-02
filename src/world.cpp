@@ -1,6 +1,6 @@
 #include "world.h"
 #include "entity.h"
-#include "spritenode.h"
+#include "tile.h"
 #include "player.h"
 #include "command.h"
 
@@ -9,9 +9,11 @@
 
 // TODO(dan): tilemap.cpp
 static const char* tiletexfile = "simple_tiles_32x32.png";
+static const char* spiketexfile = "basicdungeontileset.png";
+
 u32 tileIDfromCoords(const u32 x, const u32 y);
-//std::unordered_map<u32, SpriteNode*> tilemap;
-std::map<u32, SpriteNode*> tilemap;
+//std::unordered_map<u32, Tile*> tilemap;
+std::map<u32, Tile*> tilemap;
 sf::Vector2u maxMapSize;
 struct TileInfo
 {
@@ -56,35 +58,31 @@ void World::update(f32 dt)
         if (pRelPos.x < 0.3f && m_player->velocity.x < 0.f)
         {
             m_view.move(m_player->velocity.x * dt, 0.f);
-            m_view.setCenter(std::floor(m_view.getCenter().x),
-                             m_view.getCenter().y);
+            m_view.setCenter(std::ceil(m_view.getCenter().x), m_view.getCenter().y);
         }
         if (pRelPos.x > 0.7f && m_player->velocity.x > 0.f)
         {
             m_view.move(m_player->velocity.x * dt, 0.f);
-            m_view.setCenter(std::ceil(m_view.getCenter().x),
-                             m_view.getCenter().y);
+            m_view.setCenter(std::floor(m_view.getCenter().x), m_view.getCenter().y);
         }
         if (pRelPos.y < 0.3f && m_player->velocity.y < 0.f)
         {
             m_view.move(0.f, m_player->velocity.y * dt);
-            m_view.setCenter(m_view.getCenter().x,
-                             std::ceil(m_view.getCenter().y));
+            m_view.setCenter(m_view.getCenter().x, std::floor(m_view.getCenter().y));
         }
         if (pRelPos.y > 0.7f && m_player->velocity.y > 0.f)
         {
             m_view.move(0.f, m_player->velocity.y * dt);
-            m_view.setCenter(m_view.getCenter().x,
-                             std::floor(m_view.getCenter().y));
+            m_view.setCenter(m_view.getCenter().x, std::ceil(m_view.getCenter().y));
         }
 
         // workaround to let player not get stuck outside of viewborders
-        if (pRelPos.x < 0.28f) m_view.setCenter(m_player->getPosition());
-        if (pRelPos.x > 0.72f) m_view.setCenter(m_player->getPosition());
-        if (pRelPos.y < 0.28f) m_view.setCenter(m_player->getPosition());
-        if (pRelPos.y > 0.72f) m_view.setCenter(m_player->getPosition());
+        if (pRelPos.x < 0.05f) m_view.setCenter(m_player->getPosition());
+        if (pRelPos.x > 0.95f) m_view.setCenter(m_player->getPosition());
+        if (pRelPos.y < 0.05f) m_view.setCenter(m_player->getPosition());
+        if (pRelPos.y > 0.95f) m_view.setCenter(m_player->getPosition());
 
-        // m_view.setCenter(std::round(m_view.getCenter().x), std::round(m_view.getCenter().y));
+        m_view.setCenter(std::round(m_view.getCenter().x), std::round(m_view.getCenter().y));
     } //////////////////////////////////////////////////////////////////////////
 
     // reset velocity
@@ -130,8 +128,10 @@ void World::draw()
                 {
                     tilemap[id]->shouldDraw = true;
 
-                    /*
+                    auto& tile = tilemap[id];
                     // collision filtering (doesn't seem to improve performance)
+                    /*
+                    // First approach
                     // NOTE(dan): also doesn't set back maskbits when tile is
                     // out of view
                     b2Fixture* fixt = tile->body->GetFixtureList();
@@ -139,6 +139,9 @@ void World::draw()
                     filter.maskBits = 0xFFFF;
                     fixt->SetFilterData(filter);
                     */
+
+                    // Second approach
+                    //tile->body->SetActive(true);
                 }
             }
         }
@@ -176,9 +179,13 @@ void World::buildScene()
     std::map<sf::Color, TileInfo, decltype(comparator)> colorMap(comparator);
 
     auto& levelTex = m_textures.get(tiletexfile);
-    auto& level0 = m_levels.get("level0_overload.png");
+    auto& spikeTex = m_textures.get(spiketexfile);
+    auto& level0 = m_levels.get("level1.png");
 
     maxMapSize = level0.getSize();
+    // malloc tiles array
+    // tiles = malloc((maxMapSize.x * maxMapSize.y) * sizeof(tile))
+    // memset(tiles, 0, sizeof(tiles)); // zero array
 
     // fill the colormap
     u32 xCount = levelTex.getSize().x / 32;
@@ -202,7 +209,8 @@ void World::buildScene()
             sf::Color sample = level0.getPixel(x,y);
 
             // Player generation
-            if (sample == sf::Color::Red) {
+            if (sample == sf::Color::Blue)
+            {
                 playercount++;
                 std::unique_ptr<Player> player(new Player(m_textures));
                 m_player = player.get();
@@ -221,11 +229,47 @@ void World::buildScene()
                 continue;
             }
 
+            // spike generation
+            if (sample == sf::Color::Red)
+            {
+                // 0 5
+                std::unique_ptr<Tile> spike(new Tile(spikeTex,
+                                                     sf::IntRect(5 * 32, 0 * 32,
+                                                                 32, 32)));
+                spike->setPosition(x * 32, y * 32);
+                u32 id = tileIDfromCoords(x * 32, y * 32);
+                tilemap[id] = spike.get();
+                spike->typeflags |= ENTITY_ENEMY;
+                spike->body = createBox(world, x * 32, y * 32, 32, 32,
+                                        b2_staticBody, spike.get());
+                m_layerNodes[LAYER_MID]->attachChild(std::move(spike));
+                continue;
+            }
+
+            // checkpoint generation
+            if (sample == sf::Color::Green)
+            {
+                std::unique_ptr<Tile> check(new Tile(spikeTex,
+                                                     sf::IntRect(5 * 32, 16,
+                                                                 32, 64 - 16)));
+                check->setPosition(x * 32, y * 32 + 32);
+                u32 id = tileIDfromCoords(x * 32, y * 32);
+                tilemap[id] = check.get();
+                //check->typeflags |= ENTITY_CHECKPOINT;
+                check->body = createBox(world, x * 32, y * 32 + 32, 32, 64,
+                                        b2_staticBody, check.get());
+                check->body->SetActive(false);
+                m_layerNodes[LAYER_BACK]->attachChild(std::move(check));
+
+                m_player->checkpoint_loc.x = x * 32;
+                m_player->checkpoint_loc.y = y * 32;
+                continue;
+            }
+
             if (sample == sf::Color::White) continue; // whitespace
 
-            TileInfo& tInfo = colorMap[sample];
-            std::unique_ptr<SpriteNode> tile(new SpriteNode(levelTex,
-                                                            tInfo.rect));
+            TileInfo& tInfo = colorMap.at(sample);
+            std::unique_ptr<Tile> tile(new Tile(levelTex, tInfo.rect));
             tile->setPosition(x * 32, y * 32);
             u32 id = tileIDfromCoords(x * 32, y * 32);
             tilemap[id] = tile.get();
@@ -239,6 +283,8 @@ void World::buildScene()
             m_layerNodes[tInfo.layer]->attachChild(std::move(tile));
         }
     }
+
+    DEBUG_GUI([]() { ImGui::Text("Hello"); });
 
     assert(playercount == 1);
 }
@@ -287,14 +333,14 @@ void World::spawnBox(sf::Vector2f pos, b32 isStatic)
     // there already is a tile here so don't spawn another one
     if (tilemap.find(tileIDfromCoords(xpos, ypos)) != tilemap.end()) return;
 
-    std::unique_ptr<SpriteNode> box(new SpriteNode(m_textures.get(tiletexfile),
+    std::unique_ptr<Tile> box(new Tile(m_textures.get(tiletexfile),
                                                    sf::IntRect(tilenr * 32, 0  * 32,
                                                                32, 32)));
     box->moving = true;
     box->shouldDraw = true;
 
     box->setPosition(xpos, ypos);
-    box->typeflags = ENTITY_TILE | ENTITY_ENEMY;
+    box->typeflags = ENTITY_TILE;
 
     box->body = createBox(world, xpos, ypos, 32, 32, type, box.get());
     box->body->SetFixedRotation(true);
@@ -303,5 +349,5 @@ void World::spawnBox(sf::Vector2f pos, b32 isStatic)
 
 u32 tileIDfromCoords(const u32 x, const u32 y)
 {
-    return (x * maxMapSize.x) + y;
+    return ((y/32) * maxMapSize.x) + (x/32);
 }

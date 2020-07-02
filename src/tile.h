@@ -3,27 +3,16 @@
 #include "entity.h"
 #include "physics.h"
 
-// TODO(dan): rename to tile
 // TODO(dan): dynamic bodys shouldn't be considered tiles, then the update
 // function can be empty
 // NOTE(dan): tiles shouldn't be entities (?)
-class SpriteNode : public Entity
+class Tile : public Entity
 {
 public:
-    explicit SpriteNode(const sf::Texture& texture)
-      : m_sprite(texture)
+    Tile(const sf::Texture& tile_sheet, const sf::IntRect& tile_rect)
+      : m_sprite(tile_sheet, tile_rect)
     {
-        // TODO keep (?)
-        m_sprite.setOrigin(texture.getSize().x / 2.0f,
-                           texture.getSize().y / 2.0f);
-    };
-
-    // TODO(dan): rename rect to something better
-    SpriteNode(const sf::Texture& texture, const sf::IntRect& rect)
-      : m_sprite(texture, rect)
-    {
-        // TODO keep (?)
-        m_sprite.setOrigin(rect.width / 2.0f, rect.height / 2.0f);
+        m_sprite.setOrigin(tile_rect.width / 2.0f, tile_rect.height / 2.0f);
     }
 
     virtual sf::FloatRect getBoundingRect() const override
@@ -33,6 +22,7 @@ public:
 
     virtual void updateCurrent(f32 dt) override
     {
+        // TODO(dan): not needed for (static) tiles
         setRotation(radToDeg(body->GetAngle()));
         setPosition(metersToPixels(body->GetPosition().x), metersToPixels(body->GetPosition().y));
     };
@@ -54,9 +44,8 @@ private:
 public:
     b2Body* body = nullptr;
     u32 typeflags = ENTITY_TILE;
-    //u32 tileID = 0;
-    mutable b32 shouldDraw = false;
     b32 moving = false;
+    mutable b32 shouldDraw = false;
 
 private:
     sf::Sprite m_sprite;

@@ -43,6 +43,7 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     assignKey(sf::Keyboard::LShift, SPRINT);
     assignKey(sf::Keyboard::Space, JUMP);
     assignKey(sf::Keyboard::X, DYING);
+    assignKey(sf::Keyboard::R, RESPAWN);
 
     m_actionbinds[MOVE_LEFT].action  = derivedAction<Player>(PlayerMover(-speed, 0.f, false));
     m_actionbinds[MOVE_RIGHT].action = derivedAction<Player>(PlayerMover(+speed, 0.f, true));
@@ -59,8 +60,15 @@ Player::Player(ResourcePool<sf::Texture>& textures)
         }
     });
     m_actionbinds[DYING].action = derivedAction<Player>([](Player& p, f32) { p.m_state = DEAD; });
+    m_actionbinds[RESPAWN].action = derivedAction<Player>([](Player& p, f32) {
+        p.body->SetTransform(b2Vec2(pixelsToMeters(p.checkpoint_loc.x),
+                                    pixelsToMeters(p.checkpoint_loc.y)), 0);
+        p.goToCheckpoint = false;
+    });
 
     for (auto& i : m_actionbinds) i.second.category = ENTITY_PLAYER;
+
+    DEBUG_GUI([&]() { ImGui::Text("PLAYER_STATE: %d", m_state); });
 }
 
 /*
@@ -69,9 +77,7 @@ Player::Player(ResourcePool<sf::Texture>& textures)
  */
 void Player::updateCurrent(f32 dt)
 {
-    //move(velocity * dt);
-
-    if (velocity.y > 100.f) m_state = FALLING;
+    if (velocity.y > 100.f && !goToCheckpoint) m_state = FALLING;
 
     // Animation:
     // only update texture if animation was found
@@ -83,12 +89,9 @@ void Player::updateCurrent(f32 dt)
 
     // TODO(dan): hardcoded
     // player needs to respawn
-    if (goToCheckpoint)
-    {
-        body->SetTransform(b2Vec2(130.f, 70.f), 0);
-        goToCheckpoint = !goToCheckpoint;
-    }
+    if (goToCheckpoint) m_state = DEAD; // TODO(dan): play death animation
 
+    // apply physics simulation position to sprite
     //setRotation(radToDeg(body->GetAngle()));
     setPosition(metersToPixels(body->GetPosition().x), metersToPixels(body->GetPosition().y));
 }
@@ -140,14 +143,14 @@ void Player::createAnimations()
 
     /* Death */
     m_anims.emplace(DEAD, Animation(texSize, 8, 9));
-    m_anims.at(DEAD).add(0, 2, 0.1f);
-    m_anims.at(DEAD).add(1, 2, 0.1f);
-    m_anims.at(DEAD).add(2, 2, 0.1f);
-    m_anims.at(DEAD).add(3, 2, 0.1f);
-    m_anims.at(DEAD).add(4, 2, 0.1f);
-    m_anims.at(DEAD).add(5, 2, 0.1f);
-    m_anims.at(DEAD).add(6, 2, 0.1f);
-    m_anims.at(DEAD).add(7, 2, 0.1f);
+    m_anims.at(DEAD).add(0, 2, 0.08f);
+    m_anims.at(DEAD).add(1, 2, 0.08f);
+    m_anims.at(DEAD).add(2, 2, 0.08f);
+    m_anims.at(DEAD).add(3, 2, 0.08f);
+    m_anims.at(DEAD).add(4, 2, 0.08f);
+    m_anims.at(DEAD).add(5, 2, 0.08f);
+    m_anims.at(DEAD).add(6, 2, 0.08f);
+    m_anims.at(DEAD).add(7, 2, 0.08f);
     m_anims.at(DEAD).looped = false;
 
     // Not all or too many animation states defined
@@ -170,14 +173,17 @@ void Player::drawCurrent(sf::RenderTarget& target, sf::RenderStates states) cons
 void Player::handleEvent(const sf::Event& event, std::queue<Command>& commands)
 {
     // workaround to support modifiers
-    switch (event.type) {
+    switch (event.type)
+    {
     case sf::Event::KeyPressed:
-        if (event.key.code == getAssignedKey(SPRINT)) {
+        if (event.key.code == getAssignedKey(SPRINT))
+        {
             commands.push(m_actionbinds[SPRINT]);
         }
         break;
     case sf::Event::KeyReleased:
-        if (event.key.code == getAssignedKey(SPRINT)) {
+        if (event.key.code == getAssignedKey(SPRINT))
+        {
             commands.push(m_actionbinds[SPRINT]);
         }
         break;
@@ -188,6 +194,15 @@ void Player::handleEvent(const sf::Event& event, std::queue<Command>& commands)
 // For continuous real-time actions (WHILE an event happens)
 void Player::handleInput(std::queue<Command>& commands)
 {
+    // TODO(dan): hardcoded
+    // only respond to respawn key if dead
+    if (goToCheckpoint)
+    {
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
+            commands.push(m_actionbinds[RESPAWN]);
+        return;
+    }
+
     if (canJump) m_state = IDLE;
 
     for (auto i : m_keybinds)
@@ -204,6 +219,7 @@ b32 Player::isOneShot(Action action)
     case JUMP:       // fallthrough
     case MOVE_DOWN:
     case DYING:
+    case RESPAWN:
         return false;
 
     default: return true;

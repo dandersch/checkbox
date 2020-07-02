@@ -1,5 +1,7 @@
 #include "game.h"
 
+std::vector<std::function<void(void)>> g_gui_callbacks;
+
 Game::Game()
   : m_window(sf::VideoMode(1280, 720), "SFML game")
   , m_texs(".png")
@@ -162,6 +164,9 @@ void Game::debugGui(sf::Time time)
                                               : m_music.pause();
     ImGui::Text("FPS: %.3f", g_fps); ImGui::SameLine();
     ImGui::Text("TPS: %.3f", g_tps);
+
+    for (auto func : g_gui_callbacks)
+        func();
 
     ImGui::End();
 }

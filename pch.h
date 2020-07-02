@@ -15,6 +15,7 @@
 #include <cmath>    // abs
 #include <cstddef>  // offsetof, NULL
 #include <cstring>  // memcpy
+#include <functional>
 
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
@@ -30,3 +31,12 @@
 #include "imgui.h"
 
 //#include <glm/glm.hpp>
+
+#define BUILD_DEBUG
+#ifdef BUILD_DEBUG
+    #define DEBUG_GUI(x) g_gui_callbacks.push_back(x);
+#else
+    #define DEBUG_GUI(x)
+#endif
+
+extern std::vector<std::function<void(void)>> g_gui_callbacks;

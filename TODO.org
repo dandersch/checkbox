@@ -1,20 +1,19 @@
-* Sound
-- sfxs for player movement
-
 * Gamelogic
-- add gamestacks
-- add a goal
+- [ ] add gamestates
+- [ ] add a goal tile
+- [ ] add a spike tile
+- [ ] add a checkpoint tile
 
 * Level
-- culling w/ tileIDs
-- levelgeneration
-  + support for specifying tile being in foreground/background
-  + support for specifying enemy positions
-  + support for specifying goal
-  + batch neighbouring sprites w/ same texture to one sprite
+- [X] culling w/ tileIDs
+- [ ] levelgeneration
+  + [X] support for specifying tile being in foreground/background
+  + [ ] support for specifying enemy positions
+  + [ ] support for specifying goal
+  + [ ] batch neighbouring sprites w/ same texture to one sprite
 
 * Visuals
-- use better tileset
+- [ ] use better tileset
 - fix flickering/aliasing (white lines between sprites). Possible solutions:
   + In order to render a sf::Drawable object pixel-perfectly, make sure the
     involved coordinates allow a 1:1 mapping of pixels in the window to texels
@@ -35,24 +34,19 @@
 - Background parallaxing
 
 * Movement
-- Stop jump if hitting box upwards
+- [ ] fix view following
+- [X] Stop jump if hitting box upwards
 
 * Animation
-- build-up/anticipation for jump
+- [ ] build-up/anticipation for jump
 
 * Collision
-- decouple physics
-- don't collide with nodes in foreground/background
-- implement simple collision pairing
-- add weight factor (moveable boxes)
-- add enemies w/ collision
-- improve player collision box
-- ignore unreachable tiles in collision checking (set as "uncollidable" in level
-  generation?)
+- [ ] don't collide with nodes in foreground/background
+- [ ] improve player collision box
+- [ ] collision filtering to improve performance
 
 * Etc
-- compile on windows
-- performance unpredictable
-- fps indicator
-- screencast: record gameplay footage "ffmpeg -f gdigrab -framerate 30 -i
+- [ ] compile on windows
+- [X] fps indicator
+- [ ] screencast: record gameplay footage "ffmpeg -f gdigrab -framerate 30 -i
   title="german.avi - VLC media player" -b:v 3M germ.flv"

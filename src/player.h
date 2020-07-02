@@ -22,6 +22,7 @@ public:
         SPRINT,
         JUMP,
         DYING,
+        RESPAWN,
         ACTIONCOUNT
     };
 
@@ -68,6 +69,8 @@ public:
     b32 goToCheckpoint = false;
     f32 speed;
     PlayerState m_state;
+    sf::Vector2i checkpoint_loc; // location of last checkpoint
+    // Entity* checkpoint_box;
 
 private:
     std::map<PlayerState, Animation> m_anims;
