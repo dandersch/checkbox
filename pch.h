@@ -40,3 +40,19 @@
 #endif
 
 extern std::vector<std::function<void(void)>> g_gui_callbacks;
+
+// conversion functions
+constexpr f64 PIXELS_PER_METER = 32.0;
+constexpr f64 PI = 3.14159265358979323846;
+
+template<typename T>
+constexpr T pixelsToMeters(const T& x) { return x / PIXELS_PER_METER; };
+
+template<typename T>
+constexpr T metersToPixels(const T& x) { return x * PIXELS_PER_METER; };
+
+template<typename T>
+constexpr T degToRad(const T& x) { return PI * x / 180.f; }
+
+template<typename T>
+constexpr T radToDeg(const T& x) { return 180.f * x / PI; };

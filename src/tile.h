@@ -1,7 +1,8 @@
 #pragma once
 #include "pch.h"
 #include "entity.h"
-#include "physics.h"
+
+extern bool g_cull_tiles;
 
 // TODO(dan): dynamic bodys shouldn't be considered tiles, then the update
 // function can be empty
@@ -33,11 +34,19 @@ private:
     virtual void drawCurrent(sf::RenderTarget& target,
                              sf::RenderStates states) const override
     {
-        // tilemap culling
-        if (shouldDraw)
+        // can be turned on/off for debugging
+        if (g_cull_tiles)
+        {
+            // tilemap culling
+            if (shouldDraw)
+            {
+                target.draw(m_sprite, states);
+                if (!moving) shouldDraw = false;
+            }
+        }
+        else
         {
             target.draw(m_sprite, states);
-            if (!moving) shouldDraw = false;
         }
     }
 
@@ -47,6 +56,6 @@ public:
     b32 moving = false;
     mutable b32 shouldDraw = false;
 
-private:
+//private:
     sf::Sprite m_sprite;
 };

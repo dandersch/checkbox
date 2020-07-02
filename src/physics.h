@@ -3,25 +3,9 @@
 #include "entity.h"
 #include "command.h"
 #include "player.h"
-
-// conversion functions
-constexpr f64 PIXELS_PER_METER = 32.0;
-constexpr f64 PI = 3.14159265358979323846;
-
-template<typename T>
-constexpr T pixelsToMeters(const T& x) { return x / PIXELS_PER_METER; };
-
-template<typename T>
-constexpr T metersToPixels(const T& x) { return x * PIXELS_PER_METER; };
-
-template<typename T>
-constexpr T degToRad(const T& x) { return PI * x / 180.f; }
-
-template<typename T>
-constexpr T radToDeg(const T& x) { return 180.f * x / PI; };
+#include "tile.h"
 
 // Collision Listener
-// TODO(dan): template
 class PlayerContactListener : public b2ContactListener
 {
     // TODO(dan): only player-on-tile supported currently
@@ -63,7 +47,18 @@ class PlayerContactListener : public b2ContactListener
         if (e2->getType() & ENTITY_ENEMY)
         {
             // TODO(dan): make player die or sth similar
-            player->goToCheckpoint = true;
+            player->dead = true;
+        }
+
+        if (e2->getType() & ENTITY_CHECKPOINT)
+        {
+            // TODO: play animation?
+            // paint new checkpoint green and take away green from old one
+            if (player->checkpoint_box)
+                ((Tile*) player->checkpoint_box)->m_sprite.setColor(sf::Color::White);
+            player->checkpoint_box = e2;
+            ((Tile*) e2)->m_sprite.setColor(sf::Color::Green);
+            return;
         }
 
         if (e2->getType() & ENTITY_TILE)

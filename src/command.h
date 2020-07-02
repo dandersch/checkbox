@@ -9,7 +9,8 @@ enum EntityType
     ENTITY_NONE       = 0,
     ENTITY_PLAYER     = 1 << 0,
     ENTITY_ENEMY      = 1 << 1,
-    ENTITY_TILE       = 1 << 2
+    ENTITY_TILE       = 1 << 2,
+    ENTITY_CHECKPOINT = 1 << 3,
 };
 
 struct Command

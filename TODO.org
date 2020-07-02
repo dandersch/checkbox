@@ -1,8 +1,8 @@
 * Gamelogic
 - [ ] add gamestates
 - [ ] add a goal tile
-- [ ] add a spike tile
-- [ ] add a checkpoint tile
+- [X] add a spike tile
+- [X] add a checkpoint tile
 
 * Level
 - [X] culling w/ tileIDs
@@ -34,6 +34,7 @@
 - Background parallaxing
 
 * Movement
+- [ ] use box2d sensor for jumping
 - [ ] fix view following
 - [X] Stop jump if hitting box upwards
 

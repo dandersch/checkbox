@@ -27,8 +27,7 @@ struct PlayerMover
 };
 
 Player::Player(ResourcePool<sf::Texture>& textures)
-    : m_sprite(textures.get("platformer_sprites_base.png"))
-//: m_sprite(textures.get("test32.png"))
+  : m_sprite(textures.get("platformer_sprites_base.png"))
   , speed(75.f)
 {
     m_state = IDLE;
@@ -38,8 +37,6 @@ Player::Player(ResourcePool<sf::Texture>& textures)
 
     assignKey(sf::Keyboard::A, MOVE_LEFT);
     assignKey(sf::Keyboard::D, MOVE_RIGHT);
-    assignKey(sf::Keyboard::W, MOVE_UP);
-    assignKey(sf::Keyboard::S, MOVE_DOWN);
     assignKey(sf::Keyboard::LShift, SPRINT);
     assignKey(sf::Keyboard::Space, JUMP);
     assignKey(sf::Keyboard::X, DYING);
@@ -47,8 +44,6 @@ Player::Player(ResourcePool<sf::Texture>& textures)
 
     m_actionbinds[MOVE_LEFT].action  = derivedAction<Player>(PlayerMover(-speed, 0.f, false));
     m_actionbinds[MOVE_RIGHT].action = derivedAction<Player>(PlayerMover(+speed, 0.f, true));
-    //m_actionbinds[MOVE_UP].action  = derivedAction<Player>(PlayerMover(0.f, -speed));
-    //m_actionbinds[MOVE_DOWN].action = derivedAction<Player>(PlayerMover(0.f, +speed));
     m_actionbinds[SPRINT].action = derivedAction<Player>([](Player& p, f32) {
         p.running = !p.running;
     });
@@ -61,9 +56,14 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     });
     m_actionbinds[DYING].action = derivedAction<Player>([](Player& p, f32) { p.m_state = DEAD; });
     m_actionbinds[RESPAWN].action = derivedAction<Player>([](Player& p, f32) {
-        p.body->SetTransform(b2Vec2(pixelsToMeters(p.checkpoint_loc.x),
-                                    pixelsToMeters(p.checkpoint_loc.y)), 0);
-        p.goToCheckpoint = false;
+        if (p.checkpoint_box)
+            p.body->SetTransform(b2Vec2(pixelsToMeters(p.checkpoint_box->getPosition().x),
+                                        pixelsToMeters(p.checkpoint_box->getPosition().y)), 0);
+        else
+            p.body->SetTransform(b2Vec2(pixelsToMeters(p.spawn_loc.x),
+                                        pixelsToMeters(p.spawn_loc.y)), 0);
+
+        p.dead = false;
     });
 
     for (auto& i : m_actionbinds) i.second.category = ENTITY_PLAYER;
@@ -77,7 +77,7 @@ Player::Player(ResourcePool<sf::Texture>& textures)
  */
 void Player::updateCurrent(f32 dt)
 {
-    if (velocity.y > 100.f && !goToCheckpoint) m_state = FALLING;
+    if (velocity.y > 100.f && !dead) m_state = FALLING;
 
     // Animation:
     // only update texture if animation was found
@@ -89,7 +89,7 @@ void Player::updateCurrent(f32 dt)
 
     // TODO(dan): hardcoded
     // player needs to respawn
-    if (goToCheckpoint) m_state = DEAD; // TODO(dan): play death animation
+    if (dead) m_state = DEAD; // TODO(dan): play death animation
 
     // apply physics simulation position to sprite
     //setRotation(radToDeg(body->GetAngle()));
@@ -196,7 +196,7 @@ void Player::handleInput(std::queue<Command>& commands)
 {
     // TODO(dan): hardcoded
     // only respond to respawn key if dead
-    if (goToCheckpoint)
+    if (dead)
     {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
             commands.push(m_actionbinds[RESPAWN]);

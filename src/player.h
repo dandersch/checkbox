@@ -66,11 +66,11 @@ public:
     b32 canJump = false;
     b32 running = false;
     b32 facingRight = true;
-    b32 goToCheckpoint = false;
+    b32 dead = false;
     f32 speed;
     PlayerState m_state;
-    sf::Vector2i checkpoint_loc; // location of last checkpoint
-    // Entity* checkpoint_box;
+    sf::Vector2i spawn_loc;
+    Entity* checkpoint_box = nullptr;
 
 private:
     std::map<PlayerState, Animation> m_anims;

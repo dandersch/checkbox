@@ -11,6 +11,7 @@
 static const char* tiletexfile = "simple_tiles_32x32.png";
 static const char* spiketexfile = "basicdungeontileset.png";
 
+bool g_cull_tiles = true;
 u32 tileIDfromCoords(const u32 x, const u32 y);
 //std::unordered_map<u32, Tile*> tilemap;
 std::map<u32, Tile*> tilemap;
@@ -28,18 +29,23 @@ enum TileSheet
     SHEET_HEIGHT = 64
 };
 
+b2Body* createBox(b2World& world, i32 posX, i32 posY, i32 sizeX, i32 sizeY,
+                  b2BodyType type, void* userData, b32 collidable = true);
+
 World::World(sf::RenderWindow& window)
   : m_window(window)
   , m_view(sf::Vector2f(640.f, 360.f), sf::Vector2f(VIEW_HEIGHT, VIEW_WIDTH))
   , m_textures(".png")
   , m_levels(".png")
   , m_player(nullptr)
-  , playerTileContact() // collision response
+  , playerTileContact()      // collision response
   , world(b2Vec2(0.f, 25.f)) // TODO keep using higher gravity (?)
 {
     loadTextures();
     buildScene();
     world.SetContactListener(&playerTileContact);
+
+    DEBUG_GUI([]() { ImGui::Checkbox("TileMap Culling", &g_cull_tiles); });
 }
 
 void World::update(f32 dt)
@@ -113,6 +119,7 @@ void World::draw()
 
     // TODO(dan): this maybe shouldn't happen in the drawloop, but putting it in
     // the update loop causes flickering...
+    if (g_cull_tiles)
     { // TILEMAP CULLING ////////////////////////////////////////////////
         u32 view_left   = std::round( (m_view.getCenter().x - (m_view.getSize().x / 2)) / 32) * 32;
         u32 view_top    = std::round( (m_view.getCenter().y - (m_view.getSize().y / 2)) / 32) * 32;
@@ -226,6 +233,7 @@ void World::buildScene()
                                                               // collision
                                            b2_dynamicBody, m_player);
                 m_player->body->SetFixedRotation(true);
+                m_player->spawn_loc = sf::Vector2i(x * 32, y * 32);
                 continue;
             }
 
@@ -252,17 +260,13 @@ void World::buildScene()
                 std::unique_ptr<Tile> check(new Tile(spikeTex,
                                                      sf::IntRect(5 * 32, 16,
                                                                  32, 64 - 16)));
-                check->setPosition(x * 32, y * 32 + 32);
+                check->setPosition(x * 32, y * 32);
                 u32 id = tileIDfromCoords(x * 32, y * 32);
                 tilemap[id] = check.get();
-                //check->typeflags |= ENTITY_CHECKPOINT;
-                check->body = createBox(world, x * 32, y * 32 + 32, 32, 64,
-                                        b2_staticBody, check.get());
-                check->body->SetActive(false);
+                check->typeflags |= ENTITY_CHECKPOINT;
+                check->body = createBox(world, x * 32, y * 32, 32, 64,
+                                        b2_staticBody, check.get(), false);
                 m_layerNodes[LAYER_BACK]->attachChild(std::move(check));
-
-                m_player->checkpoint_loc.x = x * 32;
-                m_player->checkpoint_loc.y = y * 32;
                 continue;
             }
 
@@ -289,8 +293,8 @@ void World::buildScene()
     assert(playercount == 1);
 }
 
-b2Body* World::createBox(b2World& world, i32 posX, i32 posY, i32 sizeX,
-                         i32 sizeY, b2BodyType type, void* userData)
+b2Body* createBox(b2World& world, i32 posX, i32 posY, i32 sizeX, i32 sizeY,
+                  b2BodyType type, void* userData, b32 collidable)
 {
     b2BodyDef bodyDef;
     bodyDef.position.Set(pixelsToMeters<double>(posX),
@@ -302,11 +306,12 @@ b2Body* World::createBox(b2World& world, i32 posX, i32 posY, i32 sizeX,
                      pixelsToMeters<double>(sizeY / 2.f));
 
     b2FixtureDef fixtureDef;
-    //if (userData != m_player) fixtureDef.filter.maskBits = 0x0000;
     fixtureDef.density = 1.0f;
     fixtureDef.friction = 0.4f;
     fixtureDef.restitution = 0.5f;
     fixtureDef.shape = &b2shape;
+    if (!collidable)
+        fixtureDef.isSensor = true;
 
     b2Body* body = world.CreateBody(&bodyDef);
     body->CreateFixture(&fixtureDef);
