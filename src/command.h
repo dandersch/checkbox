@@ -11,6 +11,7 @@ enum EntityType
     ENTITY_ENEMY      = 1 << 1,
     ENTITY_TILE       = 1 << 2,
     ENTITY_CHECKPOINT = 1 << 3,
+    ENTITY_HOLDABLE   = 1 << 4
 };
 
 struct Command

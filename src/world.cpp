@@ -29,9 +29,6 @@ enum TileSheet
     SHEET_HEIGHT = 64
 };
 
-b2Body* createBox(b2World& world, i32 posX, i32 posY, i32 sizeX, i32 sizeY,
-                  b2BodyType type, void* userData, b32 collidable = true);
-
 World::World(sf::RenderWindow& window)
   : m_window(window)
   , m_view(sf::Vector2f(640.f, 360.f), sf::Vector2f(VIEW_HEIGHT, VIEW_WIDTH))
@@ -288,13 +285,11 @@ void World::buildScene()
         }
     }
 
-    DEBUG_GUI([]() { ImGui::Text("Hello"); });
-
     assert(playercount == 1);
 }
 
-b2Body* createBox(b2World& world, i32 posX, i32 posY, i32 sizeX, i32 sizeY,
-                  b2BodyType type, void* userData, b32 collidable)
+b2Body* World::createBox(b2World& world, i32 posX, i32 posY, i32 sizeX, i32 sizeY,
+                         b2BodyType type, void* userData, b32 collidable)
 {
     b2BodyDef bodyDef;
     bodyDef.position.Set(pixelsToMeters<double>(posX),
@@ -314,7 +309,21 @@ b2Body* createBox(b2World& world, i32 posX, i32 posY, i32 sizeX, i32 sizeY,
         fixtureDef.isSensor = true;
 
     b2Body* body = world.CreateBody(&bodyDef);
-    body->CreateFixture(&fixtureDef);
+    auto fixt = body->CreateFixture(&fixtureDef);
+    fixt->SetUserData((void *) 0); // TODO(dan): use enums later
+
+    // add sensor fixtures for player
+    if (userData == m_player)
+    {
+        b2PolygonShape sensorShape;
+        sensorShape.SetAsBox(pixelsToMeters<double>(sizeX * 2.f),
+                             pixelsToMeters<double>(sizeY / 2.f));
+        b2FixtureDef sensorFixtDef;
+        sensorFixtDef.shape = &sensorShape;
+        sensorFixtDef.isSensor = true;
+        auto sensorFixt = body->CreateFixture(&sensorFixtDef);
+        sensorFixt->SetUserData((void *) 1);
+    }
 
     body->SetUserData(userData);
 
@@ -323,7 +332,7 @@ b2Body* createBox(b2World& world, i32 posX, i32 posY, i32 sizeX, i32 sizeY,
 
 void World::spawnBox(sf::Vector2f pos, b32 isStatic)
 {
-    u32 tilenr = 5;
+    u32 tilenr = 1;
     b2BodyType type = b2_dynamicBody;
     if (isStatic)
     {
@@ -343,9 +352,11 @@ void World::spawnBox(sf::Vector2f pos, b32 isStatic)
                                                                32, 32)));
     box->moving = true;
     box->shouldDraw = true;
-
     box->setPosition(xpos, ypos);
-    box->typeflags = ENTITY_TILE;
+
+    // testing dynamic body as checkpoint
+    if (isStatic) box->typeflags = ENTITY_TILE;
+    else box->typeflags = ENTITY_TILE | ENTITY_CHECKPOINT | ENTITY_HOLDABLE;
 
     box->body = createBox(world, xpos, ypos, 32, 32, type, box.get());
     box->body->SetFixedRotation(true);

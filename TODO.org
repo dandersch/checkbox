@@ -3,6 +3,8 @@
 - [ ] add a goal tile
 - [X] add a spike tile
 - [X] add a checkpoint tile
+- [X] boxes can be picked up and moved around
+- [ ] boxes can be thrown
 
 * Level
 - [X] culling w/ tileIDs

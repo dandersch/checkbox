@@ -51,7 +51,6 @@ private:
     }
 
 public:
-    b2Body* body = nullptr;
     u32 typeflags = ENTITY_TILE;
     b32 moving = false;
     mutable b32 shouldDraw = false;

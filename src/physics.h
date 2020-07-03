@@ -16,16 +16,22 @@ class PlayerContactListener : public b2ContactListener
 
         auto e1 = body1;
         auto e2 = body2;
+        auto player_fixt = contact->GetFixtureA();
 
         // swap entities if needed to make order consistent to order in EntityType
         if (body1->getType() > body2->getType())
         {
             e1 = body2;
             e2 = body1;
+            player_fixt = contact->GetFixtureB();
         }
 
         // early out
         if (!(e1->getType() == ENTITY_PLAYER)) return;
+
+        // determine fixture
+        i32 fixtureType = 0;
+        if (player_fixt->GetUserData() == (void*) 1) fixtureType = 1;
 
         //...world manifold is helpful for getting locations
         b2WorldManifold worldManifold;
@@ -44,13 +50,20 @@ class PlayerContactListener : public b2ContactListener
         // TODO(dan): playerOnTile(e1,e2,normal)
         Player* player = static_cast<Player*>(e1);
 
-        if (e2->getType() & ENTITY_ENEMY)
+        // TODO(dan): player sensor fixture collision with holdable
+        // if (e2->getType() & ENTITY_HOLDABLE)
+        // add to e2 player.holdables, making sure there are no duplicates
+
+        if (e2->getType() & ENTITY_HOLDABLE && fixtureType == 1)
+            player->holdables.insert(e2);
+
+        if (e2->getType() & ENTITY_ENEMY && fixtureType == 0)
         {
             // TODO(dan): make player die or sth similar
             player->dead = true;
         }
 
-        if (e2->getType() & ENTITY_CHECKPOINT)
+        if (e2->getType() & ENTITY_CHECKPOINT && fixtureType == 0)
         {
             // TODO: play animation?
             // paint new checkpoint green and take away green from old one
@@ -58,10 +71,13 @@ class PlayerContactListener : public b2ContactListener
                 ((Tile*) player->checkpoint_box)->m_sprite.setColor(sf::Color::White);
             player->checkpoint_box = e2;
             ((Tile*) e2)->m_sprite.setColor(sf::Color::Green);
+
+            // TODO(dan): return early breaks things when checkpoint is a
+            // collidable body
             return;
         }
 
-        if (e2->getType() & ENTITY_TILE)
+        if (e2->getType() & ENTITY_TILE && fixtureType == 0)
         {
             if (normal.x > 0) // touching right side of tile
             {

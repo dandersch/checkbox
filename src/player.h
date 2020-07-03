@@ -21,6 +21,7 @@ public:
         MOVE_DOWN,
         SPRINT,
         JUMP,
+        HOLD, // TODO(dan)
         DYING,
         RESPAWN,
         ACTIONCOUNT
@@ -55,6 +56,11 @@ public:
         return getWorldTransform().transformRect(m_sprite.getGlobalBounds());
     };
 
+    inline sf::Vector2f forwardRay()
+    {
+        return facingRight ? sf::Vector2f(1, 0) : sf::Vector2f(-1, 0);
+    }
+
 private:
     void restartAnimsExcept(i32 index);
     void drawCurrent(sf::RenderTarget& target,
@@ -71,6 +77,10 @@ public:
     PlayerState m_state;
     sf::Vector2i spawn_loc;
     Entity* checkpoint_box = nullptr;
+
+    Entity* holding = nullptr;
+    std::function<bool(const Entity* lhs, const Entity* rhs)> set_comparator;
+    std::set<Entity*, decltype(set_comparator)> holdables;
 
 private:
     std::map<PlayerState, Animation> m_anims;

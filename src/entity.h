@@ -37,8 +37,8 @@ private:
 
 public:
     b2Body* body = nullptr;
-
     // EntityFlags flags;
+
     // scene graph
     std::vector<std::unique_ptr<Entity>> m_children;
     Entity* m_parent = nullptr;

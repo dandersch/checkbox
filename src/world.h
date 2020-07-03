@@ -28,6 +28,9 @@ private:
     void loadTextures();
     void buildScene();
 
+    b2Body* createBox(b2World& world, i32 posX, i32 posY, i32 sizeX, i32 sizeY,
+                      b2BodyType type, void* userData, b32 collidable = true);
+
 public:
     sf::View m_view; // TODO private
     std::queue<Command> cmdQueue;

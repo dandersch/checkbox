@@ -39,6 +39,7 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     assignKey(sf::Keyboard::D, MOVE_RIGHT);
     assignKey(sf::Keyboard::LShift, SPRINT);
     assignKey(sf::Keyboard::Space, JUMP);
+    assignKey(sf::Keyboard::F, HOLD);
     assignKey(sf::Keyboard::X, DYING);
     assignKey(sf::Keyboard::R, RESPAWN);
 
@@ -66,9 +67,40 @@ Player::Player(ResourcePool<sf::Texture>& textures)
         p.dead = false;
     });
 
+    m_actionbinds[HOLD].action = derivedAction<Player>([](Player& p, f32) {
+        if (p.holding)
+        {
+            ((Tile*) p.holding)->m_sprite.setColor(sf::Color::White);
+            p.holding = nullptr;
+        }
+        else
+        {
+            p.holding = *p.holdables.begin();
+        }
+    });
+
     for (auto& i : m_actionbinds) i.second.category = ENTITY_PLAYER;
 
     DEBUG_GUI([&]() { ImGui::Text("PLAYER_STATE: %d", m_state); });
+
+    // TODO(dan): sort through holdables, remove holdables too far away
+    set_comparator = [&](const Entity* e1, const Entity* e2) {
+        auto e1_to_p = e1->getPosition() - this->getPosition();
+        auto e2_to_p = e2->getPosition() - this->getPosition();
+        f32 e1_dist = std::pow(e1_to_p.x, 2) + std::pow(e1_to_p.y, 2);
+        f32 e2_dist = std::pow(e2_to_p.x, 2) + std::pow(e2_to_p.y, 2);
+        return e1_dist < e2_dist;
+    };
+
+    holdables = std::set<Entity*, decltype(set_comparator)>(set_comparator);
+
+    DEBUG_GUI([&]() {
+        ImGui::Text("current set of holdables:");
+        for (auto it = holdables.begin(); it != holdables.end(); ++it)
+        {
+            ImGui::Text("%.p", *it);
+        }
+    });
 }
 
 /*
@@ -77,6 +109,10 @@ Player::Player(ResourcePool<sf::Texture>& textures)
  */
 void Player::updateCurrent(f32 dt)
 {
+    // apply physics simulation position to sprite
+    //setRotation(radToDeg(body->GetAngle()));
+    setPosition(metersToPixels(body->GetPosition().x), metersToPixels(body->GetPosition().y));
+
     if (velocity.y > 100.f && !dead) m_state = FALLING;
 
     // Animation:
@@ -87,13 +123,43 @@ void Player::updateCurrent(f32 dt)
         m_sprite.setTextureRect(m_anims.at(m_state).update(dt));
     }
 
+    // iterate through holdabels, check distance to player, if above
+    // min_hold_distance, remove out of set
+    for (auto it = holdables.cbegin(); it != holdables.cend(); it++)
+    {
+        auto ent_to_p = (*it)->getPosition() - this->getPosition();
+        f32 ent_dist = std::pow(ent_to_p.x, 2) + std::pow(ent_to_p.y, 2);
+        if (ent_dist > 10000.f)
+        {
+            holdables.erase(it, holdables.cend());
+            return;
+        }
+        else
+        {
+            continue;
+        }
+    }
+
+    if (holding)
+    {
+        auto box_pos = getPosition() + (35.f * forwardRay());
+        ((Tile*) holding)->m_sprite.setColor(sf::Color::Red);
+
+        // TODO(dan): crashes...
+        ((Tile*) holding)->body->SetTransform(b2Vec2(pixelsToMeters(box_pos.x),
+                                           pixelsToMeters(box_pos.y)),
+                                    0);
+        /*
+        holding->setRotation(radToDeg(body->GetAngle()));
+        holding->setPosition(metersToPixels(body->GetPosition().x),
+                             metersToPixels(body->GetPosition().y));
+        */
+    }
+
     // TODO(dan): hardcoded
     // player needs to respawn
     if (dead) m_state = DEAD; // TODO(dan): play death animation
 
-    // apply physics simulation position to sprite
-    //setRotation(radToDeg(body->GetAngle()));
-    setPosition(metersToPixels(body->GetPosition().x), metersToPixels(body->GetPosition().y));
 }
 
 void Player::createAnimations()
@@ -177,15 +243,13 @@ void Player::handleEvent(const sf::Event& event, std::queue<Command>& commands)
     {
     case sf::Event::KeyPressed:
         if (event.key.code == getAssignedKey(SPRINT))
-        {
             commands.push(m_actionbinds[SPRINT]);
-        }
+        if (event.key.code == getAssignedKey(HOLD))
+            commands.push(m_actionbinds[HOLD]);
         break;
     case sf::Event::KeyReleased:
         if (event.key.code == getAssignedKey(SPRINT))
-        {
             commands.push(m_actionbinds[SPRINT]);
-        }
         break;
     default: break;
     }
