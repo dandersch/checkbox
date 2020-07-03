@@ -21,7 +21,7 @@ public:
         MOVE_DOWN,
         SPRINT,
         JUMP,
-        HOLD, // TODO(dan)
+        HOLD,
         DYING,
         RESPAWN,
         ACTIONCOUNT

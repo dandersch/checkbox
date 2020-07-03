@@ -5,6 +5,10 @@
 #include "player.h"
 #include "tile.h"
 
+extern bool create_joint;
+extern b2Body* body_player;
+extern b2Body* body_box;
+
 // Collision Listener
 class PlayerContactListener : public b2ContactListener
 {
@@ -17,6 +21,7 @@ class PlayerContactListener : public b2ContactListener
         auto e1 = body1;
         auto e2 = body2;
         auto player_fixt = contact->GetFixtureA();
+        auto other_fixt = contact->GetFixtureB();
 
         // swap entities if needed to make order consistent to order in EntityType
         if (body1->getType() > body2->getType())
@@ -24,6 +29,7 @@ class PlayerContactListener : public b2ContactListener
             e1 = body2;
             e2 = body1;
             player_fixt = contact->GetFixtureB();
+            other_fixt = contact->GetFixtureA();
         }
 
         // early out
@@ -55,11 +61,17 @@ class PlayerContactListener : public b2ContactListener
         // add to e2 player.holdables, making sure there are no duplicates
 
         if (e2->getType() & ENTITY_HOLDABLE && fixtureType == 1)
-            player->holdables.insert(e2);
+        {
+            // Approach 1:
+            //player->holdables.insert(e2);
+
+            // Approach 2: ...
+        }
 
         if (e2->getType() & ENTITY_ENEMY && fixtureType == 0)
         {
             // TODO(dan): make player die or sth similar
+            player->holding = nullptr;
             player->dead = true;
         }
 
@@ -100,6 +112,7 @@ class PlayerContactListener : public b2ContactListener
         }
     }
 
+    // TODO(dan): use endcontact for removing holdables from set
     /*
     void EndContact(b2Contact* contact)
     {

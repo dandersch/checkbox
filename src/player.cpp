@@ -57,6 +57,7 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     });
     m_actionbinds[DYING].action = derivedAction<Player>([](Player& p, f32) { p.m_state = DEAD; });
     m_actionbinds[RESPAWN].action = derivedAction<Player>([](Player& p, f32) {
+        if (p.checkpoint_box == p.holding && !p.dead) return; // holding the checkpoint
         if (p.checkpoint_box)
             p.body->SetTransform(b2Vec2(pixelsToMeters(p.checkpoint_box->getPosition().x),
                                         pixelsToMeters(p.checkpoint_box->getPosition().y)), 0);
@@ -68,7 +69,7 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     });
 
     m_actionbinds[HOLD].action = derivedAction<Player>([](Player& p, f32) {
-        if (p.holding)
+        if (p.holding && !p.dead)
         {
             ((Tile*) p.holding)->m_sprite.setColor(sf::Color::White);
             p.holding = nullptr;
@@ -246,6 +247,8 @@ void Player::handleEvent(const sf::Event& event, std::queue<Command>& commands)
             commands.push(m_actionbinds[SPRINT]);
         if (event.key.code == getAssignedKey(HOLD))
             commands.push(m_actionbinds[HOLD]);
+        if (event.key.code == getAssignedKey(RESPAWN))
+            commands.push(m_actionbinds[RESPAWN]);
         break;
     case sf::Event::KeyReleased:
         if (event.key.code == getAssignedKey(SPRINT))
@@ -283,7 +286,6 @@ b32 Player::isOneShot(Action action)
     case JUMP:       // fallthrough
     case MOVE_DOWN:
     case DYING:
-    case RESPAWN:
         return false;
 
     default: return true;

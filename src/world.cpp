@@ -10,6 +10,7 @@
 // TODO(dan): tilemap.cpp
 static const char* tiletexfile = "simple_tiles_32x32.png";
 static const char* spiketexfile = "basicdungeontileset.png";
+static f32 FORCE_TO_BREAK_HOLD = 2500000.f;
 
 bool g_cull_tiles = true;
 u32 tileIDfromCoords(const u32 x, const u32 y);
@@ -29,6 +30,11 @@ enum TileSheet
     SHEET_HEIGHT = 64
 };
 
+bool create_joint = false;
+b2Body* body_player = nullptr;
+b2Body* body_box = nullptr;
+b2WheelJoint* hold_joint = nullptr;
+
 World::World(sf::RenderWindow& window)
   : m_window(window)
   , m_view(sf::Vector2f(640.f, 360.f), sf::Vector2f(VIEW_HEIGHT, VIEW_WIDTH))
@@ -43,6 +49,7 @@ World::World(sf::RenderWindow& window)
     world.SetContactListener(&playerTileContact);
 
     DEBUG_GUI([]() { ImGui::Checkbox("TileMap Culling", &g_cull_tiles); });
+    DEBUG_GUI([]() { ImGui::InputFloat("Force to break hold:", &FORCE_TO_BREAK_HOLD);} );
 }
 
 void World::update(f32 dt)
@@ -61,12 +68,12 @@ void World::update(f32 dt)
         if (pRelPos.x < 0.3f && m_player->velocity.x < 0.f)
         {
             m_view.move(m_player->velocity.x * dt, 0.f);
-            m_view.setCenter(std::ceil(m_view.getCenter().x), m_view.getCenter().y);
+            m_view.setCenter(std::floor(m_view.getCenter().x), m_view.getCenter().y);
         }
         if (pRelPos.x > 0.7f && m_player->velocity.x > 0.f)
         {
             m_view.move(m_player->velocity.x * dt, 0.f);
-            m_view.setCenter(std::floor(m_view.getCenter().x), m_view.getCenter().y);
+            m_view.setCenter(std::ceil(m_view.getCenter().x), m_view.getCenter().y);
         }
         if (pRelPos.y < 0.3f && m_player->velocity.y < 0.f)
         {
@@ -97,6 +104,31 @@ void World::update(f32 dt)
         //m_scenegraph.onCommand(cmd, dt); // bad performance w/ large scenegraphs
         m_player->onCommand(cmd, dt);
     }
+
+    if (hold_joint)
+    {
+        // check if box is facing right side
+        auto dir = body_box->GetPosition() - m_player->body->GetPosition();
+        if ((dir.x > 0 && m_player->forwardRay().x < 0) ||
+            (dir.x < 0 && m_player->forwardRay().x > 0))
+        {
+            auto box_pos = m_player->getPosition() +
+                           (35.f * m_player->forwardRay());
+            body_box->SetTransform(b2Vec2(pixelsToMeters(box_pos.x),
+                                          pixelsToMeters(box_pos.y)),
+                                   0);
+        }
+
+        b2Vec2 reactionForce = hold_joint->GetReactionForce(1 / dt);
+        float forceModuleSq = reactionForce.LengthSquared();
+        if (forceModuleSq > FORCE_TO_BREAK_HOLD)
+        {
+            world.DestroyJoint(hold_joint);
+            hold_joint = nullptr;
+        }
+    }
+
+    // destroy joint if force too great
 
     // Physics
     m_player->velocity.y += metersToPixels(world.GetGravity().y) * dt;
@@ -359,6 +391,20 @@ void World::spawnBox(sf::Vector2f pos, b32 isStatic)
     else box->typeflags = ENTITY_TILE | ENTITY_CHECKPOINT | ENTITY_HOLDABLE;
 
     box->body = createBox(world, xpos, ypos, 32, 32, type, box.get());
+
+    if (!isStatic)
+    {
+        b2WheelJointDef jointDef;
+        jointDef.bodyA = m_player->body;
+        jointDef.bodyB = box->body;
+        jointDef.collideConnected = true;
+
+        body_box = box->body;
+
+        // create the joint
+        hold_joint = (b2WheelJoint*) world.CreateJoint(&jointDef);
+    }
+
     box->body->SetFixedRotation(true);
     m_layerNodes[LAYER_MID]->attachChild(std::move(box));
 }
