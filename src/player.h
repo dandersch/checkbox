@@ -73,6 +73,7 @@ public:
     b32 running = false;
     b32 facingRight = true;
     b32 dead = false;
+    b32 fixedJump = false;
     f32 speed;
     PlayerState m_state;
     sf::Vector2i spawn_loc;

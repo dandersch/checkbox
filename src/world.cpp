@@ -95,8 +95,15 @@ void World::update(f32 dt)
         m_view.setCenter(std::round(m_view.getCenter().x), std::round(m_view.getCenter().y));
     } //////////////////////////////////////////////////////////////////////////
 
-    // reset velocity
-    m_player->velocity.x = 0.f;
+    // reset velocity unless fixed jumping
+    if (m_player->fixedJump) // TODO(dan): find a better way
+    {
+        if (m_player->velocity.x != 0)
+        m_player->facingRight ? m_player->velocity.x = 250.f
+                              : m_player->velocity.x = -250.f;
+    } else {
+        m_player->velocity.x = 0.f;
+    }
 
     while (!cmdQueue.empty()) {
         Command cmd = cmdQueue.front();

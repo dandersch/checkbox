@@ -93,10 +93,12 @@ class PlayerContactListener : public b2ContactListener
         {
             if (normal.x > 0) // touching right side of tile
             {
+                player->fixedJump = false;
             }
 
             if (normal.x < 0) // touching left side of tile
             {
+                player->fixedJump = false;
             }
 
             if (normal.y > 0) // touching bottom of tile
@@ -106,6 +108,7 @@ class PlayerContactListener : public b2ContactListener
 
             if (normal.y < 0) // touching top of tile
             {
+                player->fixedJump = false;
                 player->canJump = true;
                 player->velocity.y = 0;
             }

@@ -9,17 +9,24 @@ struct PlayerMover
       : velocity(vx, vy)
       , rightDir(rightDir)
     {}
-    void operator()(Player& player, f32) const
+    void operator()(Player& p, f32) const
     {
-        if (player.running) {
-            player.velocity += (2.f * velocity);
-            if (player.canJump) player.m_state = Player::RUNNING;
-        } else {
-            player.velocity += velocity;
-            if (player.canJump) player.m_state = Player::WALKING;
+        // movement not controllable mid-jump holding a box
+        if ((p.m_state == Player::JUMPING ||
+             p.m_state == Player::FALLING) && p.holding)
+        {
+            return;
         }
 
-        player.facingRight = rightDir;
+        if (p.running) {
+            p.velocity += (2.f * velocity);
+            if (p.canJump) p.m_state = Player::RUNNING;
+        } else {
+            p.velocity += velocity;
+            if (p.canJump) p.m_state = Player::WALKING;
+        }
+
+        p.facingRight = rightDir;
     }
 
     sf::Vector2f velocity;
@@ -28,7 +35,7 @@ struct PlayerMover
 
 Player::Player(ResourcePool<sf::Texture>& textures)
   : m_sprite(textures.get("platformer_sprites_base.png"))
-  , speed(75.f)
+  , speed(100.f)
 {
     m_state = IDLE;
     m_sprite.setTextureRect(sf::IntRect(0, 0, PLAYER_WIDTH, PLAYER_HEIGHT));
@@ -46,10 +53,19 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     m_actionbinds[MOVE_LEFT].action  = derivedAction<Player>(PlayerMover(-speed, 0.f, false));
     m_actionbinds[MOVE_RIGHT].action = derivedAction<Player>(PlayerMover(+speed, 0.f, true));
     m_actionbinds[SPRINT].action = derivedAction<Player>([](Player& p, f32) {
-        p.running = !p.running;
+        if (p.holding) p.running = false;
+        else p.running = !p.running;
     });
     m_actionbinds[JUMP].action = derivedAction<Player>([](Player& p, f32) {
-        if (p.canJump) {
+        if (p.canJump && p.holding)
+        {
+            p.fixedJump = true;
+            p.velocity.y = -sqrtf(2.0f * 981.f * 120.f);
+            p.m_state = JUMPING;
+            p.canJump = false;
+        }
+        else if (p.canJump)
+        {
             p.velocity.y = -sqrtf(2.0f * 981.f * 120.f);
             p.m_state = JUMPING;
             p.canJump = false;
