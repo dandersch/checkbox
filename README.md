@@ -1,3 +1,10 @@
+# Vorstellung
+Termin: Freitag,
+Position: 4,
+Geschätze Uhrzeit: 13:45
+
+Note: tba
+
 # Projektname (kommt noch)
 
 ## Kurze Zusammenfassung
