@@ -73,6 +73,7 @@ Player::Player(ResourcePool<sf::Texture>& textures)
         {
             ((Tile*) p.holding)->m_sprite.setColor(sf::Color::White);
             p.holding = nullptr;
+            // TODO apply force
         }
         else
         {
@@ -111,7 +112,7 @@ Player::Player(ResourcePool<sf::Texture>& textures)
 void Player::updateCurrent(f32 dt)
 {
     // apply physics simulation position to sprite
-    //setRotation(radToDeg(body->GetAngle()));
+    // setRotation(radToDeg(body->GetAngle()));
     setPosition(metersToPixels(body->GetPosition().x), metersToPixels(body->GetPosition().y));
 
     if (velocity.y > 100.f && !dead) m_state = FALLING;
@@ -128,6 +129,12 @@ void Player::updateCurrent(f32 dt)
     // min_hold_distance, remove out of set
     for (auto it = holdables.cbegin(); it != holdables.cend(); it++)
     {
+        // TODO(dan): paint nearest holdable red/blue/...
+        /*
+        static auto first = holdables.begin();
+        ((Tile*)(*first))->m_sprite.setColor(sf::Color::Blue);
+        */
+
         auto ent_to_p = (*it)->getPosition() - this->getPosition();
         f32 ent_dist = std::pow(ent_to_p.x, 2) + std::pow(ent_to_p.y, 2);
         if (ent_dist > 10000.f)
@@ -144,12 +151,9 @@ void Player::updateCurrent(f32 dt)
     if (holding)
     {
         auto box_pos = getPosition() + (35.f * forwardRay());
-        ((Tile*) holding)->m_sprite.setColor(sf::Color::Red);
+        //((Tile*) holding)->m_sprite.setColor(sf::Color::Red);
 
-        // TODO(dan): crashes...
-        ((Tile*) holding)->body->SetTransform(b2Vec2(pixelsToMeters(box_pos.x),
-                                           pixelsToMeters(box_pos.y)),
-                                    0);
+        //((Tile*) holding)->body->SetTransform(b2Vec2(pixelsToMeters(box_pos.x), pixelsToMeters(box_pos.y)), 0);
         /*
         holding->setRotation(radToDeg(body->GetAngle()));
         holding->setPosition(metersToPixels(body->GetPosition().x),
@@ -160,7 +164,6 @@ void Player::updateCurrent(f32 dt)
     // TODO(dan): hardcoded
     // player needs to respawn
     if (dead) m_state = DEAD; // TODO(dan): play death animation
-
 }
 
 void Player::createAnimations()

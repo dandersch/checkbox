@@ -63,7 +63,7 @@ class PlayerContactListener : public b2ContactListener
         if (e2->getType() & ENTITY_HOLDABLE && fixtureType == 1)
         {
             // Approach 1:
-            //player->holdables.insert(e2);
+            player->holdables.insert(e2);
 
             // Approach 2: ...
         }

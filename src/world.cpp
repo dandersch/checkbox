@@ -32,7 +32,7 @@ enum TileSheet
 
 bool create_joint = false;
 b2Body* body_player = nullptr;
-b2Body* body_box = nullptr;
+//b2Body* body_box = nullptr;
 b2WheelJoint* hold_joint = nullptr;
 
 World::World(sf::RenderWindow& window)
@@ -105,30 +105,53 @@ void World::update(f32 dt)
         m_player->onCommand(cmd, dt);
     }
 
-    if (hold_joint)
+    if (m_player->holding)
     {
-        // check if box is facing right side
-        auto dir = body_box->GetPosition() - m_player->body->GetPosition();
-        if ((dir.x > 0 && m_player->forwardRay().x < 0) ||
-            (dir.x < 0 && m_player->forwardRay().x > 0))
+        if (hold_joint)
         {
-            auto box_pos = m_player->getPosition() +
-                           (35.f * m_player->forwardRay());
-            body_box->SetTransform(b2Vec2(pixelsToMeters(box_pos.x),
-                                          pixelsToMeters(box_pos.y)),
-                                   0);
-        }
+            // check if box is facing right side
+            auto dir = m_player->holding->body->GetPosition() - m_player->body->GetPosition();
+            if ((dir.x > 0 && m_player->forwardRay().x < 0) ||
+                (dir.x < 0 && m_player->forwardRay().x > 0))
+            {
+                auto box_pos = m_player->getPosition() +
+                               (35.f * m_player->forwardRay());
+                m_player->holding->body->SetTransform(b2Vec2(pixelsToMeters(box_pos.x),
+                                                             pixelsToMeters(box_pos.y)),
+                                                      0);
+            }
 
-        b2Vec2 reactionForce = hold_joint->GetReactionForce(1 / dt);
-        float forceModuleSq = reactionForce.LengthSquared();
-        if (forceModuleSq > FORCE_TO_BREAK_HOLD)
+            // destroy joint if force too great
+            b2Vec2 reactionForce = hold_joint->GetReactionForce(1 / dt);
+            float forceModuleSq = reactionForce.LengthSquared();
+            if (forceModuleSq > FORCE_TO_BREAK_HOLD)
+            {
+                world.DestroyJoint(hold_joint);
+                hold_joint = nullptr;
+                m_player->holding = nullptr;
+            }
+        }
+        else // create joint
+        {
+            b2WheelJointDef jointDef;
+            jointDef.bodyA = m_player->body;
+            jointDef.bodyB = m_player->holding->body;
+            jointDef.collideConnected = true;
+
+            //body_box = box->body;
+
+            // create the joint
+            hold_joint = (b2WheelJoint*) world.CreateJoint(&jointDef);
+        }
+    }
+    else
+    {
+        if (hold_joint)
         {
             world.DestroyJoint(hold_joint);
             hold_joint = nullptr;
         }
     }
-
-    // destroy joint if force too great
 
     // Physics
     m_player->velocity.y += metersToPixels(world.GetGravity().y) * dt;
@@ -392,6 +415,7 @@ void World::spawnBox(sf::Vector2f pos, b32 isStatic)
 
     box->body = createBox(world, xpos, ypos, 32, 32, type, box.get());
 
+    /*
     if (!isStatic)
     {
         b2WheelJointDef jointDef;
@@ -399,11 +423,12 @@ void World::spawnBox(sf::Vector2f pos, b32 isStatic)
         jointDef.bodyB = box->body;
         jointDef.collideConnected = true;
 
-        body_box = box->body;
+        //body_box = box->body;
 
         // create the joint
         hold_joint = (b2WheelJoint*) world.CreateJoint(&jointDef);
     }
+    */
 
     box->body->SetFixedRotation(true);
     m_layerNodes[LAYER_MID]->attachChild(std::move(box));

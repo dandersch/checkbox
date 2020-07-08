@@ -36,5 +36,5 @@ private:
     sf::Text m_text;
     sf::Music m_music;
 
-    // GameState m_state;
+    // enum GameState { ... } vs GameState m_state;
 };
