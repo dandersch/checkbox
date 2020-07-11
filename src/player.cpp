@@ -15,11 +15,13 @@ struct PlayerMover
         if ((p.m_state == Player::JUMPING ||
              p.m_state == Player::FALLING) && p.holding)
         {
+            // direction change allowed when standing still
+            if (p.velocity.x == 0.f) p.facingRight = rightDir;
             return;
         }
 
         if (p.running) {
-            p.velocity += (2.f * velocity);
+            p.velocity += (1.5f * velocity);
             if (p.canJump) p.m_state = Player::RUNNING;
         } else {
             p.velocity += velocity;
@@ -35,7 +37,7 @@ struct PlayerMover
 
 Player::Player(ResourcePool<sf::Texture>& textures)
   : m_sprite(textures.get("platformer_sprites_base.png"))
-  , speed(100.f)
+  , speed(75.f)
 {
     m_state = IDLE;
     m_sprite.setTextureRect(sf::IntRect(0, 0, PLAYER_WIDTH, PLAYER_HEIGHT));
@@ -60,7 +62,7 @@ Player::Player(ResourcePool<sf::Texture>& textures)
         if (p.canJump && p.holding)
         {
             p.fixedJump = true;
-            p.velocity.y = -sqrtf(2.0f * 981.f * 120.f);
+            p.velocity.y = -sqrtf(2.0f * 981.f * 100.f);
             p.m_state = JUMPING;
             p.canJump = false;
         }
@@ -75,11 +77,17 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     m_actionbinds[RESPAWN].action = derivedAction<Player>([](Player& p, f32) {
         if (p.checkpoint_box == p.holding && !p.dead) return; // holding the checkpoint
         if (p.checkpoint_box)
+        {
+            // TODO(dan): center/move view
             p.body->SetTransform(b2Vec2(pixelsToMeters(p.checkpoint_box->getPosition().x),
-                                        pixelsToMeters(p.checkpoint_box->getPosition().y)), 0);
+                                        pixelsToMeters(p.checkpoint_box->getPosition().y - 64.f)), 0);
+            // TODO(dan): play effect/animation
+        }
         else
+        {
             p.body->SetTransform(b2Vec2(pixelsToMeters(p.spawn_loc.x),
                                         pixelsToMeters(p.spawn_loc.y)), 0);
+        }
 
         p.dead = false;
     });
@@ -87,6 +95,9 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     m_actionbinds[HOLD].action = derivedAction<Player>([](Player& p, f32) {
         if (p.holding && !p.dead)
         {
+            auto forwardForce = p.forwardRay() * 15.f;
+            p.holding->body->SetLinearVelocity(b2Vec2(forwardForce.x, -5.f));
+
             ((Tile*) p.holding)->m_sprite.setColor(sf::Color::White);
             p.holding = nullptr;
             // TODO apply force

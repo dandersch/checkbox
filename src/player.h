@@ -75,6 +75,7 @@ public:
     b32 dead = false;
     b32 fixedJump = false;
     f32 speed;
+    u32 lifeCount = 3;
     PlayerState m_state;
     sf::Vector2i spawn_loc;
     Entity* checkpoint_box = nullptr;

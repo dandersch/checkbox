@@ -56,21 +56,15 @@ class PlayerContactListener : public b2ContactListener
         // TODO(dan): playerOnTile(e1,e2,normal)
         Player* player = static_cast<Player*>(e1);
 
-        // TODO(dan): player sensor fixture collision with holdable
-        // if (e2->getType() & ENTITY_HOLDABLE)
-        // add to e2 player.holdables, making sure there are no duplicates
-
+        // player sensor fixture collision with holdable
         if (e2->getType() & ENTITY_HOLDABLE && fixtureType == 1)
         {
-            // Approach 1:
             player->holdables.insert(e2);
-
-            // Approach 2: ...
         }
 
         if (e2->getType() & ENTITY_ENEMY && fixtureType == 0)
         {
-            // TODO(dan): make player die or sth similar
+            if (!player->dead) player->lifeCount--;
             player->holding = nullptr;
             player->dead = true;
         }
@@ -86,11 +80,14 @@ class PlayerContactListener : public b2ContactListener
 
             // TODO(dan): return early breaks things when checkpoint is a
             // collidable body
-            return;
+            // return;
         }
 
         if (e2->getType() & ENTITY_TILE && fixtureType == 0)
         {
+            // ignore collision with currently held entity
+            if (player->holding == e2) return;
+
             if (normal.x > 0) // touching right side of tile
             {
                 player->fixedJump = false;

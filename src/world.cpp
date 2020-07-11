@@ -32,7 +32,6 @@ enum TileSheet
 
 bool create_joint = false;
 b2Body* body_player = nullptr;
-//b2Body* body_box = nullptr;
 b2WheelJoint* hold_joint = nullptr;
 
 World::World(sf::RenderWindow& window)
@@ -99,9 +98,11 @@ void World::update(f32 dt)
     if (m_player->fixedJump) // TODO(dan): find a better way
     {
         if (m_player->velocity.x != 0)
-        m_player->facingRight ? m_player->velocity.x = 250.f
-                              : m_player->velocity.x = -250.f;
-    } else {
+            m_player->facingRight ? m_player->velocity.x = 200.f
+                                  : m_player->velocity.x = -200.f;
+    }
+    else
+    {
         m_player->velocity.x = 0.f;
     }
 
@@ -144,8 +145,6 @@ void World::update(f32 dt)
             jointDef.bodyA = m_player->body;
             jointDef.bodyB = m_player->holding->body;
             jointDef.collideConnected = true;
-
-            //body_box = box->body;
 
             // create the joint
             hold_joint = (b2WheelJoint*) world.CreateJoint(&jointDef);
@@ -406,8 +405,12 @@ void World::spawnBox(sf::Vector2f pos, b32 isStatic)
     auto xpos = std::round(pos.x / 32) * 32;
     auto ypos = std::round(pos.y / 32) * 32;
 
-    // there already is a tile here so don't spawn another one
-    if (tilemap.find(tileIDfromCoords(xpos, ypos)) != tilemap.end()) return;
+    // there already is a collidable tile here so don't spawn another one
+    auto tileIt = tilemap.find(tileIDfromCoords(xpos, ypos));
+    if (tileIt != tilemap.end())
+    {
+        if ((*tileIt).second->body->IsActive()) return;
+    }
 
     std::unique_ptr<Tile> box(new Tile(m_textures.get(tiletexfile),
                                                    sf::IntRect(tilenr * 32, 0  * 32,
@@ -421,21 +424,6 @@ void World::spawnBox(sf::Vector2f pos, b32 isStatic)
     else box->typeflags = ENTITY_TILE | ENTITY_CHECKPOINT | ENTITY_HOLDABLE;
 
     box->body = createBox(world, xpos, ypos, 32, 32, type, box.get());
-
-    /*
-    if (!isStatic)
-    {
-        b2WheelJointDef jointDef;
-        jointDef.bodyA = m_player->body;
-        jointDef.bodyB = box->body;
-        jointDef.collideConnected = true;
-
-        //body_box = box->body;
-
-        // create the joint
-        hold_joint = (b2WheelJoint*) world.CreateJoint(&jointDef);
-    }
-    */
 
     box->body->SetFixedRotation(true);
     m_layerNodes[LAYER_MID]->attachChild(std::move(box));

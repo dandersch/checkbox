@@ -112,6 +112,12 @@ void Game::update(f32 dtime)
 {
     m_world.update(dtime);
 
+    // TODO(dan): testing lifecount
+    auto lives = m_world.m_player->lifeCount;
+    if (lives == 0) m_text.setFillColor(sf::Color::Red);
+    else m_text.setFillColor(sf::Color::Blue);
+    m_text.setString("Lives left: " + std::to_string(lives));
+
     // TODO use cursor class (?)
     // convert mousepos to world coordinates
     m_cursor.setPosition(m_window.mapPixelToCoords(sf::Vector2i(sf::Mouse::getPosition(m_window).x - 9,
