@@ -1,5 +1,7 @@
 #include "game.h"
 
+#include "gui.h"
+
 std::vector<std::function<void(void)>> g_gui_callbacks;
 static const sf::Time TIME_PER_FRAME = sf::seconds(1.f/60.f);
 // for FPS
@@ -14,9 +16,14 @@ static f32 tps = 0;
 enum GameState
 {
     MAIN_MENU,
-    INGAME
+    IN_GAME,
+    EXIT_GAME
 };
 static GameState currentState = MAIN_MENU;
+
+static std::shared_ptr<GUIContainer> guiContainer;
+static std::shared_ptr<GUIButton> guiButton1;
+static std::shared_ptr<GUIButton> guiButton2;
 
 Game::Game()
   : m_window(sf::VideoMode(1280, 720), "SFML game")
@@ -42,6 +49,20 @@ Game::Game()
     m_music.play();
     m_music.pause();
     m_music.setVolume(1.f);
+
+    // MENU
+    guiContainer = std::make_shared<GUIContainer>();
+    guiButton1 = std::make_shared<GUIButton>(m_fonts, m_texs);
+    guiButton1->setText("START GAME");
+    guiButton1->setCallback([&]() { currentState = IN_GAME; });
+    guiButton1->setPosition(100, 100);
+    guiButton2 = std::make_shared<GUIButton>(m_fonts, m_texs);
+    guiButton2->setText("END GAME");
+    guiButton2->setCallback([&]() { currentState = EXIT_GAME; });
+    guiButton2->setPosition(100, 250);
+    guiContainer->pack(guiButton1);
+    guiContainer->pack(guiButton2);
+    guiContainer->setPosition(640,360);
 }
 
 void Game::processEvents()
@@ -50,7 +71,12 @@ void Game::processEvents()
     while (m_window.pollEvent(event)) {
         ImGui::SFML::ProcessEvent(event);
 
-        m_world.m_player->handleEvent(event, m_world.cmdQueue);
+        switch (currentState)
+        {
+        case MAIN_MENU: guiContainer->handleEvent(event); break;
+        case IN_GAME: m_world.m_player->handleEvent(event, m_world.cmdQueue); break;
+        case EXIT_GAME: ; break; // TODO somewhere else
+        }
 
         switch (event.type) {
         case (sf::Event::Closed): m_window.close(); break;
@@ -110,13 +136,29 @@ void Game::processEvents()
 
 void Game::update(f32 dtime)
 {
-    m_world.update(dtime);
-
-    // TODO(dan): testing lifecount
-    auto lives = m_world.m_player->lifeCount;
-    if (lives == 0) m_text.setFillColor(sf::Color::Red);
-    else m_text.setFillColor(sf::Color::Blue);
-    m_text.setString("Lives left: " + std::to_string(lives));
+    switch (currentState)
+    {
+    case MAIN_MENU:
+    {
+        break;
+    }
+    case IN_GAME:
+    {
+        m_world.update(dtime);
+        // TODO(dan): testing lifecount
+        auto lives = m_world.m_player->lifeCount;
+        if (lives == 0) m_text.setFillColor(sf::Color::Red);
+        else
+            m_text.setFillColor(sf::Color::Blue);
+        m_text.setString("Lives left: " + std::to_string(lives));
+        break;
+    }
+    case EXIT_GAME:
+    {
+        m_window.close();
+        break;
+    }
+    }
 
     // TODO use cursor class (?)
     // convert mousepos to world coordinates
@@ -126,20 +168,42 @@ void Game::update(f32 dtime)
 
 void Game::render()
 {
-    m_window.clear(sf::Color(140, 170, 200, 255));
-    m_world.draw();
-
     f32 current_time = fps_clock.restart().asSeconds();
     fps = 1.f / current_time;
     fps_last_time = current_time;
 
-    // Everything drawn after setting the view will appear fixed on the screen
-    m_window.setView(m_window.getDefaultView());
-    m_window.draw(m_text); // TODO(dan): testing text
-    m_window.setView(m_world.m_view);
+    m_window.clear(sf::Color(140, 170, 200, 255));
+
+    switch (currentState)
+    {
+    case MAIN_MENU:
+    {
+        m_window.draw(*guiContainer);
+        break;
+    }
+    case IN_GAME:
+    {
+        m_world.draw();
+
+        // Everything drawn after setting the view will appear fixed on the
+        // screen
+        m_window.setView(m_window.getDefaultView());
+        {
+            m_window.draw(m_text); // TODO(dan): testing text
+        }
+        m_window.setView(m_world.m_view);
+
+        break;
+    }
+    case EXIT_GAME:
+    {
+        break;
+    }
+    }
 
     ImGui::SFML::Render(m_window);
     m_window.draw(m_cursor);
+
     m_window.display();
 }
 
