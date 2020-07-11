@@ -50,6 +50,8 @@ public:
 
     void assignKey(sf::Keyboard::Key key, Action action);
     sf::Keyboard::Key getAssignedKey(Action action) const;
+    u32 getAssignedButton(Action action) const;
+    void assignButton(u32 button, Action action);
 
     virtual sf::FloatRect getBoundingRect() const override
     {
@@ -87,6 +89,7 @@ public:
 private:
     std::map<PlayerState, Animation> m_anims;
     std::map<sf::Keyboard::Key, Action> m_keybinds;
+    std::map<u32, Action> m_joybinds;
     std::map<Action, Command> m_actionbinds;
     sf::Sprite m_sprite;
 };

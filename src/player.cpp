@@ -2,6 +2,31 @@
 #include "resourcepool.h"
 #include "physics.h"
 
+// Left X Axis: sf::Joystick::Axis::X
+// Left Y Axis: sf::Joystick::Axis::Y
+// Right X Axis: sf::Joystick::Axis::U
+// Right Y Axis: sf::Joystick::Axis::V
+// L Trigger sf::Joystick::Axis::Z
+// R Trigger sf::Joystick::Axis::R
+// D-Pad X Axis sf::Joystick::Axis::PovX
+// D-Pad Y Axis sf::Joystick::Axis::PovY
+enum DS4Button
+{
+    DS4_CROSS,
+    DS4_CIRCLE,
+    DS4_TRIANGLE,
+    DS4_SQUARE,
+    DS4_L1,
+    DS4_R1,
+    DS4_L2,
+    DS4_R2,
+    DS4_SELECT,
+    DS4_START,
+    DS4_HOME,
+    DS4_L3,
+    DS4_R3
+};
+
 // functor for player movement
 struct PlayerMover
 {
@@ -44,13 +69,16 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     m_sprite.setOrigin(32,32);
     createAnimations();
 
-    assignKey(sf::Keyboard::A, MOVE_LEFT);
-    assignKey(sf::Keyboard::D, MOVE_RIGHT);
+    assignKey(sf::Keyboard::A,      MOVE_LEFT);
+    assignKey(sf::Keyboard::D,      MOVE_RIGHT);
     assignKey(sf::Keyboard::LShift, SPRINT);
-    assignKey(sf::Keyboard::Space, JUMP);
-    assignKey(sf::Keyboard::F, HOLD);
-    assignKey(sf::Keyboard::X, DYING);
-    assignKey(sf::Keyboard::R, RESPAWN);
+    assignKey(sf::Keyboard::Space,  JUMP);
+    assignKey(sf::Keyboard::F,      HOLD);
+    //assignKey(sf::Keyboard::X,      DYING);
+    assignKey(sf::Keyboard::R,      RESPAWN);
+    assignButton(DS4_CROSS,  JUMP);
+    assignButton(DS4_R1,     RESPAWN);
+    assignButton(DS4_SQUARE, HOLD);
 
     m_actionbinds[MOVE_LEFT].action  = derivedAction<Player>(PlayerMover(-speed, 0.f, false));
     m_actionbinds[MOVE_RIGHT].action = derivedAction<Player>(PlayerMover(+speed, 0.f, true));
@@ -269,21 +297,29 @@ void Player::drawCurrent(sf::RenderTarget& target, sf::RenderStates states) cons
 // For one-time actions (WHEN an event happens)
 void Player::handleEvent(const sf::Event& event, std::queue<Command>& commands)
 {
-    // workaround to support modifiers
     switch (event.type)
     {
     case sf::Event::KeyPressed:
-        if (event.key.code == getAssignedKey(SPRINT))
-            commands.push(m_actionbinds[SPRINT]);
-        if (event.key.code == getAssignedKey(HOLD))
-            commands.push(m_actionbinds[HOLD]);
-        if (event.key.code == getAssignedKey(RESPAWN))
-            commands.push(m_actionbinds[RESPAWN]);
+        for (auto i : m_keybinds)
+            if (event.key.code == getAssignedKey(i.second))
+                commands.push(m_actionbinds[i.second]);
         break;
+
+    case sf::Event::JoystickButtonPressed:
+        for (auto i : m_joybinds)
+        {
+            if (sf::Joystick::isButtonPressed(0, i.first) &&
+                isOneShot(i.second))
+                commands.push(m_actionbinds[i.second]);
+        }
+        break;
+
+    // workaround to support modifiers (?)
     case sf::Event::KeyReleased:
         if (event.key.code == getAssignedKey(SPRINT))
             commands.push(m_actionbinds[SPRINT]);
         break;
+
     default: break;
     }
 }
@@ -297,6 +333,8 @@ void Player::handleInput(std::queue<Command>& commands)
     {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
             commands.push(m_actionbinds[RESPAWN]);
+        if (sf::Joystick::isButtonPressed(0, DS4_R1))
+            commands.push(m_actionbinds[RESPAWN]);
         return;
     }
 
@@ -305,6 +343,16 @@ void Player::handleInput(std::queue<Command>& commands)
     for (auto i : m_keybinds)
         if (sf::Keyboard::isKeyPressed(i.first) && !isOneShot(i.second))
             commands.push(m_actionbinds[i.second]);
+
+    for (auto i : m_joybinds)
+        if (sf::Joystick::isButtonPressed(0, i.first) && !isOneShot(i.second))
+            commands.push(m_actionbinds[i.second]);
+
+    // TODO(dan): hardcoded input for joystick axis
+    if (sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::PovX) < 0)
+        commands.push(m_actionbinds[MOVE_LEFT]);
+    if (sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::PovX) > 0)
+        commands.push(m_actionbinds[MOVE_RIGHT]);
 }
 
 b32 Player::isOneShot(Action action)
@@ -325,7 +373,8 @@ b32 Player::isOneShot(Action action)
 void Player::assignKey(sf::Keyboard::Key key, Action action)
 {
     // Remove all keys that already map to action
-    for (auto it = m_keybinds.begin(); it != m_keybinds.end();) {
+    for (auto it = m_keybinds.begin(); it != m_keybinds.end();)
+    {
         if (it->second == action) m_keybinds.erase(it++);
         else ++it;
     }
@@ -334,10 +383,31 @@ void Player::assignKey(sf::Keyboard::Key key, Action action)
     m_keybinds[key] = action;
 }
 
+void Player::assignButton(u32 button, Action action)
+{
+    // Remove all keys that already map to action
+    for (auto it = m_joybinds.begin(); it != m_joybinds.end();)
+    {
+        if (it->second == action) m_joybinds.erase(it++);
+        else ++it;
+    }
+
+    // Insert new binding
+    m_joybinds[button] = action;
+}
+
 sf::Keyboard::Key Player::getAssignedKey(Action action) const
 {
     for (auto i : m_keybinds)
         if (i.second == action) return i.first;
 
     return sf::Keyboard::Unknown;
+}
+
+u32 Player::getAssignedButton(Action action) const
+{
+    for (auto i : m_joybinds)
+        if (i.second == action) return i.first;
+
+    return 10; // no joystick::unknown (?)
 }
