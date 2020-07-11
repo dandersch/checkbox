@@ -19,7 +19,7 @@ public:
         MOVE_RIGHT,
         MOVE_UP,
         MOVE_DOWN,
-        SPRINT,
+        //SPRINT,
         JUMP,
         HOLD,
         DYING,
@@ -72,7 +72,6 @@ private:
 public:
     sf::Vector2f velocity = sf::Vector2f(0, 0);
     b32 canJump = false;
-    b32 running = false;
     b32 facingRight = true;
     b32 dead = false;
     b32 fixedJump = false;

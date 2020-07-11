@@ -45,7 +45,7 @@ struct PlayerMover
             return;
         }
 
-        if (p.running) {
+        if (!p.holding) {
             p.velocity += (1.5f * velocity);
             if (p.canJump) p.m_state = Player::RUNNING;
         } else {
@@ -71,7 +71,6 @@ Player::Player(ResourcePool<sf::Texture>& textures)
 
     assignKey(sf::Keyboard::A,      MOVE_LEFT);
     assignKey(sf::Keyboard::D,      MOVE_RIGHT);
-    assignKey(sf::Keyboard::LShift, SPRINT);
     assignKey(sf::Keyboard::Space,  JUMP);
     assignKey(sf::Keyboard::F,      HOLD);
     //assignKey(sf::Keyboard::X,      DYING);
@@ -82,10 +81,6 @@ Player::Player(ResourcePool<sf::Texture>& textures)
 
     m_actionbinds[MOVE_LEFT].action  = derivedAction<Player>(PlayerMover(-speed, 0.f, false));
     m_actionbinds[MOVE_RIGHT].action = derivedAction<Player>(PlayerMover(+speed, 0.f, true));
-    m_actionbinds[SPRINT].action = derivedAction<Player>([](Player& p, f32) {
-        if (p.holding) p.running = false;
-        else p.running = !p.running;
-    });
     m_actionbinds[JUMP].action = derivedAction<Player>([](Player& p, f32) {
         if (p.canJump && p.holding)
         {
@@ -312,12 +307,6 @@ void Player::handleEvent(const sf::Event& event, std::queue<Command>& commands)
                 isOneShot(i.second))
                 commands.push(m_actionbinds[i.second]);
         }
-        break;
-
-    // workaround to support modifiers (?)
-    case sf::Event::KeyReleased:
-        if (event.key.code == getAssignedKey(SPRINT))
-            commands.push(m_actionbinds[SPRINT]);
         break;
 
     default: break;
