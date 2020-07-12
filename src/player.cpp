@@ -1,15 +1,16 @@
 #include "player.h"
 #include "resourcepool.h"
 #include "physics.h"
+#include "playercmds.h"
 
-// Left X Axis: sf::Joystick::Axis::X
-// Left Y Axis: sf::Joystick::Axis::Y
+// Left X Axis:  sf::Joystick::Axis::X
+// Left Y Axis:  sf::Joystick::Axis::Y
 // Right X Axis: sf::Joystick::Axis::U
 // Right Y Axis: sf::Joystick::Axis::V
-// L Trigger sf::Joystick::Axis::Z
-// R Trigger sf::Joystick::Axis::R
-// D-Pad X Axis sf::Joystick::Axis::PovX
-// D-Pad Y Axis sf::Joystick::Axis::PovY
+// L Trigger:    sf::Joystick::Axis::Z
+// R Trigger:    sf::Joystick::Axis::R
+// D-Pad X Axis: sf::Joystick::Axis::PovX
+// D-Pad Y Axis: sf::Joystick::Axis::PovY
 enum DS4Button
 {
     DS4_CROSS,
@@ -27,113 +28,31 @@ enum DS4Button
     DS4_R3
 };
 
-// functor for player movement
-struct PlayerMover
-{
-    PlayerMover(f32 vx, f32 vy, b32 rightDir = false)
-      : velocity(vx, vy)
-      , rightDir(rightDir)
-    {}
-    void operator()(Player& p, f32) const
-    {
-        // movement not controllable mid-jump holding a box
-        if ((p.m_state == Player::JUMPING ||
-             p.m_state == Player::FALLING) && p.holding)
-        {
-            // direction change allowed when standing still
-            if (p.velocity.x == 0.f) p.facingRight = rightDir;
-            return;
-        }
-
-        if (!p.holding) {
-            p.velocity += (1.5f * velocity);
-            if (p.canJump) p.m_state = Player::RUNNING;
-        } else {
-            p.velocity += velocity;
-            if (p.canJump) p.m_state = Player::WALKING;
-        }
-
-        p.facingRight = rightDir;
-    }
-
-    sf::Vector2f velocity;
-    b32 rightDir;
-};
-
 Player::Player(ResourcePool<sf::Texture>& textures)
   : m_sprite(textures.get("platformer_sprites_base.png"))
   , speed(75.f)
 {
     m_state = IDLE;
     m_sprite.setTextureRect(sf::IntRect(0, 0, PLAYER_WIDTH, PLAYER_HEIGHT));
-    m_sprite.setOrigin(32,32);
+    m_sprite.setOrigin(32, 32);
     createAnimations();
 
-    assignKey(sf::Keyboard::A,      MOVE_LEFT);
-    assignKey(sf::Keyboard::D,      MOVE_RIGHT);
-    assignKey(sf::Keyboard::Space,  JUMP);
-    assignKey(sf::Keyboard::F,      HOLD);
-    //assignKey(sf::Keyboard::X,      DYING);
-    assignKey(sf::Keyboard::R,      RESPAWN);
-    assignButton(DS4_CROSS,  JUMP);
-    assignButton(DS4_R1,     RESPAWN);
+    assignKey(sf::Keyboard::A, MOVE_LEFT);
+    assignKey(sf::Keyboard::D, MOVE_RIGHT);
+    assignKey(sf::Keyboard::Space, JUMP);
+    assignKey(sf::Keyboard::F, HOLD);
+    // assignKey(sf::Keyboard::X,      DYING);
+    assignKey(sf::Keyboard::R, RESPAWN);
+    assignButton(DS4_CROSS, JUMP);
+    assignButton(DS4_R1, RESPAWN);
     assignButton(DS4_SQUARE, HOLD);
 
-    m_actionbinds[MOVE_LEFT].action  = derivedAction<Player>(PlayerMover(-speed, 0.f, false));
-    m_actionbinds[MOVE_RIGHT].action = derivedAction<Player>(PlayerMover(+speed, 0.f, true));
-    m_actionbinds[JUMP].action = derivedAction<Player>([](Player& p, f32) {
-        if (p.canJump && p.holding)
-        {
-            p.fixedJump = true;
-            p.velocity.y = -sqrtf(2.0f * 981.f * 100.f);
-            p.m_state = JUMPING;
-            p.canJump = false;
-        }
-        else if (p.canJump)
-        {
-            p.velocity.y = -sqrtf(2.0f * 981.f * 120.f);
-            p.m_state = JUMPING;
-            p.canJump = false;
-        }
-    });
-    m_actionbinds[DYING].action = derivedAction<Player>([](Player& p, f32) { p.m_state = DEAD; });
-    m_actionbinds[RESPAWN].action = derivedAction<Player>([](Player& p, f32) {
-        if (p.checkpoint_box == p.holding && !p.dead) return; // holding the checkpoint
-        if (p.checkpoint_box)
-        {
-            // TODO(dan): center/move view
-            p.body->SetTransform(b2Vec2(pixelsToMeters(p.checkpoint_box->getPosition().x),
-                                        pixelsToMeters(p.checkpoint_box->getPosition().y - 64.f)), 0);
-            // TODO(dan): play effect/animation
-        }
-        else
-        {
-            p.body->SetTransform(b2Vec2(pixelsToMeters(p.spawn_loc.x),
-                                        pixelsToMeters(p.spawn_loc.y)), 0);
-        }
-
-        p.dead = false;
-    });
-
-    m_actionbinds[HOLD].action = derivedAction<Player>([](Player& p, f32) {
-        if (p.holding && !p.dead)
-        {
-            auto forwardForce = p.forwardRay() * 15.f;
-            p.holding->body->SetLinearVelocity(b2Vec2(forwardForce.x, -5.f));
-
-            ((Tile*) p.holding)->m_sprite.setColor(sf::Color::White);
-            p.holding = nullptr;
-            // TODO apply force
-        }
-        else
-        {
-            p.holding = *p.holdables.begin();
-        }
-    });
-
-    for (auto& i : m_actionbinds) i.second.category = ENTITY_PLAYER;
-
-    DEBUG_GUI([&]() { ImGui::Text("PLAYER_STATE: %d", m_state); });
+    m_actionbinds[MOVE_LEFT] = moveLeftCmd;
+    m_actionbinds[MOVE_RIGHT] = moveRightCmd;
+    m_actionbinds[JUMP] = jumpCmd;
+    m_actionbinds[DYING] = dieCmd;
+    m_actionbinds[RESPAWN] = respawnCmd;
+    m_actionbinds[HOLD] = holdCmd;
 
     // TODO(dan): sort through holdables, remove holdables too far away
     set_comparator = [&](const Entity* e1, const Entity* e2) {
@@ -146,6 +65,7 @@ Player::Player(ResourcePool<sf::Texture>& textures)
 
     holdables = std::set<Entity*, decltype(set_comparator)>(set_comparator);
 
+    DEBUG_GUI([&]() { ImGui::Text("PLAYER_STATE: %d", m_state); });
     DEBUG_GUI([&]() {
         ImGui::Text("current set of holdables:");
         for (auto it = holdables.begin(); it != holdables.end(); ++it)
@@ -292,6 +212,8 @@ void Player::drawCurrent(sf::RenderTarget& target, sf::RenderStates states) cons
 // For one-time actions (WHEN an event happens)
 void Player::handleEvent(const sf::Event& event, std::queue<Command>& commands)
 {
+    if (dead) return;
+
     switch (event.type)
     {
     case sf::Event::KeyPressed:

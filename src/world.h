@@ -16,6 +16,12 @@ public:
     void draw();
     void spawnBox(sf::Vector2f pos, b32 isStatic = false);
 
+    inline void handleInput() { m_player->handleInput(cmdQueue); }
+    inline void handleEvents(sf::Event event)
+    {
+        m_player->handleEvent(event, cmdQueue);
+    }
+
 public:
     sf::View m_view; // TODO private
     std::queue<Command> cmdQueue;

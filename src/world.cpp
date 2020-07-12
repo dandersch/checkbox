@@ -4,6 +4,7 @@
 #include "player.h"
 #include "command.h"
 #include "levelgen.h"
+#include "playercmds.h"
 
 #define VIEW_HEIGHT 1280
 #define VIEW_WIDTH  720
@@ -15,52 +16,12 @@ static ResourcePool<sf::Image> m_levels(".png");
 static b2World world(b2Vec2(0.f, 25.f)); // TODO keep using higher gravity (?)
 static sf::Vector2u maxMapSize;
 
-// functor for player movement
-struct PlayerMover
-{
-    PlayerMover(f32 vx, f32 vy, b32 rightDir = false)
-      : velocity(vx, vy)
-      , rightDir(rightDir)
-    {}
-    void operator()(Player& p, f32) const
-    {
-        // movement not controllable mid-jump holding a box
-        if ((p.m_state == Player::JUMPING ||
-             p.m_state == Player::FALLING) && p.holding)
-        {
-            // direction change allowed when standing still
-            if (p.velocity.x == 0.f) p.facingRight = rightDir;
-            return;
-        }
-
-        if (!p.holding) {
-            p.velocity += (1.5f * velocity);
-            if (p.canJump) p.m_state = Player::RUNNING;
-        } else {
-            p.velocity += velocity;
-            if (p.canJump) p.m_state = Player::WALKING;
-        }
-
-        p.facingRight = rightDir;
-    }
-
-    sf::Vector2f velocity;
-    b32 rightDir;
-};
-
 // TODO(dan): tilemap.cpp
 static const char* tiletexfile = "simple_tiles_32x32.png";
 static f32 FORCE_TO_BREAK_HOLD = 2500000.f;
 //std::unordered_map<u32, Tile*> tilemap;
 static std::map<u32, Tile*> tilemap;
 bool g_cull_tiles = true;
-enum TileSheet
-{
-    TILE_SIZE = 32,
-    SHEET_WIDTH = 288,
-    SHEET_HEIGHT = 64
-};
-
 bool create_joint = false;
 b2Body* body_player = nullptr;
 b2WheelJoint* hold_joint = nullptr;
@@ -68,47 +29,24 @@ b2WheelJoint* hold_joint = nullptr;
 static std::queue<Command> demoCmds;
 void fillUpDemoQueue()
 {
-    Command moveRight;
-    moveRight.action = derivedAction<Player>(PlayerMover(100.f, 0.f, true));
-    moveRight.category = ENTITY_PLAYER;
-    Command moveLeft;
-    moveLeft.action = derivedAction<Player>(PlayerMover(-100.f, 0.f, false));
-    moveLeft.category = ENTITY_PLAYER;
-    Command jump;
-    jump.category = ENTITY_PLAYER;
-    jump.action = derivedAction<Player>([](Player& p, f32) {
-        if (p.canJump && p.holding)
-        {
-            p.fixedJump = true;
-            p.velocity.y = -sqrtf(2.0f * 981.f * 100.f);
-            p.m_state = Player::JUMPING;
-            p.canJump = false;
-        }
-        else if (p.canJump)
-        {
-            p.velocity.y = -sqrtf(2.0f * 981.f * 120.f);
-            p.m_state = Player::JUMPING;
-            p.canJump = false;
-        }
-    });
-
+    return;
     for (int i = 0; i < 100; i++)
-        demoCmds.push(moveRight);
-    demoCmds.push(jump);
+        demoCmds.push(moveRightCmd);
+    demoCmds.push(jumpCmd);
     for (int i = 0; i < 100; i++)
-        demoCmds.push(moveRight);
+        demoCmds.push(moveRightCmd);
     for (int i = 0; i < 100; i++)
-        demoCmds.push(moveLeft);
-    demoCmds.push(jump);
+        demoCmds.push(moveLeftCmd);
+    demoCmds.push(jumpCmd);
     for (int i = 0; i < 100; i++)
-        demoCmds.push(moveLeft);
+        demoCmds.push(moveLeftCmd);
 }
 
 World::World(sf::RenderWindow& window)
   : m_window(window)
   , m_view(sf::Vector2f(640.f, 360.f), sf::Vector2f(VIEW_HEIGHT, VIEW_WIDTH))
   , m_player(nullptr)
-  , playerTileContact()      // collision response
+  , playerTileContact() // collision response
 {
     // initialize nodes for every layer of the scene
     for (std::size_t i = 0; i < LAYER_COUNT; i++) {
@@ -121,7 +59,7 @@ World::World(sf::RenderWindow& window)
     m_player = player.get();
     m_layerNodes[LAYER_MID]->attachChild(std::move(player));
 
-    buildLevel(tilemap, &world, m_textures, m_levels, maxMapSize, m_layerNodes,
+    levelBuild(tilemap, &world, m_textures, m_levels, maxMapSize, m_layerNodes,
                m_player, "level0.png");
 
     m_view.setCenter(m_player->getPosition());
@@ -279,7 +217,7 @@ void World::draw()
         {
             for (u32 x = view_left; x <= view_right; x += 32)
             {
-                u32 id = tileIDfromCoords(x, y, maxMapSize);
+                u32 id = levelTileIDfromCoords(x, y, maxMapSize);
                 if (tilemap.find(id) != tilemap.end())
                 {
                     tilemap[id]->shouldDraw = true;
@@ -308,38 +246,6 @@ void World::draw()
 
 void World::spawnBox(sf::Vector2f pos, b32 isStatic)
 {
-    u32 tilenr = 1;
-    b2BodyType type = b2_dynamicBody;
-    if (isStatic)
-    {
-        type = b2_staticBody;
-        tilenr = 2;
-    }
-
-    // clamp boxes to tileraster
-    auto xpos = std::round(pos.x / 32) * 32;
-    auto ypos = std::round(pos.y / 32) * 32;
-
-    // there already is a collidable tile here so don't spawn another one
-    auto tileIt = tilemap.find(tileIDfromCoords(xpos, ypos, maxMapSize));
-    if (tileIt != tilemap.end())
-    {
-        if ((*tileIt).second->body->IsActive()) return;
-    }
-
-    std::unique_ptr<Tile> box(new Tile(m_textures.get(tiletexfile),
-                                                   sf::IntRect(tilenr * 32, 0  * 32,
-                                                               32, 32)));
-    box->moving = true;
-    box->shouldDraw = true;
-    box->setPosition(xpos, ypos);
-
-    // testing dynamic body as checkpoint
-    if (isStatic) box->typeflags = ENTITY_TILE;
-    else box->typeflags = ENTITY_TILE | ENTITY_CHECKPOINT | ENTITY_HOLDABLE;
-
-    box->body = createBox(&world, xpos, ypos, 32, 32, type, box.get(), m_player);
-
-    box->body->SetFixedRotation(true);
-    m_layerNodes[LAYER_MID]->attachChild(std::move(box));
+    levelPlaceBox(pos, isStatic, &world, tilemap, m_layerNodes, maxMapSize,
+                  m_textures.get(tiletexfile), m_player);
 }

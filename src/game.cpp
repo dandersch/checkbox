@@ -74,8 +74,10 @@ void Game::processEvents()
         switch (currentState)
         {
         case MAIN_MENU: guiContainer->handleEvent(event); break;
-        case IN_GAME: m_world.m_player->handleEvent(event, m_world.cmdQueue); break;
-        case EXIT_GAME: ; break; // TODO somewhere else
+        case IN_GAME:
+            m_world.handleEvents(event);
+            break;
+        case EXIT_GAME:; break; // TODO somewhere else
         }
 
         switch (event.type) {
@@ -96,7 +98,7 @@ void Game::processEvents()
             auto pos = m_window.mapPixelToCoords(sf::Vector2i(sf::Mouse::getPosition(m_window).x - 9,
                                                               sf::Mouse::getPosition(m_window).y - 4));
             if (event.key.code == (sf::Keyboard::Key) sf::Mouse::Left)
-                m_world.spawnBox(pos);
+                m_world.spawnBox(pos, false);
             if (event.key.code == (sf::Keyboard::Key) sf::Mouse::Right)
                 m_world.spawnBox(pos, true);
             break;
@@ -131,7 +133,12 @@ void Game::processEvents()
         }
     }
 
-    m_world.m_player->handleInput(m_world.cmdQueue);
+    switch (currentState)
+    {
+    case MAIN_MENU: break;
+    case IN_GAME: m_world.handleInput(); break;
+    case EXIT_GAME:; break; // TODO somewhere else
+    }
 }
 
 void Game::update(f32 dtime)

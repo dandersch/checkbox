@@ -1,7 +1,8 @@
 #pragma once
 #include "pch.h"
 
-template<typename Resource> class ResourcePool;
+template<typename Resource>
+class ResourcePool;
 class Player;
 class Tile;
 class Entity;
@@ -14,14 +15,18 @@ enum Layer
     LAYER_COUNT
 };
 
-void buildLevel(std::map<u32, Tile*>& tilemap, b2World* world,
+void levelBuild(std::map<u32, Tile*>& tilemap, b2World* world,
                 ResourcePool<sf::Texture>& textures,
                 ResourcePool<sf::Image>& levels, sf::Vector2u& maxMapSize,
                 std::array<Entity*, LAYER_COUNT>& m_layerNodes, Player* player,
-                std::string levelName = "");
+                const std::string& levelName = "");
 
-b2Body* createBox(b2World* world, i32 posX, i32 posY, i32 sizeX, i32 sizeY,
-                  b2BodyType type, void* userData, Player* player,
-                  b32 collidable = true);
+// tilemap, tiletexfile, layerNodes
+void levelPlaceBox(sf::Vector2f pos, b32 isStatic, b2World* world,
+                   std::map<u32, Tile*>& tilemap,
+                   std::array<Entity*, LAYER_COUNT>& m_layerNodes,
+                   const sf::Vector2u maxMapSize, const sf::Texture& tile_sheet,
+                   Player* player);
 
-u32 tileIDfromCoords(const u32 x, const u32 y, const sf::Vector2u MaxMapSize);
+u32 levelTileIDfromCoords(const u32 x, const u32 y,
+                          const sf::Vector2u MaxMapSize);

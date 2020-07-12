@@ -10,11 +10,24 @@ struct TileInfo
     // friction?
 };
 
-void buildLevel(std::map<u32, Tile*>& tilemap, b2World* world,
+// TODO
+enum TileSheet
+{
+    TILE_SIZE = 32,
+    SHEET_WIDTH = 288,
+    SHEET_HEIGHT = 64
+};
+
+// internal
+b2Body* createBox(b2World* world, i32 posX, i32 posY, i32 sizeX, i32 sizeY,
+                  b2BodyType type, void* userData, Player* player,
+                  b32 collidable = true);
+
+void levelBuild(std::map<u32, Tile*>& tilemap, b2World* world,
                 ResourcePool<sf::Texture>& textures,
                 ResourcePool<sf::Image>& levels, sf::Vector2u& maxMapSize,
-                std::array<Entity*, LAYER_COUNT>& m_layerNodes,
-                Player* player, std::string levelName)
+                std::array<Entity*, LAYER_COUNT>& m_layerNodes, Player* player,
+                const std::string& levelName)
 {
     // lambda comparator to be able to create a map with sf::Color as key
     auto comparator = [](const sf::Color& c1, const sf::Color& c2) -> b32 {
@@ -89,7 +102,7 @@ void buildLevel(std::map<u32, Tile*>& tilemap, b2World* world,
                                                      sf::IntRect(5 * 32, 0 * 32,
                                                                  32, 32)));
                 spike->setPosition(x * 32, y * 32);
-                u32 id = tileIDfromCoords(x * 32, y * 32, maxMapSize);
+                u32 id = levelTileIDfromCoords(x * 32, y * 32, maxMapSize);
                 tilemap[id] = spike.get();
                 spike->typeflags |= ENTITY_ENEMY;
                 spike->body = createBox(world, x * 32, y * 32, 32, 32,
@@ -105,7 +118,7 @@ void buildLevel(std::map<u32, Tile*>& tilemap, b2World* world,
                                                      sf::IntRect(5 * 32, 16, 32,
                                                                  64 - 16)));
                 check->setPosition(x * 32, y * 32);
-                u32 id = tileIDfromCoords(x * 32, y * 32, maxMapSize);
+                u32 id = levelTileIDfromCoords(x * 32, y * 32, maxMapSize);
                 tilemap[id] = check.get();
                 check->typeflags |= ENTITY_CHECKPOINT;
                 check->body = createBox(world, x * 32, y * 32, 32, 64,
@@ -120,7 +133,7 @@ void buildLevel(std::map<u32, Tile*>& tilemap, b2World* world,
             TileInfo& tInfo = colorMap.at(sample);
             std::unique_ptr<Tile> tile(new Tile(levelTex, tInfo.rect));
             tile->setPosition(x * 32, y * 32);
-            u32 id = tileIDfromCoords(x * 32, y * 32, maxMapSize);
+            u32 id = levelTileIDfromCoords(x * 32, y * 32, maxMapSize);
             tilemap[id] = tile.get();
             tile->body = createBox(world, x * 32, y * 32, 32, 32, b2_staticBody,
                                    tile.get(), player);
@@ -177,7 +190,50 @@ b2Body* createBox(b2World* world, i32 posX, i32 posY, i32 sizeX, i32 sizeY,
     return body;
 }
 
-u32 tileIDfromCoords(const u32 x, const u32 y, const sf::Vector2u MaxMapSize)
+void levelPlaceBox(sf::Vector2f pos, b32 isStatic, b2World* world,
+                   std::map<u32, Tile*>& tilemap,
+                   std::array<Entity*, LAYER_COUNT>& m_layerNodes,
+                   const sf::Vector2u maxMapSize, const sf::Texture& tile_sheet,
+                   Player* player)
+{
+    u32 tilenr = 1;
+    b2BodyType type = b2_dynamicBody;
+    if (isStatic)
+    {
+        type = b2_staticBody;
+        tilenr = 2;
+    }
+
+    // clamp boxes to tileraster
+    auto xpos = std::round(pos.x / 32) * 32;
+    auto ypos = std::round(pos.y / 32) * 32;
+
+    // there already is a collidable tile here so don't spawn another one
+    auto tileIt = tilemap.find(levelTileIDfromCoords(xpos, ypos, maxMapSize));
+    if (tileIt != tilemap.end())
+    {
+        if ((*tileIt).second->body->IsActive()) return;
+    }
+
+    std::unique_ptr<Tile> box(new Tile(tile_sheet,
+                                       sf::IntRect(tilenr * 32, 0 * 32, 32,
+                                                   32)));
+    box->moving = true;
+    box->shouldDraw = true;
+    box->setPosition(xpos, ypos);
+
+    // testing dynamic body as checkpoint
+    if (isStatic) box->typeflags = ENTITY_TILE;
+    else
+        box->typeflags = ENTITY_TILE | ENTITY_CHECKPOINT | ENTITY_HOLDABLE;
+
+    box->body = createBox(world, xpos, ypos, 32, 32, type, box.get(), player);
+
+    box->body->SetFixedRotation(true);
+    m_layerNodes[LAYER_MID]->attachChild(std::move(box));
+}
+
+u32 levelTileIDfromCoords(const u32 x, const u32 y, const sf::Vector2u MaxMapSize)
 {
     return ((y / 32) * MaxMapSize.x) + (x / 32);
 }
