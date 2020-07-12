@@ -33,7 +33,6 @@ static const float DISTANCE_TO_HOLD = 25000.f;
 Player::Player(ResourcePool<sf::Texture>& textures)
     //: m_sprite(textures.get("platformer_sprites_base.png"))
   : m_sprite(textures.get("output.png"))
-  , speed(75.f)
 {
     m_state = IDLE;
     m_sprite.setTextureRect(sf::IntRect(0, 0, PLAYER_WIDTH, PLAYER_HEIGHT));
@@ -46,9 +45,11 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     assignKey(sf::Keyboard::F, HOLD);
     // assignKey(sf::Keyboard::X,      DYING);
     assignKey(sf::Keyboard::R, RESPAWN);
+    assignKey(sf::Keyboard::BackSpace, RETRY);
     assignButton(DS4_CROSS, JUMP);
     assignButton(DS4_R1, RESPAWN);
     assignButton(DS4_SQUARE, HOLD);
+    assignButton(DS4_R2, RETRY);
 
     m_actionbinds[MOVE_LEFT] = moveLeftCmd;
     m_actionbinds[MOVE_RIGHT] = moveRightCmd;
@@ -56,6 +57,7 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     //m_actionbinds[DYING] = dieCmd;
     m_actionbinds[RESPAWN] = respawnCmd;
     m_actionbinds[HOLD] = holdCmd;
+    m_actionbinds[RETRY] = retryCmd;
 
     // TODO(dan): sort through holdables, remove holdables too far away
     set_comparator = [&](const Entity* e1, const Entity* e2) {
@@ -249,6 +251,10 @@ void Player::handleInput(std::queue<Command>& commands)
             commands.push(m_actionbinds[RESPAWN]);
         if (sf::Joystick::isButtonPressed(0, DS4_R1))
             commands.push(m_actionbinds[RESPAWN]);
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::BackSpace))
+            commands.push(m_actionbinds[RETRY]);
+        if (sf::Joystick::isButtonPressed(0, DS4_R2))
+            commands.push(m_actionbinds[RETRY]);
         return;
     }
 

@@ -67,6 +67,33 @@ class PlayerContactListener : public b2ContactListener
             if (!player->dead) player->lifeCount--;
             player->holding = nullptr;
             player->dead = true;
+
+            // TODO(dan): hardcoded
+            // make spikes bloody
+            sf::IntRect bloodyRect(0,0,64,64);
+            if (e2->getType() & ENTITY_SPIKE_UP)
+            {
+                bloodyRect.left = 5 * 64;
+                bloodyRect.top = 9 * 64;
+            }
+            else if (e2->getType() & ENTITY_SPIKE_DOWN)
+            {
+                bloodyRect.left = 5 * 64;
+                bloodyRect.top = 11 * 64;
+            }
+            else if (e2->getType() & ENTITY_SPIKE_LEFT)
+            {
+                bloodyRect.left = 4 * 64;
+                bloodyRect.top = 10 * 64;
+
+            }
+            else if (e2->getType() & ENTITY_SPIKE_RIGHT)
+            {
+                bloodyRect.left = 6 * 64;
+                bloodyRect.top = 10 * 64;
+            }
+
+            ((Tile*) e2)->m_sprite.setTextureRect(bloodyRect);
         }
 
         if (e2->getType() & ENTITY_CHECKPOINT && fixtureType == 0)

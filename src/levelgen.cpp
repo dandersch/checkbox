@@ -44,7 +44,6 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
 {
     std::map<sf::Color, TileInfo, decltype(comparator)> colorMap(comparator);
     auto& levelTex = textures.get(tileSheet);
-    //auto& spikeTex = textures.get("basicdungeontileset.png");
     auto& lvlImg = levels.get(levelName_mid);
     auto& lvlImg_bg = levels.get(levelName_back);
     maxMapSize = lvlImg.getSize();
@@ -65,7 +64,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                 player->setPosition(x * tile_width, y * tile_height);
                 player->body = createBox(world, player->getPosition().x,
                                          player->getPosition().y,
-                                         PLAYER_WIDTH / 2,
+                                         (PLAYER_WIDTH / 2) - 10,
                                          PLAYER_HEIGHT - 2, // TODO(dan):
                                                             // workaround for
                                                             // "better"
@@ -78,18 +77,54 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
             }
 
             // spike generation
-            if (sample == sf::Color::Red)
+            if (sample == sf::Color::Red || sample == sf::Color(121, 0, 130) ||
+                sample == sf::Color(130, 0, 65) ||
+                sample == sf::Color(40, 0, 130))
             {
                 TileInfo& tInfo = colorMap.at(sample);
                 std::unique_ptr<Tile> spike(new Tile(levelTex, tInfo.rect));
                 spike->setPosition(x * tile_width, y * tile_height);
-                u32 id = levelTileIDfromCoords(x * tile_width, y * tile_height, maxMapSize);
+                u32 id = levelTileIDfromCoords(x * tile_width, y * tile_height,
+                                               maxMapSize);
                 tilemap[id] = spike.get();
                 spike->typeflags |= ENTITY_ENEMY;
-                spike->body = createBox(world, x * tile_width, y * tile_height,
-                                        tile_width, tile_height, b2_staticBody,
-                                        spike.get(), player);
-                m_layerNodes[LAYER_MID]->attachChild(std::move(spike));
+
+                if (sample == sf::Color::Red)
+                {
+                    spike->typeflags |= ENTITY_SPIKE_UP;
+                    spike->body = createBox(world, x * tile_width,
+                                            y * tile_height, tile_width,
+                                            tile_height/2, b2_staticBody,
+                                            spike.get(), player);
+                    m_layerNodes[LAYER_MID]->attachChild(std::move(spike));
+                }
+                else if (sample == sf::Color(121, 0, 130))
+                {
+                    spike->typeflags |= ENTITY_SPIKE_RIGHT;
+                    spike->body = createBox(world, x * tile_width,
+                                            y * tile_height, tile_width/2,
+                                            tile_height, b2_staticBody,
+                                            spike.get(), player);
+                    m_layerNodes[LAYER_MID]->attachChild(std::move(spike));
+                }
+                else if (sample == sf::Color(130, 0, 65))
+                {
+                    spike->typeflags |= ENTITY_SPIKE_LEFT;
+                    spike->body = createBox(world, x * tile_width,
+                                            y * tile_height, tile_width / 2,
+                                            tile_height, b2_staticBody,
+                                            spike.get(), player);
+                    m_layerNodes[LAYER_MID]->attachChild(std::move(spike));
+                }
+                else if (sample == sf::Color(40, 0, 130))
+                {
+                    spike->typeflags |= ENTITY_SPIKE_DOWN;
+                    spike->body = createBox(world, x * tile_width,
+                                            y * tile_height, tile_width,
+                                            tile_height / 2, b2_staticBody,
+                                            spike.get(), player);
+                    m_layerNodes[LAYER_MID]->attachChild(std::move(spike));
+                }
                 continue;
             }
 

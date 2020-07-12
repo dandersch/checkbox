@@ -24,6 +24,7 @@ public:
         HOLD,
         DYING,
         RESPAWN,
+        RETRY,
         ACTIONCOUNT
     };
 
@@ -75,7 +76,6 @@ public:
     b32 facingRight = true;
     b32 dead = false;
     b32 fixedJump = false;
-    f32 speed;
     u32 lifeCount = 3;
     PlayerState m_state;
     sf::Vector2i spawn_loc;

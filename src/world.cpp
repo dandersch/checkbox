@@ -23,7 +23,7 @@ World::World(const std::string& levelName, b32 menuMode)
   , m_textures(".png")
   , m_levels(".png")
   , playerTileContact() // collision response
-  , world(b2Vec2(0.f, 25.f))
+  , world(b2Vec2(0.f, 50.f))
   , menuMode(menuMode)
 {
     // initialize nodes for every layer of the scene
@@ -217,7 +217,7 @@ void World::update(f32 dt, sf::RenderWindow& window)
     m_scenegraph.update(dt);
 
     // workaround so y-velocity doesnt build up from gravity
-    if (m_player->velocity.y > 2000.f) m_player->velocity.y = 2000.f;
+    if (m_player->velocity.y > 1000.f) m_player->velocity.y = 1000.f;
 }
 
 void World::draw(sf::RenderWindow& window)

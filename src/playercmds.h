@@ -21,7 +21,7 @@ struct PlayerMover
         {
             // direction change allowed when standing still
             if (p.velocity.x == 0.f) p.facingRight = rightDir;
-            return;
+            //return; // TODO(dan): fix
         }
 
         if (!p.holding)
@@ -58,13 +58,13 @@ static const Command jumpCmd = {
         if (p.canJump && p.holding)
         {
             p.fixedJump = true;
-            p.velocity.y = -sqrtf(2.0f * 981.f * 120.f);
+            p.velocity.y = -sqrtf(2.0f * 981.f * 200.f);
             p.m_state = Player::JUMPING;
             p.canJump = false;
         }
         else if (p.canJump)
         {
-            p.velocity.y = -sqrtf(2.0f * 981.f * 150.f);
+            p.velocity.y = -sqrtf(2.0f * 981.f * 300.f);
             p.m_state = Player::JUMPING;
             p.canJump = false;
         }
@@ -114,6 +114,17 @@ static const Command holdCmd = {
         }
     }),
     ENTITY_PLAYER, CMD_HOLD
+};
+
+static const Command retryCmd = {
+    derivedAction<Player>([](Player& p, f32) {
+        p.body->SetTransform(b2Vec2(pixelsToMeters(p.spawn_loc.x),
+                                    pixelsToMeters(p.spawn_loc.y)),
+                             0);
+
+        p.dead = false;
+    }),
+    ENTITY_PLAYER, CMD_RETRY
 };
 
 /*

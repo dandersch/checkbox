@@ -6,12 +6,16 @@ class Entity;
 // TODO(dan): move to entity
 enum EntityType
 {
-    ENTITY_NONE       = 0,
-    ENTITY_PLAYER     = 1 << 0,
-    ENTITY_ENEMY      = 1 << 1,
-    ENTITY_TILE       = 1 << 2,
-    ENTITY_CHECKPOINT = 1 << 3,
-    ENTITY_HOLDABLE   = 1 << 4
+    ENTITY_NONE         = 0,
+    ENTITY_PLAYER       = 1 << 0,
+    ENTITY_ENEMY        = 1 << 1,
+    ENTITY_TILE         = 1 << 2,
+    ENTITY_CHECKPOINT   = 1 << 3,
+    ENTITY_HOLDABLE     = 1 << 4,
+    ENTITY_SPIKE_UP     = 1 << 5,
+    ENTITY_SPIKE_DOWN   = 1 << 6,
+    ENTITY_SPIKE_LEFT   = 1 << 7,
+    ENTITY_SPIKE_RIGHT  = 1 << 8,
 };
 
 enum CmdType
@@ -21,7 +25,8 @@ enum CmdType
     CMD_MOVE_RIGHT,
     CMD_JUMP,
     CMD_RESPAWN,
-    CMD_HOLD
+    CMD_HOLD,
+    CMD_RETRY
 };
 
 struct Command
