@@ -8,6 +8,13 @@
 #define VIEW_HEIGHT 1280
 #define VIEW_WIDTH  720
 
+enum GameState
+{
+    MAIN_MENU,
+    IN_GAME,
+    EXIT_GAME
+};
+
 class Game
 {
 public:
@@ -19,6 +26,9 @@ private:
     void update(f32 dtime);
     void render();
     void debugGui(sf::Time time);
+
+public:
+    GameState currentState = MAIN_MENU;
 
 private:
     // rendering

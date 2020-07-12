@@ -41,10 +41,10 @@ struct PlayerMover
 };
 
 static const Command moveLeftCmd = {
-    derivedAction<Player>(PlayerMover(-100.f, 0.f, false)), ENTITY_PLAYER
+    derivedAction<Player>(PlayerMover(-75.f, 0.f, false)), ENTITY_PLAYER
 };
 static const Command moveRightCmd = {
-    derivedAction<Player>(PlayerMover(100.f, 0.f, true)), ENTITY_PLAYER
+    derivedAction<Player>(PlayerMover(75.f, 0.f, true)), ENTITY_PLAYER
 };
 
 static const Command jumpCmd = {

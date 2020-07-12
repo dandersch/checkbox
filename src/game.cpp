@@ -1,9 +1,8 @@
 #include "game.h"
-
-#include "gui.h"
+#include "menu.h"
 
 std::vector<std::function<void(void)>> g_gui_callbacks;
-static const sf::Time TIME_PER_FRAME = sf::seconds(1.f/60.f);
+static const sf::Time TIME_PER_FRAME = sf::seconds(1.f / 60.f);
 // for FPS
 static sf::Clock fps_clock;
 static f32 fps_last_time = 0;
@@ -12,18 +11,6 @@ static f32 fps = 0;
 static sf::Clock tps_clock;
 static f32 tps_last_time = 0;
 static f32 tps = 0;
-
-enum GameState
-{
-    MAIN_MENU,
-    IN_GAME,
-    EXIT_GAME
-};
-static GameState currentState = MAIN_MENU;
-
-static std::shared_ptr<GUIContainer> guiContainer;
-static std::shared_ptr<GUIButton> guiButton1;
-static std::shared_ptr<GUIButton> guiButton2;
 
 Game::Game()
   : m_window(sf::VideoMode(1280, 720), "SFML game")
@@ -50,19 +37,7 @@ Game::Game()
     m_music.pause();
     m_music.setVolume(1.f);
 
-    // MENU
-    guiContainer = std::make_shared<GUIContainer>();
-    guiButton1 = std::make_shared<GUIButton>(m_fonts, m_texs);
-    guiButton1->setText("START GAME");
-    guiButton1->setCallback([&]() { currentState = IN_GAME; });
-    guiButton1->setPosition(100, 100);
-    guiButton2 = std::make_shared<GUIButton>(m_fonts, m_texs);
-    guiButton2->setText("END GAME");
-    guiButton2->setCallback([&]() { currentState = EXIT_GAME; });
-    guiButton2->setPosition(100, 250);
-    guiContainer->pack(guiButton1);
-    guiContainer->pack(guiButton2);
-    guiContainer->setPosition(640,360);
+    menuInit(this, m_texs, m_fonts);
 }
 
 void Game::processEvents()
@@ -73,11 +48,9 @@ void Game::processEvents()
 
         switch (currentState)
         {
-        case MAIN_MENU: guiContainer->handleEvent(event); break;
-        case IN_GAME:
-            m_world.handleEvents(event);
-            break;
-        case EXIT_GAME:; break; // TODO somewhere else
+        case MAIN_MENU: menuHandleEvents(event); break;
+        case IN_GAME: m_world.handleEvents(event); break;
+        case EXIT_GAME: break;
         }
 
         switch (event.type) {
@@ -137,7 +110,7 @@ void Game::processEvents()
     {
     case MAIN_MENU: break;
     case IN_GAME: m_world.handleInput(); break;
-    case EXIT_GAME:; break; // TODO somewhere else
+    case EXIT_GAME: break;
     }
 }
 
@@ -185,7 +158,7 @@ void Game::render()
     {
     case MAIN_MENU:
     {
-        m_window.draw(*guiContainer);
+        menuDraw(m_window);
         break;
     }
     case IN_GAME:
