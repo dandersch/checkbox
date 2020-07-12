@@ -204,8 +204,11 @@ void Game::render()
     }
     }
 
-    if (show_debug) ImGui::SFML::Render(m_window);
-    m_window.draw(m_cursor);
+    if (show_debug)
+    {
+        ImGui::SFML::Render(m_window);
+        m_window.draw(m_cursor);
+    }
 
     m_window.display();
 }

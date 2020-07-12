@@ -258,17 +258,19 @@ void World::spawnBox(sf::Vector2f pos, b32 isStatic)
 void fillUpDemoQueue(std::queue<Command>& demoCmds)
 {
     //return;
+    for (int i = 0; i < 50; i++)
+        demoCmds.push(nullCmd);
+    for (int i = 0; i < 230; i++)
+        demoCmds.push(moveRightCmd);
+    demoCmds.push(jumpCmd);
+    for (int i = 0; i < 50; i++)
+        demoCmds.push(moveRightCmd);
+    demoCmds.push(jumpCmd);
+    for (int i = 0; i < 50; i++)
+        demoCmds.push(moveRightCmd);
     for (int i = 0; i < 100; i++)
         demoCmds.push(nullCmd);
-    for (int i = 0; i < 100; i++)
-        demoCmds.push(moveRightCmd);
-    demoCmds.push(jumpCmd);
-    for (int i = 0; i < 100; i++)
-        demoCmds.push(moveRightCmd);
-    for (int i = 0; i < 100; i++)
-        demoCmds.push(moveLeftCmd);
-    demoCmds.push(jumpCmd);
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < 350; i++)
         demoCmds.push(moveLeftCmd);
 
     /*
