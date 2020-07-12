@@ -3,6 +3,8 @@
 #include "player.h"
 #include "tile.h"
 
+void cmdFillUpHashMap();
+
 // functor for player movement
 struct PlayerMover
 {
@@ -40,11 +42,15 @@ struct PlayerMover
     b32 rightDir;
 };
 
+static const Command nullCmd = { [](Entity& e, f32) {}, ENTITY_NONE, CMD_NULL };
+
 static const Command moveLeftCmd = {
-    derivedAction<Player>(PlayerMover(-75.f, 0.f, false)), ENTITY_PLAYER
+    derivedAction<Player>(PlayerMover(-150.f, 0.f, false)), ENTITY_PLAYER,
+    CMD_MOVE_LEFT
 };
 static const Command moveRightCmd = {
-    derivedAction<Player>(PlayerMover(75.f, 0.f, true)), ENTITY_PLAYER
+    derivedAction<Player>(PlayerMover( 150.f, 0.f, true)), ENTITY_PLAYER,
+    CMD_MOVE_RIGHT
 };
 
 static const Command jumpCmd = {
@@ -52,18 +58,18 @@ static const Command jumpCmd = {
         if (p.canJump && p.holding)
         {
             p.fixedJump = true;
-            p.velocity.y = -sqrtf(2.0f * 981.f * 100.f);
+            p.velocity.y = -sqrtf(2.0f * 981.f * 120.f);
             p.m_state = Player::JUMPING;
             p.canJump = false;
         }
         else if (p.canJump)
         {
-            p.velocity.y = -sqrtf(2.0f * 981.f * 120.f);
+            p.velocity.y = -sqrtf(2.0f * 981.f * 150.f);
             p.m_state = Player::JUMPING;
             p.canJump = false;
         }
     }),
-    ENTITY_PLAYER
+    ENTITY_PLAYER, CMD_JUMP
 };
 
 static const Command respawnCmd = {
@@ -88,7 +94,7 @@ static const Command respawnCmd = {
 
         p.dead = false;
     }),
-    ENTITY_PLAYER
+    ENTITY_PLAYER, CMD_RESPAWN
 };
 
 static const Command holdCmd = {
@@ -107,10 +113,24 @@ static const Command holdCmd = {
             p.holding = *p.holdables.begin();
         }
     }),
-    ENTITY_PLAYER
+    ENTITY_PLAYER, CMD_HOLD
 };
 
+/*
 static const Command dieCmd = { derivedAction<Player>([](Player& p, f32) {
                                     p.m_state = Player::DEAD;
                                 }),
                                 ENTITY_PLAYER };
+*/
+
+// TODO(dan): doesn't work
+/*
+static std::map<u32, Command> cmdFromType({
+        { CMD_NULL,       nullCmd },
+        { CMD_MOVE_LEFT,  moveLeftCmd },
+        { CMD_MOVE_RIGHT, moveRightCmd },
+        { CMD_JUMP,       jumpCmd },
+        { CMD_RESPAWN,    respawnCmd },
+        { CMD_HOLD,       holdCmd },
+    });
+*/

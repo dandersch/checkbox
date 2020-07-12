@@ -31,20 +31,18 @@ public:
     GameState currentState = MAIN_MENU;
 
 private:
+    World m_world;
+
     // rendering
     sf::RenderWindow m_window;
 
     // resources
     ResourcePool<sf::Texture> m_texs;
-    //ResourcePool<sf::SoundBuffer> m_sfxs;
     ResourcePool<sf::Font> m_fonts;
-
-    World m_world;
+    //ResourcePool<sf::SoundBuffer> m_sfxs;
 
     sf::Texture m_cursorTexture;
     sf::Sprite m_cursor;
     sf::Text m_text;
     sf::Music m_music;
-
-    // enum GameState { ... } vs GameState m_state;
 };

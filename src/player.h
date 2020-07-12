@@ -4,8 +4,8 @@
 #include "entity.h"
 #include "command.h"
 
-#define PLAYER_WIDTH  64
-#define PLAYER_HEIGHT 64
+#define PLAYER_WIDTH  128
+#define PLAYER_HEIGHT 128
 
 // forward declarations
 template<typename Resource> class ResourcePool;

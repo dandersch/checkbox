@@ -28,13 +28,16 @@ enum DS4Button
     DS4_R3
 };
 
+static const float DISTANCE_TO_HOLD = 25000.f;
+
 Player::Player(ResourcePool<sf::Texture>& textures)
-  : m_sprite(textures.get("platformer_sprites_base.png"))
+    //: m_sprite(textures.get("platformer_sprites_base.png"))
+  : m_sprite(textures.get("output.png"))
   , speed(75.f)
 {
     m_state = IDLE;
     m_sprite.setTextureRect(sf::IntRect(0, 0, PLAYER_WIDTH, PLAYER_HEIGHT));
-    m_sprite.setOrigin(32, 32);
+    m_sprite.setOrigin(64, 64);
     createAnimations();
 
     assignKey(sf::Keyboard::A, MOVE_LEFT);
@@ -50,7 +53,7 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     m_actionbinds[MOVE_LEFT] = moveLeftCmd;
     m_actionbinds[MOVE_RIGHT] = moveRightCmd;
     m_actionbinds[JUMP] = jumpCmd;
-    m_actionbinds[DYING] = dieCmd;
+    //m_actionbinds[DYING] = dieCmd;
     m_actionbinds[RESPAWN] = respawnCmd;
     m_actionbinds[HOLD] = holdCmd;
 
@@ -107,7 +110,7 @@ void Player::updateCurrent(f32 dt)
 
         auto ent_to_p = (*it)->getPosition() - this->getPosition();
         f32 ent_dist = std::pow(ent_to_p.x, 2) + std::pow(ent_to_p.y, 2);
-        if (ent_dist > 10000.f)
+        if (ent_dist > DISTANCE_TO_HOLD)
         {
             holdables.erase(it, holdables.cend());
             return;
@@ -120,7 +123,7 @@ void Player::updateCurrent(f32 dt)
 
     if (holding)
     {
-        auto box_pos = getPosition() + (35.f * forwardRay());
+        auto box_pos = getPosition() + (50.f * forwardRay());
         //((Tile*) holding)->m_sprite.setColor(sf::Color::Red);
 
         //((Tile*) holding)->body->SetTransform(b2Vec2(pixelsToMeters(box_pos.x), pixelsToMeters(box_pos.y)), 0);

@@ -12,14 +12,16 @@ static sf::Clock tps_clock;
 static f32 tps_last_time = 0;
 static f32 tps = 0;
 
+static bool show_debug = false;
+
 Game::Game()
   : m_window(sf::VideoMode(1280, 720), "SFML game")
   , m_texs(".png")
   , m_fonts(".ttf")
-  , m_world(m_window)
   , m_cursor(m_texs.get("cursor.png"), sf::IntRect(144, 0, 72, 72))
   , m_text("Hello World", m_fonts.get("Boxy-Bold.ttf"), 35)
   , m_music()
+  , m_world("level_new.png")
 {
     m_window.setVerticalSyncEnabled(true); // Don't use
     // m_window.setFramerateLimit(60);     // both
@@ -44,7 +46,7 @@ void Game::processEvents()
 {
     sf::Event event;
     while (m_window.pollEvent(event)) {
-        ImGui::SFML::ProcessEvent(event);
+        if (show_debug) ImGui::SFML::ProcessEvent(event);
 
         switch (currentState)
         {
@@ -54,7 +56,18 @@ void Game::processEvents()
         }
 
         switch (event.type) {
-        case (sf::Event::Closed): m_window.close(); break;
+        case (sf::Event::Closed):
+        {
+            // serialize commands
+            /*
+            std::ofstream democommands;
+            democommands.open("democommands.txt");
+            for (auto i : m_world.cmdSerializer) democommands << i;
+            democommands.close();
+            */
+            m_window.close();
+            break;
+        }
 
         case (sf::Event::Resized):
         {
@@ -102,13 +115,16 @@ void Game::processEvents()
             break;
         }
 
+        case (sf::Event::KeyPressed):
+            if (event.key.code == sf::Keyboard::F1) show_debug = !show_debug;
+
         default: break;
         }
     }
 
     switch (currentState)
     {
-    case MAIN_MENU: break;
+    case MAIN_MENU: menuHandleInput(); break;
     case IN_GAME: m_world.handleInput(); break;
     case EXIT_GAME: break;
     }
@@ -120,11 +136,12 @@ void Game::update(f32 dtime)
     {
     case MAIN_MENU:
     {
+        menuWorldUpdate(dtime, m_window);
         break;
     }
     case IN_GAME:
     {
-        m_world.update(dtime);
+        m_world.update(dtime, m_window);
         // TODO(dan): testing lifecount
         auto lives = m_world.m_player->lifeCount;
         if (lives == 0) m_text.setFillColor(sf::Color::Red);
@@ -163,7 +180,7 @@ void Game::render()
     }
     case IN_GAME:
     {
-        m_world.draw();
+        m_world.draw(m_window);
 
         // Everything drawn after setting the view will appear fixed on the
         // screen
@@ -181,7 +198,7 @@ void Game::render()
     }
     }
 
-    ImGui::SFML::Render(m_window);
+    if (show_debug) ImGui::SFML::Render(m_window);
     m_window.draw(m_cursor);
 
     m_window.display();
@@ -214,7 +231,7 @@ void Game::run()
         processEvents();
         accumulator += clock.restart();
 
-        debugGui(accumulator);
+        if (show_debug) debugGui(accumulator);
 
         while (accumulator > TIME_PER_FRAME) {
             accumulator -= TIME_PER_FRAME;

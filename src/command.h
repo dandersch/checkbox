@@ -14,10 +14,21 @@ enum EntityType
     ENTITY_HOLDABLE   = 1 << 4
 };
 
+enum CmdType
+{
+    CMD_NULL,
+    CMD_MOVE_LEFT,
+    CMD_MOVE_RIGHT,
+    CMD_JUMP,
+    CMD_RESPAWN,
+    CMD_HOLD
+};
+
 struct Command
 {
     std::function<void(Entity&, f32)> action;
     u32 category;
+    u32 cmdType = 0;
 };
 
 // To avoid having to downcast from scenenode in action functions

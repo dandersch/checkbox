@@ -119,12 +119,13 @@ class GUILabel : public GUIComponent
 {
 public:
     GUILabel(const std::string& text, ResourcePool<sf::Font>& fonts)
-      : mText(text, fonts.get("Boxy_Bold.ttf"), 50)
+      : mText(text, fonts.get("Boxy-Bold.ttf"), 100)
     {
     }
 
     virtual bool isSelectable() const { return false; }
     inline void setText(const std::string& text) { mText.setString(text); }
+    inline void setColor(const sf::Color col) { mText.setFillColor(col); }
     virtual void handleEvent(const sf::Event& event) {}
 
 private:
@@ -148,7 +149,7 @@ public:
       , mSelectedTexture(textures.get("button2.png"))
       , mPressedTexture(textures.get("button3.png"))
       , mSprite()
-      , mText("", fonts.get("Boxy-Bold.ttf"), 16)
+      , mText("", fonts.get("Boxy-Bold.ttf"), 32)
       , mIsToggle(false)
     {
         mSprite.setTexture(mNormalTexture);

@@ -18,69 +18,51 @@ enum TileSheet
     SHEET_HEIGHT = 64
 };
 
+// lambda comparator to be able to create a map with sf::Color as key
+auto comparator = [](const sf::Color& c1, const sf::Color& c2) -> b32 {
+    if (c1.r < c2.r) return true;
+    else if (c1.r == c2.r && c1.g < c2.g)
+        return true;
+    else if (c1.r == c2.r && c1.g == c2.g && c1.b < c2.b)
+        return true;
+    return false;
+};
+
 // internal
 b2Body* createBox(b2World* world, i32 posX, i32 posY, i32 sizeX, i32 sizeY,
                   b2BodyType type, void* userData, Player* player,
                   b32 collidable = true);
+void fillColorMap(sf::Image& lvlImg, sf::Texture& levelTex,
+                  std::map<sf::Color, TileInfo, decltype(comparator)>& colorMap);
 
-void levelBuild(std::map<u32, Tile*>& tilemap, b2World* world,
-                ResourcePool<sf::Texture>& textures,
+void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
+                b2World* world, ResourcePool<sf::Texture>& textures,
                 ResourcePool<sf::Image>& levels, sf::Vector2u& maxMapSize,
                 std::array<Entity*, LAYER_COUNT>& m_layerNodes, Player* player,
-                const std::string& levelName)
+                const std::string& levelName_mid,
+                const std::string& levelName_back, const std::string& tileSheet)
 {
-    // lambda comparator to be able to create a map with sf::Color as key
-    auto comparator = [](const sf::Color& c1, const sf::Color& c2) -> b32 {
-        if (c1.r < c2.r) return true;
-        else if (c1.r == c2.r && c1.g < c2.g)
-            return true;
-        else if (c1.r == c2.r && c1.g == c2.g && c1.b < c2.b)
-            return true;
-        return false;
-    };
-
     std::map<sf::Color, TileInfo, decltype(comparator)> colorMap(comparator);
+    auto& levelTex = textures.get(tileSheet);
+    //auto& spikeTex = textures.get("basicdungeontileset.png");
+    auto& lvlImg = levels.get(levelName_mid);
+    auto& lvlImg_bg = levels.get(levelName_back);
+    maxMapSize = lvlImg.getSize();
+    fillColorMap(lvlImg, levelTex, colorMap);
 
-    auto& levelTex = textures.get("simple_tiles_32x32.png");
-    auto& spikeTex = textures.get("basicdungeontileset.png");
-    auto& level0 = levels.get("level1.png");
-
-    maxMapSize = level0.getSize();
-
-    // fill the colormap
-    u32 xCount = levelTex.getSize().x / 32;
-    u32 yCount = levelTex.getSize().y / 32;
-    for (u32 y = 0; y < yCount; y++)
-    {
-        for (u32 x = 0; x < xCount; x++)
-        {
-            // decide on foreground/background
-            if (y == 0)
-                colorMap[level0.getPixel(x, y)] = {
-                    sf::IntRect(x * 32, y * 32, 32, 32), LAYER_MID
-                };
-            else if (y == 1)
-                colorMap[level0.getPixel(x, y)] = {
-                    sf::IntRect(x * 32, y * 32, 32, 32), LAYER_BACK
-                };
-
-            // remove metadata
-            level0.setPixel(x, y, sf::Color::White);
-        }
-    }
-
+    // MID GENERATION
     u32 playercount = 0;
-    for (u32 y = 0; y < level0.getSize().y; y++)
+    for (u32 y = 0; y < lvlImg.getSize().y; y++)
     {
-        for (u32 x = 0; x < level0.getSize().x; x++)
+        for (u32 x = 0; x < lvlImg.getSize().x; x++)
         {
-            sf::Color sample = level0.getPixel(x, y);
+            sf::Color sample = lvlImg.getPixel(x, y);
 
             // Player generation
             if (sample == sf::Color::Blue)
             {
                 playercount++;
-                player->setPosition(x * 32, y * 32);
+                player->setPosition(x * tile_width, y * tile_height);
                 player->body = createBox(world, player->getPosition().x,
                                          player->getPosition().y,
                                          PLAYER_WIDTH / 2,
@@ -90,23 +72,23 @@ void levelBuild(std::map<u32, Tile*>& tilemap, b2World* world,
                                                             // collision
                                          b2_dynamicBody, player, player);
                 player->body->SetFixedRotation(true);
-                player->spawn_loc = sf::Vector2i(x * 32, y * 32);
+                player->spawn_loc = sf::Vector2i(x * tile_height,
+                                                 y * tile_height);
                 continue;
             }
 
             // spike generation
             if (sample == sf::Color::Red)
             {
-                // 0 5
-                std::unique_ptr<Tile> spike(new Tile(spikeTex,
-                                                     sf::IntRect(5 * 32, 0 * 32,
-                                                                 32, 32)));
-                spike->setPosition(x * 32, y * 32);
-                u32 id = levelTileIDfromCoords(x * 32, y * 32, maxMapSize);
+                TileInfo& tInfo = colorMap.at(sample);
+                std::unique_ptr<Tile> spike(new Tile(levelTex, tInfo.rect));
+                spike->setPosition(x * tile_width, y * tile_height);
+                u32 id = levelTileIDfromCoords(x * tile_width, y * tile_height, maxMapSize);
                 tilemap[id] = spike.get();
                 spike->typeflags |= ENTITY_ENEMY;
-                spike->body = createBox(world, x * 32, y * 32, 32, 32,
-                                        b2_staticBody, spike.get(), player);
+                spike->body = createBox(world, x * tile_width, y * tile_height,
+                                        tile_width, tile_height, b2_staticBody,
+                                        spike.get(), player);
                 m_layerNodes[LAYER_MID]->attachChild(std::move(spike));
                 continue;
             }
@@ -114,17 +96,21 @@ void levelBuild(std::map<u32, Tile*>& tilemap, b2World* world,
             // checkpoint generation
             if (sample == sf::Color::Green)
             {
-                std::unique_ptr<Tile> check(new Tile(spikeTex,
-                                                     sf::IntRect(5 * 32, 16, 32,
-                                                                 64 - 16)));
-                check->setPosition(x * 32, y * 32);
-                u32 id = levelTileIDfromCoords(x * 32, y * 32, maxMapSize);
-                tilemap[id] = check.get();
-                check->typeflags |= ENTITY_CHECKPOINT;
-                check->body = createBox(world, x * 32, y * 32, 32, 64,
-                                        b2_staticBody, check.get(), player,
-                                        false);
-                m_layerNodes[LAYER_BACK]->attachChild(std::move(check));
+                TileInfo& tInfo = colorMap.at(sample);
+                std::unique_ptr<Tile> check(new Tile(levelTex, tInfo.rect));
+                check->setPosition(x * tile_width, y * tile_height);
+                // u32 id = levelTileIDfromCoords(x * tile_width, y *
+                // tile_height, maxMapSize);
+                // tilemap[id] = check.get();
+                check->moving = true;
+                check->shouldDraw = true;
+                check->typeflags = ENTITY_TILE | ENTITY_CHECKPOINT |
+                                   ENTITY_HOLDABLE;
+                check->body = createBox(world, x * tile_width, y * tile_height,
+                                        tile_width, tile_height, b2_dynamicBody,
+                                        check.get(), player);
+                check->body->SetFixedRotation(true);
+                m_layerNodes[LAYER_MID]->attachChild(std::move(check));
                 continue;
             }
 
@@ -132,16 +118,40 @@ void levelBuild(std::map<u32, Tile*>& tilemap, b2World* world,
 
             TileInfo& tInfo = colorMap.at(sample);
             std::unique_ptr<Tile> tile(new Tile(levelTex, tInfo.rect));
-            tile->setPosition(x * 32, y * 32);
-            u32 id = levelTileIDfromCoords(x * 32, y * 32, maxMapSize);
+            tile->setPosition(x * tile_width, y * tile_height);
+            u32 id = levelTileIDfromCoords(x * tile_width, y * tile_height,
+                                           maxMapSize);
             tilemap[id] = tile.get();
-            tile->body = createBox(world, x * 32, y * 32, 32, 32, b2_staticBody,
+            tile->body = createBox(world, x * tile_width, y * tile_height,
+                                   tile_width, tile_height, b2_staticBody,
+                                   tile.get(), player);
+
+            m_layerNodes[LAYER_MID]->attachChild(std::move(tile));
+        }
+    }
+
+    fillColorMap(lvlImg_bg, levelTex, colorMap);
+    // BACKGROUND GENERATION
+    for (u32 y = 0; y < lvlImg_bg.getSize().y; y++)
+    {
+        for (u32 x = 0; x < lvlImg_bg.getSize().x; x++)
+        {
+            sf::Color sample = lvlImg_bg.getPixel(x, y);
+            if (sample == sf::Color::White) continue; // whitespace
+            TileInfo& tInfo = colorMap.at(sample);
+            std::unique_ptr<Tile> tile(new Tile(levelTex, tInfo.rect));
+            tile->setPosition(x * tile_width, y * tile_height);
+            u32 id = levelTileIDfromCoords(x * tile_width, y * tile_height,
+                                           maxMapSize);
+            tilemap_bg[id] = tile.get();
+            tile->body = createBox(world, x * tile_width, y * tile_height,
+                                   tile_width, tile_height, b2_staticBody,
                                    tile.get(), player);
 
             // make background tiles non-collidable
-            if (tInfo.layer == LAYER_BACK) tile->body->SetActive(false);
+            tile->body->SetActive(false);
 
-            m_layerNodes[tInfo.layer]->attachChild(std::move(tile));
+            m_layerNodes[LAYER_BACK]->attachChild(std::move(tile));
         }
     }
 
@@ -205,8 +215,8 @@ void levelPlaceBox(sf::Vector2f pos, b32 isStatic, b2World* world,
     }
 
     // clamp boxes to tileraster
-    auto xpos = std::round(pos.x / 32) * 32;
-    auto ypos = std::round(pos.y / 32) * 32;
+    auto xpos = std::round(pos.x / tile_width)  * tile_width;
+    auto ypos = std::round(pos.y / tile_height) * tile_height;
 
     // there already is a collidable tile here so don't spawn another one
     auto tileIt = tilemap.find(levelTileIDfromCoords(xpos, ypos, maxMapSize));
@@ -216,8 +226,9 @@ void levelPlaceBox(sf::Vector2f pos, b32 isStatic, b2World* world,
     }
 
     std::unique_ptr<Tile> box(new Tile(tile_sheet,
-                                       sf::IntRect(tilenr * 32, 0 * 32, 32,
-                                                   32)));
+                                       sf::IntRect(16 * tile_width,
+                                                   3 * tile_height, tile_width,
+                                                   tile_height)));
     box->moving = true;
     box->shouldDraw = true;
     box->setPosition(xpos, ypos);
@@ -227,7 +238,8 @@ void levelPlaceBox(sf::Vector2f pos, b32 isStatic, b2World* world,
     else
         box->typeflags = ENTITY_TILE | ENTITY_CHECKPOINT | ENTITY_HOLDABLE;
 
-    box->body = createBox(world, xpos, ypos, 32, 32, type, box.get(), player);
+    box->body = createBox(world, xpos, ypos, tile_width, tile_height, type,
+                          box.get(), player);
 
     box->body->SetFixedRotation(true);
     m_layerNodes[LAYER_MID]->attachChild(std::move(box));
@@ -235,5 +247,28 @@ void levelPlaceBox(sf::Vector2f pos, b32 isStatic, b2World* world,
 
 u32 levelTileIDfromCoords(const u32 x, const u32 y, const sf::Vector2u MaxMapSize)
 {
-    return ((y / 32) * MaxMapSize.x) + (x / 32);
+    return ((y / 64) * MaxMapSize.x) + (x / 64);
+}
+
+void fillColorMap(sf::Image& lvlImg, sf::Texture& levelTex,
+                  std::map<sf::Color, TileInfo, decltype(comparator)>& colorMap)
+{
+    // fill the colormap
+    u32 xCount = levelTex.getSize().x / tile_width;
+    u32 yCount = levelTex.getSize().y / tile_height;
+    for (u32 y = 0; y < yCount; y++)
+    {
+        for (u32 x = 0; x < xCount; x++)
+        {
+            // TODO(dan): decide on foreground/background
+            colorMap[lvlImg.getPixel(x, y)] = {
+                sf::IntRect(x * tile_width, y * tile_height, tile_width,
+                            tile_height),
+                LAYER_MID
+            };
+
+            // remove metadata
+            lvlImg.setPixel(x, y, sf::Color::White);
+        }
+    }
 }

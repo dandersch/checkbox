@@ -7,6 +7,9 @@ class Player;
 class Tile;
 class Entity;
 
+static const u32 tile_width = 64;
+static const u32 tile_height = 64;
+
 enum Layer
 {
     LAYER_BACK,
@@ -15,11 +18,13 @@ enum Layer
     LAYER_COUNT
 };
 
-void levelBuild(std::map<u32, Tile*>& tilemap, b2World* world,
-                ResourcePool<sf::Texture>& textures,
+void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
+                b2World* world, ResourcePool<sf::Texture>& textures,
                 ResourcePool<sf::Image>& levels, sf::Vector2u& maxMapSize,
                 std::array<Entity*, LAYER_COUNT>& m_layerNodes, Player* player,
-                const std::string& levelName = "");
+                const std::string& levelName_mid = "",
+                const std::string& levelName_back = "",
+                const std::string& tileSheet = "legacy_dungeon.png");
 
 // tilemap, tiletexfile, layerNodes
 void levelPlaceBox(sf::Vector2f pos, b32 isStatic, b2World* world,
