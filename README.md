@@ -5,24 +5,18 @@ Geschätze Uhrzeit: 13:45
 
 Note: tba
 
-# Projektname (kommt noch)
+# Projektname: Checkbox
 
 ## Kurze Zusammenfassung
-Voraussichtlich wird's ein Platformer. Also mit gezielten Sprüngen und
-Ausweichen muss man an das Ziel von einem Level kommen. Dementsprechend grobe
-"Physiksimulation" in Form von Sprungverhalten und Kollisionserkennung.
+Ein simpler Platformer, in dem man mit gezielten Sprüngen an das Ziel von einem
+Level kommen muss. Als Twist ist der Checkpoint im Spiel aber eine Kiste, die
+der Spieler aufheben & werfen kann. Respawns sind unbegrenzt und dadurch Teil
+der Spielmechanik.
 
 ## Detaillierte Beschreibung/Auflistung der Funktionalitaet
-- simple Platformer-Physik (Schwierigkeit B)
-- Levelgeneration aus einer Bilddatei (B-A?)
-- Einfache Animationen (B)
-- Betriebssystemunabhaengig (B)
-- Controllerunterstutzueng (B)
-- Sound (C)
-- Menue (C)
-
-## Optionale Funktionalitaeten
-- Leveleditor (Schwierigkeit B-A)
-- (mehr) Physiksimulation (A)
-- Partikeleffekte (A-S?)
-- ...
+- Platformer-Physik mit Box2D
+- Levelgeneration aus zwei Bilddateien (Hintergrund + Mainlevel)
+- variantenreiche Animationen der Spielfigur
+- Ein großes Level dass TileMap Culling nutzt um
+- Controllerunterstutzueng
+- Menue mit laufendem "Demomodus" im Hintergrund
