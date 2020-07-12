@@ -133,12 +133,12 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
             {
                 TileInfo& tInfo = colorMap.at(sample);
                 std::unique_ptr<Tile> check(new Tile(levelTex, tInfo.rect));
-                check->setPosition(x * tile_width, y * tile_height);
                 // u32 id = levelTileIDfromCoords(x * tile_width, y *
                 // tile_height, maxMapSize);
                 // tilemap[id] = check.get();
                 check->moving = true;
                 check->shouldDraw = true;
+                check->setPosition(x * tile_width, y * tile_height);
                 check->typeflags = ENTITY_TILE | ENTITY_CHECKPOINT |
                                    ENTITY_HOLDABLE;
                 check->body = createBox(world, x * tile_width, y * tile_height,
@@ -146,6 +146,24 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                                         check.get(), player);
                 check->body->SetFixedRotation(true);
                 m_layerNodes[LAYER_MID]->attachChild(std::move(check));
+                continue;
+            }
+
+            // goal generation, x = 15, y = 2
+            if (sample == sf::Color(238,205,1))
+            {
+                TileInfo& tInfo = colorMap.at(sample);
+                std::unique_ptr<Tile> goal(new Tile(levelTex, tInfo.rect));
+                goal->setPosition(x * tile_width, y * tile_height);
+                u32 id = levelTileIDfromCoords(x * tile_width, y * tile_height,
+                                               maxMapSize);
+                tilemap[id] = goal.get();
+                goal->typeflags |= ENTITY_GOAL;
+                goal->body = createBox(world, x * tile_width, y * tile_height,
+                                       tile_width, tile_height, b2_staticBody,
+                                       goal.get(), player);
+                goal->body->SetActive(true);
+                m_layerNodes[LAYER_MID]->attachChild(std::move(goal));
                 continue;
             }
 

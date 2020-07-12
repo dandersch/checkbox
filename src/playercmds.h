@@ -116,16 +116,10 @@ static const Command holdCmd = {
     ENTITY_PLAYER, CMD_HOLD
 };
 
-static const Command retryCmd = {
-    derivedAction<Player>([](Player& p, f32) {
-        p.body->SetTransform(b2Vec2(pixelsToMeters(p.spawn_loc.x),
-                                    pixelsToMeters(p.spawn_loc.y)),
-                             0);
-
-        p.dead = false;
-    }),
-    ENTITY_PLAYER, CMD_RETRY
-};
+static const Command retryCmd = { derivedAction<Player>([](Player& p, f32) {
+                                      p.retry();
+                                  }),
+                                  ENTITY_PLAYER, CMD_RETRY };
 
 /*
 static const Command dieCmd = { derivedAction<Player>([](Player& p, f32) {

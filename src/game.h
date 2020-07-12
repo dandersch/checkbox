@@ -29,10 +29,9 @@ private:
 
 public:
     GameState currentState = MAIN_MENU;
-
-private:
     World m_world;
 
+private:
     // rendering
     sf::RenderWindow m_window;
 

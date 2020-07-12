@@ -26,7 +26,10 @@ void menuInit(Game* game, ResourcePool<sf::Texture>& textures,
 
     guiButton1 = std::make_shared<GUIButton>(fonts, textures);
     guiButton1->setText("START GAME");
-    guiButton1->setCallback([&]() { gameInst->currentState = IN_GAME; });
+    guiButton1->setCallback([&]() {
+        gameInst->currentState = IN_GAME;
+        gameInst->m_world.m_player->retry();
+    });
     guiButton1->setPosition(100, 100);
 
     guiButton2 = std::make_shared<GUIButton>(fonts, textures);

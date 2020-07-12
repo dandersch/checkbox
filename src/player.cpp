@@ -331,3 +331,11 @@ u32 Player::getAssignedButton(Action action) const
 
     return 10; // no joystick::unknown (?)
 }
+
+void Player::retry()
+{
+    body->SetTransform(b2Vec2(pixelsToMeters(spawn_loc.x),
+                              pixelsToMeters(spawn_loc.y)),
+                       0);
+    dead = false;
+}

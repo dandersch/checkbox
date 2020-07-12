@@ -19,7 +19,7 @@ Game::Game()
   , m_texs(".png")
   , m_fonts(".ttf")
   , m_cursor(m_texs.get("cursor.png"), sf::IntRect(144, 0, 72, 72))
-  , m_text("Hello World", m_fonts.get("Boxy-Bold.ttf"), 35)
+  , m_text("", m_fonts.get("Boxy-Bold.ttf"), 35)
   , m_music()
   , m_world("level_new.png")
 {
@@ -147,7 +147,13 @@ void Game::update(f32 dtime)
         if (lives == 0) m_text.setFillColor(sf::Color::Red);
         else
             m_text.setFillColor(sf::Color::Blue);
-        m_text.setString("Lives left: " + std::to_string(lives));
+        //m_text.setString("Lives left: " + std::to_string(lives));
+
+        if (m_world.m_player->gameWon)
+        {
+            m_world.m_player->gameWon = false;
+            currentState = MAIN_MENU;
+        }
         break;
     }
     case EXIT_GAME:

@@ -62,6 +62,11 @@ class PlayerContactListener : public b2ContactListener
             player->holdables.insert(e2);
         }
 
+        if (e2->getType() & ENTITY_GOAL && fixtureType == 0)
+        {
+            player->gameWon = true;
+        }
+
         if (e2->getType() & ENTITY_ENEMY && fixtureType == 0)
         {
             if (!player->dead) player->lifeCount--;
