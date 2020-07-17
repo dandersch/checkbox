@@ -15,7 +15,7 @@ static f32 tps = 0;
 static bool show_debug = false;
 
 Game::Game()
-  : m_window(sf::VideoMode(1280, 720), "SFML game")
+  : m_window(sf::VideoMode(1920, 1080), "SFML game")
   , m_texs(".png")
   , m_fonts(".ttf")
   , m_cursor(m_texs.get("cursor.png"), sf::IntRect(144, 0, 72, 72))
@@ -143,15 +143,13 @@ void Game::update(f32 dtime)
     {
         m_world.update(dtime, m_window);
         // TODO(dan): testing lifecount
-        auto lives = m_world.m_player->lifeCount;
-        if (lives == 0) m_text.setFillColor(sf::Color::Red);
-        else
-            m_text.setFillColor(sf::Color::Blue);
-        //m_text.setString("Lives left: " + std::to_string(lives));
+        auto coins = m_world.m_player->goldCount;
+        m_text.setFillColor(sf::Color(238,205,1));
+        m_text.setString("Gold: " + std::to_string(coins));
 
-        if (m_world.m_player->gameWon)
+        if (m_world.m_player->gameOver)
         {
-            m_world.m_player->gameWon = false;
+            m_world.m_player->gameOver = false;
             currentState = MAIN_MENU;
         }
         break;
@@ -225,8 +223,12 @@ void Game::debugGui(sf::Time time)
     ImGui::Text("FPS: %.3f", fps); ImGui::SameLine();
     ImGui::Text("TPS: %.3f", tps);
 
+    if (ImGui::Button("Reset View"))
+        m_world.m_view.setSize(2560, 1440);
+
     for (auto func : g_gui_callbacks)
         func();
+
 
     ImGui::End();
 }

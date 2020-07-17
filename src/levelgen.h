@@ -35,3 +35,7 @@ void levelPlaceBox(sf::Vector2f pos, b32 isStatic, b2World* world,
 
 u32 levelTileIDfromCoords(const u32 x, const u32 y,
                           const sf::Vector2u MaxMapSize);
+
+b2Body* createBox(b2World* world, i32 posX, i32 posY, i32 sizeX, i32 sizeY,
+                  b2BodyType type, void* userData, Player* player,
+                  b32 collidable = true);

@@ -30,6 +30,8 @@ enum DS4Button
 
 static const float DISTANCE_TO_HOLD = 25000.f;
 
+static u32 playercount = 0; // workaround
+
 Player::Player(ResourcePool<sf::Texture>& textures)
     //: m_sprite(textures.get("platformer_sprites_base.png"))
   : m_sprite(textures.get("output.png"))
@@ -43,18 +45,18 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     assignKey(sf::Keyboard::D, MOVE_RIGHT);
     assignKey(sf::Keyboard::Space, JUMP);
     assignKey(sf::Keyboard::F, HOLD);
-    // assignKey(sf::Keyboard::X,      DYING);
+    assignKey(sf::Keyboard::Y, WINNING);
     assignKey(sf::Keyboard::R, RESPAWN);
     assignKey(sf::Keyboard::BackSpace, RETRY);
     assignButton(DS4_CROSS, JUMP);
-    assignButton(DS4_R1, RESPAWN);
+    assignButton(DS4_TRIANGLE, RESPAWN);
     assignButton(DS4_SQUARE, HOLD);
-    assignButton(DS4_R2, RETRY);
+    assignButton(DS4_START, RETRY);
 
     m_actionbinds[MOVE_LEFT] = moveLeftCmd;
     m_actionbinds[MOVE_RIGHT] = moveRightCmd;
     m_actionbinds[JUMP] = jumpCmd;
-    //m_actionbinds[DYING] = dieCmd;
+    m_actionbinds[WINNING] = winCmd;
     m_actionbinds[RESPAWN] = respawnCmd;
     m_actionbinds[HOLD] = holdCmd;
     m_actionbinds[RETRY] = retryCmd;
@@ -70,14 +72,18 @@ Player::Player(ResourcePool<sf::Texture>& textures)
 
     holdables = std::set<Entity*, decltype(set_comparator)>(set_comparator);
 
-    DEBUG_GUI([&]() { ImGui::Text("PLAYER_STATE: %d", m_state); });
-    DEBUG_GUI([&]() {
-        ImGui::Text("current set of holdables:");
-        for (auto it = holdables.begin(); it != holdables.end(); ++it)
-        {
-            ImGui::Text("%.p", *it);
-        }
-    });
+    if (playercount++ > 0)
+    {
+        DEBUG_GUI([&]() { ImGui::Text("PLAYER_STATE: %d", m_state); });
+        DEBUG_GUI([&]() { ImGui::Text("GOLDCOUNT: %d", goldCount); });
+        DEBUG_GUI([&]() {
+            ImGui::Text("current set of holdables:");
+            for (auto it = holdables.begin(); it != holdables.end(); ++it)
+            {
+                ImGui::Text("%.p", *it);
+            }
+        });
+    }
 }
 
 /*
@@ -86,6 +92,19 @@ Player::Player(ResourcePool<sf::Texture>& textures)
  */
 void Player::updateCurrent(f32 dt)
 {
+    auto time = celebTimer.getElapsedTime();
+    if (gameWon)
+    {
+        m_sprite.setTextureRect(m_anims.at(CELEBRATING).update(dt));
+        if (time.asSeconds() > 5.f)
+        {
+            gameOver = true;
+            gameWon = false;
+            celebTimer.restart();
+        }
+        return;
+    }
+
     // apply physics simulation position to sprite
     // setRotation(radToDeg(body->GetAngle()));
     setPosition(metersToPixels(body->GetPosition().x), metersToPixels(body->GetPosition().y));
@@ -198,6 +217,17 @@ void Player::createAnimations()
     m_anims.at(DEAD).add(7, 2, 0.08f);
     m_anims.at(DEAD).looped = false;
 
+    /* Celebrate */
+    m_anims.emplace(CELEBRATING, Animation(texSize, 8, 9));
+    m_anims.at(CELEBRATING).add(0, 3, 0.1f);
+    m_anims.at(CELEBRATING).add(1, 3, 0.1f);
+    m_anims.at(CELEBRATING).add(2, 3, 0.1f);
+    m_anims.at(CELEBRATING).add(3, 3, 0.1f);
+    m_anims.at(CELEBRATING).add(3, 3, 0.1f);
+    m_anims.at(CELEBRATING).add(2, 3, 0.1f);
+    m_anims.at(CELEBRATING).add(1, 3, 0.1f);
+    m_anims.at(CELEBRATING).looped = true;
+
     // Not all or too many animation states defined
     assert(STATECOUNT == m_anims.size());
 }
@@ -249,11 +279,11 @@ void Player::handleInput(std::queue<Command>& commands)
     {
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::R))
             commands.push(m_actionbinds[RESPAWN]);
-        if (sf::Joystick::isButtonPressed(0, DS4_R1))
+        if (sf::Joystick::isButtonPressed(0, DS4_TRIANGLE))
             commands.push(m_actionbinds[RESPAWN]);
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::BackSpace))
             commands.push(m_actionbinds[RETRY]);
-        if (sf::Joystick::isButtonPressed(0, DS4_R2))
+        if (sf::Joystick::isButtonPressed(0, DS4_START))
             commands.push(m_actionbinds[RETRY]);
         return;
     }
@@ -283,6 +313,7 @@ b32 Player::isOneShot(Action action)
     case MOVE_UP:    // fallthrough
     case JUMP:       // fallthrough
     case MOVE_DOWN:
+    case WINNING:
     case DYING:
         return false;
 
@@ -337,5 +368,23 @@ void Player::retry()
     body->SetTransform(b2Vec2(pixelsToMeters(spawn_loc.x),
                               pixelsToMeters(spawn_loc.y)),
                        0);
+    for (auto& cb : checkboxes)
+    {
+        auto newpos = b2Vec2(pixelsToMeters(cb.origPos.x),
+                             pixelsToMeters(cb.origPos.y));
+        cb.box->body->SetLinearVelocity(b2Vec2(0,0));
+        cb.box->body->SetTransform(newpos, 0);
+    }
+
+    for (auto c : collectedCoins)
+        c->collected = false;
+
+    for (auto p : collectedPurps)
+        p->collected = false;
+
+    collectedCoins.clear();
+    collectedPurps.clear();
+    goldCount = 0;
+    holding = nullptr;
     dead = false;
 }

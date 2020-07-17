@@ -7,16 +7,18 @@ class Entity;
 enum EntityType
 {
     ENTITY_NONE         = 0,
-    ENTITY_PLAYER       = 1 << 0,
-    ENTITY_ENEMY        = 1 << 1,
-    ENTITY_TILE         = 1 << 2,
-    ENTITY_CHECKPOINT   = 1 << 3,
-    ENTITY_HOLDABLE     = 1 << 4,
-    ENTITY_SPIKE_UP     = 1 << 5,
-    ENTITY_SPIKE_DOWN   = 1 << 6,
-    ENTITY_SPIKE_LEFT   = 1 << 7,
-    ENTITY_SPIKE_RIGHT  = 1 << 8,
-    ENTITY_GOAL         = 1 << 9
+    ENTITY_PLAYER       = 1 <<  0,
+    ENTITY_ENEMY        = 1 <<  1,
+    ENTITY_TILE         = 1 <<  2,
+    ENTITY_CHECKPOINT   = 1 <<  3,
+    ENTITY_HOLDABLE     = 1 <<  4,
+    ENTITY_SPIKE_UP     = 1 <<  5,
+    ENTITY_SPIKE_DOWN   = 1 <<  6,
+    ENTITY_SPIKE_LEFT   = 1 <<  7,
+    ENTITY_SPIKE_RIGHT  = 1 <<  8,
+    ENTITY_GOLD_COIN    = 1 <<  9,
+    ENTITY_PURP_COIN    = 1 << 10,
+    ENTITY_GOAL         = 1 << 11
 };
 
 enum CmdType
@@ -27,7 +29,8 @@ enum CmdType
     CMD_JUMP,
     CMD_RESPAWN,
     CMD_HOLD,
-    CMD_RETRY
+    CMD_RETRY,
+    CMD_WIN
 };
 
 struct Command

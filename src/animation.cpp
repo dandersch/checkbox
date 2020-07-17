@@ -21,6 +21,7 @@ sf::IntRect Animation::update(f32 dtime)
     if (m_index >= m_frames.size()) {
         if (looped) m_index = 0;
         else m_index = m_frames.size() - 1;
+        done = true;
     }
 
     if (flipped)

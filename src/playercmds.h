@@ -83,6 +83,8 @@ static const Command respawnCmd = {
                                         pixelsToMeters(p.checkpoint_box->getPosition().y -
                                                        64.f)),
                                  0);
+
+            ((Checkbox*) p.checkpoint_box)->anim.done = false;
             // TODO(dan): play effect/animation
         }
         else
@@ -91,6 +93,10 @@ static const Command respawnCmd = {
                                         pixelsToMeters(p.spawn_loc.y)),
                                  0);
         }
+
+        // p.leaveDyingCorpse = true;
+        p.leaveCorpse = true;
+        p.deathPos = p.getPosition();
 
         p.dead = false;
     }),
@@ -102,7 +108,7 @@ static const Command holdCmd = {
         if (p.holding && !p.dead)
         {
             auto forwardForce = p.forwardRay() * 15.f;
-            p.holding->body->SetLinearVelocity(b2Vec2(forwardForce.x, -5.f));
+            p.holding->body->SetLinearVelocity(b2Vec2(forwardForce.x, -12.f));
 
             ((Tile*) p.holding)->m_sprite.setColor(sf::Color::White);
             p.holding = nullptr;
@@ -120,6 +126,11 @@ static const Command retryCmd = { derivedAction<Player>([](Player& p, f32) {
                                       p.retry();
                                   }),
                                   ENTITY_PLAYER, CMD_RETRY };
+
+static const Command winCmd = { derivedAction<Player>([](Player& p, f32) {
+                                    p.m_state = Player::CELEBRATING;
+                                }),
+                                ENTITY_PLAYER, CMD_WIN };
 
 /*
 static const Command dieCmd = { derivedAction<Player>([](Player& p, f32) {

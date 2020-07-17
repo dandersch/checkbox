@@ -59,6 +59,17 @@ public:
                 if (hasSelection()) mChildren[mSelectedChild]->activate();
             }
         }
+        else if (event.type == sf::Event::JoystickButtonPressed)
+        {
+            if (sf::Joystick::isButtonPressed(0, 0)) // DS4_CROSS
+            {
+                if (hasSelection()) mChildren[mSelectedChild]->activate();
+            }
+        }
+        else if (sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::PovY) < 0)
+                selectPrevious();
+        else if (sf::Joystick::getAxisPosition(0, sf::Joystick::Axis::PovY) > 0)
+                selectNext();
     }
 
     void select(std::size_t index)

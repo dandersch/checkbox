@@ -5,12 +5,14 @@
 #include "command.h"
 #include "playercmds.h"
 
-#define VIEW_HEIGHT 2560
-#define VIEW_WIDTH  1440
+//#define VIEW_HEIGHT 2560
+//#define VIEW_WIDTH  1440
+#define VIEW_HEIGHT 3200
+#define VIEW_WIDTH  1800
 
 // TODO(dan): tilemap.cpp
 static const char* tiletexfile = "legacy_dungeon.png";
-static f32 FORCE_TO_BREAK_HOLD = 100000000.f;
+static f32 FORCE_TO_BREAK_HOLD = 50000000.f;
 // std::unordered_map<u32, Tile*> tilemap;
 bool g_cull_tiles = true;
 
@@ -63,6 +65,8 @@ World::World(const std::string& levelName, b32 menuMode)
     }
 
     //fillUpDemoQueue(demoCmds);
+
+    // TODO(dan): test spawnbox
 }
 
 void World::update(f32 dt, sf::RenderWindow& window)
@@ -75,27 +79,33 @@ void World::update(f32 dt, sf::RenderWindow& window)
         sf::Vector2f pRelPos((f32) pPixelPos.x / window.getSize().x,
                              (f32) pPixelPos.y / window.getSize().y);
 
+        f32 movefactor = 1.f;
+        if (pRelPos.x < 0.3f) movefactor = 2.f;
+        if (pRelPos.x > 0.7f) movefactor = 2.f;
+        if (pRelPos.y < 0.3f) movefactor = 2.f;
+        if (pRelPos.y > 0.7f) movefactor = 2.f;
+
         // move view if player gets out of borders
         // TODO breaks if player near border and zooming in/resizing
         // TODO(dan): camera class/.cpp?
-        if (pRelPos.x < 0.3f && m_player->velocity.x < 0.f)
+        if (pRelPos.x < 0.4f && m_player->velocity.x < 0.f)
         {
-            m_view.move(m_player->velocity.x * dt, 0.f);
+            m_view.move(m_player->velocity.x * dt * movefactor, 0.f);
             m_view.setCenter(std::floor(m_view.getCenter().x), m_view.getCenter().y);
         }
-        if (pRelPos.x > 0.7f && m_player->velocity.x > 0.f)
+        if (pRelPos.x > 0.6f && m_player->velocity.x > 0.f)
         {
-            m_view.move(m_player->velocity.x * dt, 0.f);
+            m_view.move(m_player->velocity.x * dt * movefactor, 0.f);
             m_view.setCenter(std::ceil(m_view.getCenter().x), m_view.getCenter().y);
         }
-        if (pRelPos.y < 0.3f && m_player->velocity.y < 0.f)
+        if (pRelPos.y < 0.4f && m_player->velocity.y < 0.f)
         {
-            m_view.move(0.f, m_player->velocity.y * dt);
+            m_view.move(0.f, m_player->velocity.y * dt * movefactor);
             m_view.setCenter(m_view.getCenter().x, std::floor(m_view.getCenter().y));
         }
-        if (pRelPos.y > 0.7f && m_player->velocity.y > 0.f)
+        if (pRelPos.y > 0.6f && m_player->velocity.y > 0.f)
         {
-            m_view.move(0.f, m_player->velocity.y * dt);
+            m_view.move(0.f, m_player->velocity.y * dt * movefactor);
             m_view.setCenter(m_view.getCenter().x, std::ceil(m_view.getCenter().y));
         }
 
@@ -207,6 +217,23 @@ void World::update(f32 dt, sf::RenderWindow& window)
             hold_joint = nullptr;
         }
     }
+
+    // leave player corpses when respawning
+    /*
+    if (m_player->leaveCorpse)
+    {
+        std::unique_ptr<Entity> corpse(new Corpse(*m_player->m_sprite.getTexture(),
+                                                  m_player->facingRight));
+        auto corpsePos = m_player->getPosition();
+        corpse->setPosition(corpsePos);
+        corpse->body = createBox(&world, corpsePos.x, corpsePos.y, 128 / 2, 128,
+                                 b2_dynamicBody, corpse.get(), m_player, true);
+
+        m_layerNodes[LAYER_MID]->attachChild(std::move(corpse));
+
+        m_player->leaveCorpse = false;
+    }
+    */
 
     // Physics
     m_player->velocity.y += metersToPixels(world.GetGravity().y) * dt;

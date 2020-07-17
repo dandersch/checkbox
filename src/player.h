@@ -9,6 +9,14 @@
 
 // forward declarations
 template<typename Resource> class ResourcePool;
+class Goldcoin;
+class Purpcoin;
+
+struct CheckboxInfo
+{
+    Entity* box;
+    sf::Vector2f origPos;
+};
 
 class Player : public Entity
 {
@@ -25,6 +33,7 @@ public:
         DYING,
         RESPAWN,
         RETRY,
+        WINNING,
         ACTIONCOUNT
     };
 
@@ -36,6 +45,7 @@ public:
         JUMPING,
         FALLING,
         DEAD,
+        CELEBRATING,
         STATECOUNT
     };
 
@@ -83,14 +93,23 @@ public:
     sf::Vector2i spawn_loc;
     Entity* checkpoint_box = nullptr;
     bool gameWon = false;
+    bool gameOver = false;
+    sf::Clock celebTimer;
     Entity* holding = nullptr;
     std::function<bool(const Entity* lhs, const Entity* rhs)> set_comparator;
     std::set<Entity*, decltype(set_comparator)> holdables;
+    std::vector<CheckboxInfo> checkboxes;
+    std::vector<Goldcoin*> collectedCoins;
+    std::vector<Purpcoin*> collectedPurps;
+    u32 goldCount = 0;
+    sf::Sprite m_sprite;
+
+    b32 leaveCorpse = false;
+    sf::Vector2f deathPos;
 
 private:
     std::map<PlayerState, Animation> m_anims;
     std::map<sf::Keyboard::Key, Action> m_keybinds;
     std::map<u32, Action> m_joybinds;
     std::map<Action, Command> m_actionbinds;
-    sf::Sprite m_sprite;
 };

@@ -22,11 +22,12 @@ public:
 public:
     b32 looped = true;
     b32 flipped = false; // whole animation is flipped vertically
+    b32 done = true;
+    std::vector<Frame> m_frames;
 
 private:
     f32 m_time = 0;
     u32 m_framewidth;
     u32 m_frameheight;
-    std::vector<Frame> m_frames;
     u32 m_index = 0;
 };

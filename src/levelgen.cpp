@@ -29,9 +29,6 @@ auto comparator = [](const sf::Color& c1, const sf::Color& c2) -> b32 {
 };
 
 // internal
-b2Body* createBox(b2World* world, i32 posX, i32 posY, i32 sizeX, i32 sizeY,
-                  b2BodyType type, void* userData, Player* player,
-                  b32 collidable = true);
 void fillColorMap(sf::Image& lvlImg, sf::Texture& levelTex,
                   std::map<sf::Color, TileInfo, decltype(comparator)>& colorMap);
 
@@ -103,7 +100,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                     spike->typeflags |= ENTITY_SPIKE_RIGHT;
                     spike->body = createBox(world, x * tile_width,
                                             y * tile_height, tile_width/2,
-                                            tile_height, b2_staticBody,
+                                            tile_height - 2, b2_staticBody,
                                             spike.get(), player);
                     m_layerNodes[LAYER_MID]->attachChild(std::move(spike));
                 }
@@ -112,7 +109,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                     spike->typeflags |= ENTITY_SPIKE_LEFT;
                     spike->body = createBox(world, x * tile_width,
                                             y * tile_height, tile_width / 2,
-                                            tile_height, b2_staticBody,
+                                            tile_height - 2, b2_staticBody,
                                             spike.get(), player);
                     m_layerNodes[LAYER_MID]->attachChild(std::move(spike));
                 }
@@ -129,13 +126,10 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
             }
 
             // checkpoint generation
-            if (sample == sf::Color::Green)
+            if (sample == sf::Color(0,255,1))
             {
                 TileInfo& tInfo = colorMap.at(sample);
-                std::unique_ptr<Tile> check(new Tile(levelTex, tInfo.rect));
-                // u32 id = levelTileIDfromCoords(x * tile_width, y *
-                // tile_height, maxMapSize);
-                // tilemap[id] = check.get();
+                std::unique_ptr<Tile> check(new Checkbox(levelTex, tInfo.rect));
                 check->moving = true;
                 check->shouldDraw = true;
                 check->setPosition(x * tile_width, y * tile_height);
@@ -145,7 +139,49 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                                         tile_width, tile_height, b2_dynamicBody,
                                         check.get(), player);
                 check->body->SetFixedRotation(true);
+                player->checkboxes.push_back({ check.get(),
+                                               sf::Vector2f(x * tile_width,
+                                                            y * tile_height) });
                 m_layerNodes[LAYER_MID]->attachChild(std::move(check));
+
+                // struct checkbox { Entity* box; sf::Vector2f origPos;}
+                // std::vector<checkbox> checkboxes;
+                continue;
+            }
+
+            // goldcoin generation
+            if (sample == sf::Color(238,156,1))
+            {
+                TileInfo& tInfo = colorMap.at(sample);
+                std::unique_ptr<Tile> gold(new Goldcoin(levelTex, tInfo.rect));
+                gold->setPosition(x * tile_width, y * tile_height);
+                u32 id = levelTileIDfromCoords(x * tile_width, y * tile_height,
+                                               maxMapSize);
+                tilemap[id] = gold.get();
+                gold->typeflags = ENTITY_GOLD_COIN;
+                gold->body = createBox(world, x * tile_width, y * tile_height,
+                                       tile_width, tile_height, b2_staticBody,
+                                       gold.get(), player, false);
+                gold->body->SetActive(true);
+                m_layerNodes[LAYER_MID]->attachChild(std::move(gold));
+                continue;
+            }
+
+            // goldcoin generation
+            if (sample == sf::Color(61,53,179))
+            {
+                TileInfo& tInfo = colorMap.at(sample);
+                std::unique_ptr<Tile> purp(new Purpcoin(levelTex, tInfo.rect));
+                purp->setPosition(x * tile_width, y * tile_height);
+                u32 id = levelTileIDfromCoords(x * tile_width, y * tile_height,
+                                               maxMapSize);
+                tilemap[id] = purp.get();
+                purp->typeflags = ENTITY_PURP_COIN;
+                purp->body = createBox(world, x * tile_width, y * tile_height,
+                                       tile_width, tile_height, b2_staticBody,
+                                       purp.get(), player, false);
+                purp->body->SetActive(true);
+                m_layerNodes[LAYER_MID]->attachChild(std::move(purp));
                 continue;
             }
 
@@ -161,7 +197,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                 goal->typeflags |= ENTITY_GOAL;
                 goal->body = createBox(world, x * tile_width, y * tile_height,
                                        tile_width, tile_height, b2_staticBody,
-                                       goal.get(), player);
+                                       goal.get(), player, false);
                 goal->body->SetActive(true);
                 m_layerNodes[LAYER_MID]->attachChild(std::move(goal));
                 continue;
