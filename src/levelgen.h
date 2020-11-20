@@ -38,4 +38,5 @@ u32 levelTileIDfromCoords(const u32 x, const u32 y,
 
 b2Body* createBox(b2World* world, i32 posX, i32 posY, i32 sizeX, i32 sizeY,
                   b2BodyType type, void* userData, Player* player,
-                  b32 collidable = true);
+                  b32 collidable = true, u16 categoryBits = 0x0001,
+                  u16 maskBits = 0xFFFF);

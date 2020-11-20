@@ -25,12 +25,9 @@ public:
     virtual void updateCurrent(f32 dt) override
     {
         // TODO(dan): not needed for (static) tiles
-        if (body)
-        {
-            setRotation(radToDeg(body->GetAngle()));
-            setPosition(metersToPixels(body->GetPosition().x),
-                        metersToPixels(body->GetPosition().y));
-        }
+        setRotation(radToDeg(body->GetAngle()));
+        setPosition(metersToPixels(body->GetPosition().x),
+                    metersToPixels(body->GetPosition().y));
     };
 
     inline u32 getType() const override { return typeflags; }
@@ -59,6 +56,7 @@ public:
     u32 typeflags = ENTITY_TILE;
     b32 moving = false;
     mutable b32 shouldDraw = false;
+    b32 exists = true;
 
 //private:
     sf::Sprite m_sprite;
@@ -173,17 +171,16 @@ public:
     virtual void drawCurrent(sf::RenderTarget& target,
                              sf::RenderStates states) const override
     {
-        // can be turned on/off for debugging
-        target.draw(m_sprite, states);
+        if (exists) target.draw(m_sprite, states);
     }
 };
 
 class DyingCorpse : public Tile
 {
 public:
-    DyingCorpse(const sf::Texture& tile_sheet)
-      : Tile(tile_sheet, { 0 * 64, 2 * 64, 64, 64 })
-      , anim(tile_sheet.getSize(), 23, 14)
+    DyingCorpse(const sf::Texture& tile_sheet, bool facingRight)
+      : Tile(tile_sheet, { 7 * 128, 2 * 128, 128, 128 })
+      , anim(tile_sheet.getSize(), 8, 9)
     {
         anim.add(0, 2, 0.08f);
         anim.add(1, 2, 0.08f);
@@ -194,23 +191,20 @@ public:
         anim.add(6, 2, 0.08f);
         anim.add(7, 2, 0.08f);
         anim.looped = false;
+        anim.flipped = !facingRight;
     }
 
     virtual void updateCurrent(f32 dt) override
     {
         Tile::updateCurrent(dt);
-
-        if (!anim.done)
-        {
-            m_sprite.setTextureRect(anim.update(dt));
-        }
-        else
-        {
-            m_sprite.setTextureRect({  7 * 64,
-                                       2 * 64, 64, 64 });
-        }
+        m_sprite.setTextureRect(anim.update(dt));
     }
 
-    b32 playAnim = false;
+    virtual void drawCurrent(sf::RenderTarget& target,
+                             sf::RenderStates states) const override
+    {
+        if (exists) target.draw(m_sprite, states);
+    }
+
     Animation anim;
 };

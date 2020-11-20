@@ -94,8 +94,9 @@ static const Command respawnCmd = {
                                  0);
         }
 
-        // p.leaveDyingCorpse = true;
-        p.leaveCorpse = true;
+        if (p.m_state == Player::DEAD) p.leaveCorpse = true;
+        else
+            p.leaveDyingCorpse = true;
         p.deathPos = p.getPosition();
 
         p.dead = false;

@@ -25,7 +25,7 @@
 #include <SFML/OpenGL.hpp>
 #include <SFML/Config.hpp>
 
-#include "Box2D/Box2D.h"
+#include "box2d/box2d.h"
 
 #include "imgui-SFML.h"
 #include "imgui.h"

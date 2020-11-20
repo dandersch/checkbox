@@ -29,6 +29,8 @@ void menuInit(Game* game, ResourcePool<sf::Texture>& textures,
     guiButton1->setCallback([&]() {
         gameInst->currentState = IN_GAME;
         gameInst->m_world.m_player->retry();
+        for (auto corpse : gameInst->m_world.m_player->lyingCorpses)
+            corpse->exists = false;
     });
     guiButton1->setPosition(100, 100);
 

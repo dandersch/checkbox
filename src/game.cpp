@@ -19,7 +19,7 @@ Game::Game()
   , m_texs(".png")
   , m_fonts(".ttf")
   , m_cursor(m_texs.get("cursor.png"), sf::IntRect(144, 0, 72, 72))
-  , m_text("", m_fonts.get("Boxy-Bold.ttf"), 35)
+  , m_text("", m_fonts.get("Boxy-Bold.ttf"), 70)
   , m_music()
   , m_world("level_new.png")
 {
@@ -31,7 +31,7 @@ Game::Game()
     m_window.setMouseCursorVisible(false);
     ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
 
-    m_text.setPosition(100, 900);
+    m_text.setPosition(300, 800);
 
     m_music.openFromFile("../res/intro.ogg");
     m_music.setLoop(true);
@@ -145,7 +145,7 @@ void Game::update(f32 dtime)
         // TODO(dan): testing lifecount
         auto coins = m_world.m_player->goldCount;
         m_text.setFillColor(sf::Color(238,205,1));
-        m_text.setString("Gold: " + std::to_string(coins));
+        m_text.setString(std::to_string(coins));
 
         if (m_world.m_player->gameOver)
         {

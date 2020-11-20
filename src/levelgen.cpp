@@ -66,7 +66,8 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                                                             // workaround for
                                                             // "better"
                                                             // collision
-                                         b2_dynamicBody, player, player);
+                                         b2_dynamicBody, player, player, true,
+                                         0x0001, 0xFF0F);
                 player->body->SetFixedRotation(true);
                 player->spawn_loc = sf::Vector2i(x * tile_height,
                                                  y * tile_height);
@@ -137,7 +138,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                                    ENTITY_HOLDABLE;
                 check->body = createBox(world, x * tile_width, y * tile_height,
                                         tile_width, tile_height, b2_dynamicBody,
-                                        check.get(), player);
+                                        check.get(), player, true, 0x0001, 0xFF0F);
                 check->body->SetFixedRotation(true);
                 player->checkboxes.push_back({ check.get(),
                                                sf::Vector2f(x * tile_width,
@@ -162,7 +163,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                 gold->body = createBox(world, x * tile_width, y * tile_height,
                                        tile_width, tile_height, b2_staticBody,
                                        gold.get(), player, false);
-                gold->body->SetActive(true);
+                gold->body->SetEnabled(true);
                 m_layerNodes[LAYER_MID]->attachChild(std::move(gold));
                 continue;
             }
@@ -180,7 +181,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                 purp->body = createBox(world, x * tile_width, y * tile_height,
                                        tile_width, tile_height, b2_staticBody,
                                        purp.get(), player, false);
-                purp->body->SetActive(true);
+                purp->body->SetEnabled(true);
                 m_layerNodes[LAYER_MID]->attachChild(std::move(purp));
                 continue;
             }
@@ -198,7 +199,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                 goal->body = createBox(world, x * tile_width, y * tile_height,
                                        tile_width, tile_height, b2_staticBody,
                                        goal.get(), player, false);
-                goal->body->SetActive(true);
+                goal->body->SetEnabled(true);
                 m_layerNodes[LAYER_MID]->attachChild(std::move(goal));
                 continue;
             }
@@ -238,7 +239,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                                    tile.get(), player);
 
             // make background tiles non-collidable
-            tile->body->SetActive(false);
+            tile->body->SetEnabled(false);
 
             m_layerNodes[LAYER_BACK]->attachChild(std::move(tile));
         }
@@ -249,7 +250,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
 
 b2Body* createBox(b2World* world, i32 posX, i32 posY, i32 sizeX, i32 sizeY,
                   b2BodyType type, void* userData, Player* player,
-                  b32 collidable)
+                  b32 collidable, u16 categoryBits, u16 maskBits)
 {
     b2BodyDef bodyDef;
     bodyDef.position.Set(pixelsToMeters<double>(posX),
@@ -265,6 +266,8 @@ b2Body* createBox(b2World* world, i32 posX, i32 posY, i32 sizeX, i32 sizeY,
     fixtureDef.friction = 0.4f;
     fixtureDef.restitution = 0.5f;
     fixtureDef.shape = &b2shape;
+    fixtureDef.filter.categoryBits = categoryBits;
+    fixtureDef.filter.maskBits = maskBits;
     if (!collidable) fixtureDef.isSensor = true;
 
     b2Body* body = world->CreateBody(&bodyDef);
@@ -311,7 +314,7 @@ void levelPlaceBox(sf::Vector2f pos, b32 isStatic, b2World* world,
     auto tileIt = tilemap.find(levelTileIDfromCoords(xpos, ypos, maxMapSize));
     if (tileIt != tilemap.end())
     {
-        if ((*tileIt).second->body->IsActive()) return;
+        if ((*tileIt).second->body->IsEnabled()) return;
     }
 
     std::unique_ptr<Tile> box(new Tile(tile_sheet,

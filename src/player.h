@@ -11,6 +11,7 @@
 template<typename Resource> class ResourcePool;
 class Goldcoin;
 class Purpcoin;
+class Tile;
 
 struct CheckboxInfo
 {
@@ -101,10 +102,12 @@ public:
     std::vector<CheckboxInfo> checkboxes;
     std::vector<Goldcoin*> collectedCoins;
     std::vector<Purpcoin*> collectedPurps;
+    std::vector<Tile*> lyingCorpses;
     u32 goldCount = 0;
     sf::Sprite m_sprite;
 
     b32 leaveCorpse = false;
+    b32 leaveDyingCorpse = false;
     sf::Vector2f deathPos;
 
 private:

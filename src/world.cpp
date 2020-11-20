@@ -219,21 +219,35 @@ void World::update(f32 dt, sf::RenderWindow& window)
     }
 
     // leave player corpses when respawning
-    /*
     if (m_player->leaveCorpse)
     {
         std::unique_ptr<Entity> corpse(new Corpse(*m_player->m_sprite.getTexture(),
                                                   m_player->facingRight));
-        auto corpsePos = m_player->getPosition();
+        auto corpsePos = m_player->deathPos;
         corpse->setPosition(corpsePos);
-        corpse->body = createBox(&world, corpsePos.x, corpsePos.y, 128 / 2, 128,
-                                 b2_dynamicBody, corpse.get(), m_player, true);
-
-        m_layerNodes[LAYER_MID]->attachChild(std::move(corpse));
-
+        corpse->body = createBox(&world, corpsePos.x, corpsePos.y,
+                                 (128 / 2) - 10, 128 - 2, b2_dynamicBody,
+                                 corpse.get(), m_player, true, 0x0010, 0xFF0F);
+        corpse->body->SetFixedRotation(true);
+        m_player->lyingCorpses.push_back(((Tile*) corpse.get()));
+        m_layerNodes[LAYER_BACK]->attachChild(std::move(corpse));
         m_player->leaveCorpse = false;
     }
-    */
+
+    if (m_player->leaveDyingCorpse)
+    {
+        std::unique_ptr<Entity> corpse(new DyingCorpse(*m_player->m_sprite.getTexture(),
+                                                       m_player->facingRight));
+        auto corpsePos = m_player->deathPos;
+        corpse->setPosition(corpsePos);
+        corpse->body = createBox(&world, corpsePos.x, corpsePos.y,
+                                 (128 / 2) - 10, 128 - 2, b2_dynamicBody,
+                                 corpse.get(), m_player, true, 0x0010, 0xFF0F);
+        corpse->body->SetFixedRotation(true);
+        m_player->lyingCorpses.push_back(((Tile*) corpse.get()));
+        m_layerNodes[LAYER_MID]->attachChild(std::move(corpse));
+        m_player->leaveDyingCorpse = false;
+    }
 
     // Physics
     m_player->velocity.y += metersToPixels(world.GetGravity().y) * dt;
