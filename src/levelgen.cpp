@@ -163,7 +163,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                 gold->body = createBox(world, x * tile_width, y * tile_height,
                                        tile_width, tile_height, b2_staticBody,
                                        gold.get(), player, false);
-                gold->body->SetEnabled(true);
+                gold->body->SetActive(true);
                 m_layerNodes[LAYER_MID]->attachChild(std::move(gold));
                 continue;
             }
@@ -181,7 +181,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                 purp->body = createBox(world, x * tile_width, y * tile_height,
                                        tile_width, tile_height, b2_staticBody,
                                        purp.get(), player, false);
-                purp->body->SetEnabled(true);
+                purp->body->SetActive(true);
                 m_layerNodes[LAYER_MID]->attachChild(std::move(purp));
                 continue;
             }
@@ -199,7 +199,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                 goal->body = createBox(world, x * tile_width, y * tile_height,
                                        tile_width, tile_height, b2_staticBody,
                                        goal.get(), player, false);
-                goal->body->SetEnabled(true);
+                goal->body->SetActive(true);
                 m_layerNodes[LAYER_MID]->attachChild(std::move(goal));
                 continue;
             }
@@ -239,7 +239,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                                    tile.get(), player);
 
             // make background tiles non-collidable
-            tile->body->SetEnabled(false);
+            tile->body->SetActive(false);
 
             m_layerNodes[LAYER_BACK]->attachChild(std::move(tile));
         }
@@ -314,7 +314,7 @@ void levelPlaceBox(sf::Vector2f pos, b32 isStatic, b2World* world,
     auto tileIt = tilemap.find(levelTileIDfromCoords(xpos, ypos, maxMapSize));
     if (tileIt != tilemap.end())
     {
-        if ((*tileIt).second->body->IsEnabled()) return;
+        if ((*tileIt).second->body->IsActive()) return;
     }
 
     std::unique_ptr<Tile> box(new Tile(tile_sheet,

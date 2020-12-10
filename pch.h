@@ -25,7 +25,8 @@
 #include <SFML/OpenGL.hpp>
 #include <SFML/Config.hpp>
 
-#include "box2d/box2d.h"
+// TODO(dan): compatibility with Box2D >= 2.4.0
+#include "Box2D/Box2D.h"
 
 #include "imgui-SFML.h"
 #include "imgui.h"
