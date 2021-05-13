@@ -154,12 +154,12 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
             if (sample == sf::Color(238,156,1))
             {
                 TileInfo& tInfo = colorMap.at(sample);
-                std::unique_ptr<Tile> gold(new Goldcoin(levelTex, tInfo.rect));
+                std::unique_ptr<Tile> gold(new Coin(levelTex, tInfo.rect));
                 gold->setPosition(x * tile_width, y * tile_height);
                 u32 id = levelTileIDfromCoords(x * tile_width, y * tile_height,
                                                maxMapSize);
                 tilemap[id] = gold.get();
-                gold->typeflags = ENTITY_GOLD_COIN;
+                gold->typeflags = ENTITY_COIN;
                 gold->body = createBox(world, x * tile_width, y * tile_height,
                                        tile_width, tile_height, b2_staticBody,
                                        gold.get(), player, false);
@@ -172,12 +172,12 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
             if (sample == sf::Color(61,53,179))
             {
                 TileInfo& tInfo = colorMap.at(sample);
-                std::unique_ptr<Tile> purp(new Purpcoin(levelTex, tInfo.rect));
+                std::unique_ptr<Tile> purp(new Coin(levelTex, tInfo.rect, true));
                 purp->setPosition(x * tile_width, y * tile_height);
                 u32 id = levelTileIDfromCoords(x * tile_width, y * tile_height,
                                                maxMapSize);
                 tilemap[id] = purp.get();
-                purp->typeflags = ENTITY_PURP_COIN;
+                purp->typeflags = ENTITY_COIN;
                 purp->body = createBox(world, x * tile_width, y * tile_height,
                                        tile_width, tile_height, b2_staticBody,
                                        purp.get(), player, false);

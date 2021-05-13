@@ -36,6 +36,8 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     //: m_sprite(textures.get("platformer_sprites_base.png"))
   : m_sprite(textures.get("output.png"))
 {
+    EventSystem::subscribe(std::bind(&Player::processEvent, this, std::placeholders::_1));
+
     m_state = IDLE;
     m_sprite.setTextureRect(sf::IntRect(0, 0, PLAYER_WIDTH, PLAYER_HEIGHT));
     m_sprite.setOrigin(64, 64);
@@ -53,13 +55,13 @@ Player::Player(ResourcePool<sf::Texture>& textures)
     assignButton(DS4_SQUARE, HOLD);
     assignButton(DS4_START, RETRY);
 
-    m_actionbinds[MOVE_LEFT] = moveLeftCmd;
+    m_actionbinds[MOVE_LEFT]  = moveLeftCmd;
     m_actionbinds[MOVE_RIGHT] = moveRightCmd;
-    m_actionbinds[JUMP] = jumpCmd;
-    m_actionbinds[WINNING] = winCmd;
-    m_actionbinds[RESPAWN] = respawnCmd;
-    m_actionbinds[HOLD] = holdCmd;
-    m_actionbinds[RETRY] = retryCmd;
+    m_actionbinds[JUMP]       = jumpCmd;
+    m_actionbinds[WINNING]    = winCmd;
+    m_actionbinds[RESPAWN]    = respawnCmd;
+    m_actionbinds[HOLD]       = holdCmd;
+    m_actionbinds[RETRY]      = retryCmd;
 
     // TODO(dan): sort through holdables, remove holdables too far away
     set_comparator = [&](const Entity* e1, const Entity* e2) {
@@ -83,6 +85,20 @@ Player::Player(ResourcePool<sf::Texture>& textures)
                 ImGui::Text("%.p", *it);
             }
         });
+    }
+}
+
+// TODO testing eventsystem
+void Player::processEvent(const Event& evn)
+{
+    switch (evn.type)
+    {
+        case EventType::EVENT_PLAYER_COIN_PICKUP:
+            auto coin = (Coin*) evn.args.at("coin");
+            goldCount += coin->value;
+            collectedCoins.push_back(coin);
+            coin->collected = true;
+            break;
     }
 }
 
@@ -379,11 +395,7 @@ void Player::retry()
     for (auto c : collectedCoins)
         c->collected = false;
 
-    for (auto p : collectedPurps)
-        p->collected = false;
-
     collectedCoins.clear();
-    collectedPurps.clear();
     goldCount = 0;
     holding = nullptr;
     dead = false;

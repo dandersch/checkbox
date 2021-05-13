@@ -62,17 +62,27 @@ public:
     sf::Sprite m_sprite;
 };
 
-class Goldcoin : public Tile
+class Coin : public Tile
 {
 public:
-    Goldcoin(const sf::Texture& tile_sheet, const sf::IntRect& tile_rect)
+    Coin(const sf::Texture& tile_sheet, const sf::IntRect& tile_rect,
+         bool purple = false)
       : Tile(tile_sheet, tile_rect)
       , anim(tile_sheet.getSize(), 23, 14)
     {
-        anim.add(15, 0, 0.1f);
-        anim.add(16, 0, 0.1f);
-        anim.add(17, 0, 0.1f);
-        anim.add(18, 0, 0.1f);
+        if (!purple) {
+            anim.add(15, 0, 0.1f);
+            anim.add(16, 0, 0.1f);
+            anim.add(17, 0, 0.1f);
+            anim.add(18, 0, 0.1f);
+            value = 1;
+        } else {
+            anim.add(15, 1, 0.1f);
+            anim.add(16, 1, 0.1f);
+            anim.add(17, 1, 0.1f);
+            anim.add(18, 1, 0.1f);
+            value = 5;
+        }
         anim.looped = true;
     }
 
@@ -87,10 +97,12 @@ public:
         m_sprite.setTextureRect(anim.update(dt));
     }
 
+    u32 value;
     Animation anim;
     b32 collected = false;
 };
 
+/*
 class Purpcoin : public Tile
 {
 public:
@@ -98,10 +110,6 @@ public:
       : Tile(tile_sheet, tile_rect)
       , anim(tile_sheet.getSize(), 23, 14)
     {
-        anim.add(15, 1, 0.1f);
-        anim.add(16, 1, 0.1f);
-        anim.add(17, 1, 0.1f);
-        anim.add(18, 1, 0.1f);
         anim.looped = true;
     }
 
@@ -119,6 +127,7 @@ public:
     Animation anim;
     b32 collected = false;
 };
+*/
 
 class Checkbox : public Tile
 {

@@ -5,6 +5,8 @@
 #include "player.h"
 #include "tile.h"
 
+#include "event.h"
+
 extern bool create_joint;
 extern b2Body* body_player;
 extern b2Body* body_box;
@@ -111,29 +113,11 @@ class PlayerContactListener : public b2ContactListener
             // return;
         }
 
-        if (e2->getType() & ENTITY_GOLD_COIN && fixtureType == 0)
+        if ((e2->getType() & ENTITY_COIN) && fixtureType == 0)
         {
-            // TODO(dan) reset on retry
-            auto coin = (Goldcoin*) e2;
-            if (!coin->collected)
-            {
-                player->goldCount++;
-                player->collectedCoins.push_back(coin);
-            }
-            coin->collected = true;
-            return;
-        }
-
-        if (e2->getType() & ENTITY_PURP_COIN && fixtureType == 0)
-        {
-            // TODO(dan) reset on retry
-            auto coin = (Purpcoin*) e2;
-            if (!coin->collected)
-            {
-                player->goldCount += 5;
-                player->collectedPurps.push_back(coin);
-            }
-            coin->collected = true;
+            Event evn(EventType::EVENT_PLAYER_COIN_PICKUP);
+            evn.args["coin"] = (void*) e2;
+            EventSystem::sendEvent(evn);
             return;
         }
 

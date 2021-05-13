@@ -16,9 +16,8 @@ enum EntityType
     ENTITY_SPIKE_DOWN   = 1 <<  6,
     ENTITY_SPIKE_LEFT   = 1 <<  7,
     ENTITY_SPIKE_RIGHT  = 1 <<  8,
-    ENTITY_GOLD_COIN    = 1 <<  9,
-    ENTITY_PURP_COIN    = 1 << 10,
-    ENTITY_GOAL         = 1 << 11
+    ENTITY_COIN         = 1 <<  9,
+    ENTITY_GOAL         = 1 << 10
 };
 
 enum CmdType
