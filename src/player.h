@@ -52,6 +52,12 @@ public:
 
 public:
     Player(ResourcePool<sf::Texture>& textures);
+    ~Player()
+    {
+        EventSystem::unsubscribe(std::bind(&Player::processEvent, this,
+                                           std::placeholders::_1));
+    }
+
     virtual void updateCurrent(f32 dt) override;
     void createAnimations();
 
@@ -103,7 +109,6 @@ public:
     std::set<Entity*, decltype(set_comparator)> holdables;
     std::vector<CheckboxInfo> checkboxes;
     std::vector<Coin*> collectedCoins;
-    //std::vector<Purpcoin*> collectedPurps;
     std::vector<Tile*> lyingCorpses;
     u32 goldCount = 0;
     sf::Sprite m_sprite;

@@ -1,6 +1,22 @@
 #pragma once
 #include "pch.h"
 
+enum EntityType
+{
+    ENTITY_NONE         = 0,
+    ENTITY_PLAYER       = 1 <<  0,
+    ENTITY_ENEMY        = 1 <<  1,
+    ENTITY_TILE         = 1 <<  2,
+    ENTITY_CHECKPOINT   = 1 <<  3,
+    ENTITY_HOLDABLE     = 1 <<  4,
+    ENTITY_SPIKE_UP     = 1 <<  5,
+    ENTITY_SPIKE_DOWN   = 1 <<  6,
+    ENTITY_SPIKE_LEFT   = 1 <<  7,
+    ENTITY_SPIKE_RIGHT  = 1 <<  8,
+    ENTITY_COIN         = 1 <<  9,
+    ENTITY_GOAL         = 1 << 10
+};
+
 struct Command;
 
 // TODO(dan): completely get rid of scenegraph, instead use array of entities &

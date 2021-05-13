@@ -158,6 +158,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                 gold->setPosition(x * tile_width, y * tile_height);
                 u32 id = levelTileIDfromCoords(x * tile_width, y * tile_height,
                                                maxMapSize);
+                ((Coin*) gold.get())->value = 1;
                 tilemap[id] = gold.get();
                 gold->typeflags = ENTITY_COIN;
                 gold->body = createBox(world, x * tile_width, y * tile_height,
@@ -178,6 +179,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                                                maxMapSize);
                 tilemap[id] = purp.get();
                 purp->typeflags = ENTITY_COIN;
+                ((Coin*) purp.get())->value = 5;
                 purp->body = createBox(world, x * tile_width, y * tile_height,
                                        tile_width, tile_height, b2_staticBody,
                                        purp.get(), player, false);

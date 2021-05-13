@@ -1,9 +1,10 @@
 #pragma once
 #include "command.h"
 #include "player.h"
+#include "entity.h"
 #include "tile.h"
 
-void cmdFillUpHashMap();
+//void cmdFillUpHashMap();
 
 // functor for player movement
 struct PlayerMover

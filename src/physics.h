@@ -115,6 +115,7 @@ class PlayerContactListener : public b2ContactListener
 
         if ((e2->getType() & ENTITY_COIN) && fixtureType == 0)
         {
+            if (((Coin*) e2)->collected) return;
             Event evn(EventType::EVENT_PLAYER_COIN_PICKUP);
             evn.args["coin"] = (void*) e2;
             EventSystem::sendEvent(evn);

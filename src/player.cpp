@@ -98,6 +98,7 @@ void Player::processEvent(const Event& evn)
             goldCount += coin->value;
             collectedCoins.push_back(coin);
             coin->collected = true;
+            //evn.handled = true; // shouldn't be set, bc there are 2 players
             break;
     }
 }
@@ -328,9 +329,9 @@ b32 Player::isOneShot(Action action)
     case MOVE_RIGHT: // fallthrough
     case MOVE_UP:    // fallthrough
     case JUMP:       // fallthrough
-    case MOVE_DOWN:
-    case WINNING:
-    case DYING:
+    case MOVE_DOWN:  // fallthrough
+    case WINNING:    // fallthrough
+    case DYING:      // fallthrough
         return false;
 
     default: return true;

@@ -3,6 +3,7 @@
 #include "gui.h"
 #include "levelgen.h"
 #include "world.h"
+#include "entity.h"
 
 // menu items
 static std::shared_ptr<GUIContainer> guiContainer;

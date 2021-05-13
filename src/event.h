@@ -15,9 +15,10 @@ enum class EventType
 struct Event
 {
     EventType type;
-    std::unordered_map<std::string, void*> args;
+    mutable bool handled;
+    std::unordered_map<std::string, void*> args; // for custom properties
 
-    Event(EventType type) : type(type)
+    Event(EventType type) : type(type), handled(false)
     {
         args = std::unordered_map<std::string, void*>();
     };
@@ -33,11 +34,31 @@ public:
 
     static void sendEvent(const Event& evn)
     {
-        if (sub_count == 0) return;
-        for (u32 i = 0; i < sub_count; i++) onEvent[i](evn);
+        for (u32 i = 0; i < sub_count; i++)
+        {
+            if (evn.handled) return;
+            onEvent[i](evn);
+        }
+
     }
 
-    // TODO unsubscribe method
+    // unsubscribes given function from events by finding & removing it
+    static void unsubscribe(std::function<void(const Event&)> handler)
+    {
+        for (u32 i = 0; i < sub_count; i++)
+        {
+            if (onEvent[i].target<void(*)(const Event&)>() ==
+                handler.target<void(*)(const Event&)>())
+            {
+                if (sub_count == 1) {
+                    onEvent[i] = nullptr;
+                } else {
+                    onEvent[i] = onEvent[sub_count - 1];
+                }
+                --sub_count;
+            }
+        }
+    }
 
 private:
     static std::function<void(const Event&)> onEvent[MAX_EVENT_SUBS];
