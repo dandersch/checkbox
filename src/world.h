@@ -25,6 +25,8 @@ public:
         m_player->handleEvent(event, cmdQueue);
     }
 
+    void processEvent(const Event& evn);
+
 public:
     sf::View m_view; // TODO private
     std::queue<Command> cmdQueue;

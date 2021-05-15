@@ -105,21 +105,19 @@ public:
     bool gameOver = false;
     sf::Clock celebTimer;
     Entity* holding = nullptr;
+
     std::function<bool(const Entity* lhs, const Entity* rhs)> set_comparator;
     std::set<Entity*, decltype(set_comparator)> holdables;
     std::vector<CheckboxInfo> checkboxes;
-    std::vector<Coin*> collectedCoins;
     std::vector<Tile*> lyingCorpses;
+    std::vector<Coin*> collectedCoins;
     u32 goldCount = 0;
+
     sf::Sprite m_sprite;
 
-    b32 leaveCorpse = false;
-    b32 leaveDyingCorpse = false;
-    sf::Vector2f deathPos;
-
 private:
-    std::map<PlayerState, Animation> m_anims;
+    std::map<PlayerState, Animation>    m_anims;
     std::map<sf::Keyboard::Key, Action> m_keybinds;
-    std::map<u32, Action> m_joybinds;
-    std::map<Action, Command> m_actionbinds;
+    std::map<u32, Action>               m_joybinds;
+    std::map<Action, Command>           m_actionbinds;
 };

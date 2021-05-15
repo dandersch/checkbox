@@ -3,6 +3,7 @@
 #include "player.h"
 #include "entity.h"
 #include "tile.h"
+#include "event.h"
 
 //void cmdFillUpHashMap();
 
@@ -95,10 +96,11 @@ static const Command respawnCmd = {
                                  0);
         }
 
-        if (p.m_state == Player::DEAD) p.leaveCorpse = true;
-        else
-            p.leaveDyingCorpse = true;
-        p.deathPos = p.getPosition();
+        Event evn(EventType::EVENT_PLAYER_RESPAWN);
+        evn.args["dying"]    = (void*) !(p.m_state == Player::DEAD);
+        //evn.args["position"] = (void*) &a;
+        evn.args["target"]   = static_cast<void*>(&p);
+        EventSystem::sendEvent(evn);
 
         p.dead = false;
     }),

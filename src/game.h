@@ -40,6 +40,8 @@ private:
     ResourcePool<sf::Font> m_fonts;
     //ResourcePool<sf::SoundBuffer> m_sfxs;
 
+    // TODO should have player (singleton) instead of world
+
     sf::Texture m_cursorTexture;
     sf::Sprite m_cursor;
     sf::Text m_text;

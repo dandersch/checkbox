@@ -102,33 +102,6 @@ public:
     b32 collected = false;
 };
 
-/*
-class Purpcoin : public Tile
-{
-public:
-    Purpcoin(const sf::Texture& tile_sheet, const sf::IntRect& tile_rect)
-      : Tile(tile_sheet, tile_rect)
-      , anim(tile_sheet.getSize(), 23, 14)
-    {
-        anim.looped = true;
-    }
-
-    virtual void drawCurrent(sf::RenderTarget& target,
-                             sf::RenderStates states) const override
-    {
-        if (!collected) Tile::drawCurrent(target, states);
-    }
-
-    virtual void updateCurrent(f32 dt) override {
-        Tile::updateCurrent(dt);
-        m_sprite.setTextureRect(anim.update(dt));
-    }
-
-    Animation anim;
-    b32 collected = false;
-};
-*/
-
 class Checkbox : public Tile
 {
 public:
@@ -164,49 +137,35 @@ public:
 class Corpse : public Tile
 {
 public:
-    Corpse(const sf::Texture& tile_sheet, bool facingRight)
+    Corpse(const sf::Texture& tile_sheet, bool facingRight, bool dying = false)
       : Tile(tile_sheet, { 7 * 128, 2 * 128, 128, 128 })
     {
         if (facingRight)
             m_sprite.setTextureRect({ 7 * 128, 2 * 128, 128, 128 });
         else
             m_sprite.setTextureRect({ 8 * 128, 2 * 128, -128, 128 });
+
+        if (dying)
+        {
+            anim = new Animation(tile_sheet.getSize(), 8, 9);
+            anim->add(0, 2, 0.08f);
+            anim->add(1, 2, 0.08f);
+            anim->add(2, 2, 0.08f);
+            anim->add(3, 2, 0.08f);
+            anim->add(4, 2, 0.08f);
+            anim->add(5, 2, 0.08f);
+            anim->add(6, 2, 0.08f);
+            anim->add(7, 2, 0.08f);
+            anim->looped  = false;
+            anim->flipped = !facingRight;
+        }
     }
+
+    ~Corpse() { free(anim); }
 
     virtual void updateCurrent(f32 dt) override {
         Tile::updateCurrent(dt);
-    }
-
-    virtual void drawCurrent(sf::RenderTarget& target,
-                             sf::RenderStates states) const override
-    {
-        if (exists) target.draw(m_sprite, states);
-    }
-};
-
-class DyingCorpse : public Tile
-{
-public:
-    DyingCorpse(const sf::Texture& tile_sheet, bool facingRight)
-      : Tile(tile_sheet, { 7 * 128, 2 * 128, 128, 128 })
-      , anim(tile_sheet.getSize(), 8, 9)
-    {
-        anim.add(0, 2, 0.08f);
-        anim.add(1, 2, 0.08f);
-        anim.add(2, 2, 0.08f);
-        anim.add(3, 2, 0.08f);
-        anim.add(4, 2, 0.08f);
-        anim.add(5, 2, 0.08f);
-        anim.add(6, 2, 0.08f);
-        anim.add(7, 2, 0.08f);
-        anim.looped = false;
-        anim.flipped = !facingRight;
-    }
-
-    virtual void updateCurrent(f32 dt) override
-    {
-        Tile::updateCurrent(dt);
-        m_sprite.setTextureRect(anim.update(dt));
+        if (anim) m_sprite.setTextureRect(anim->update(dt));
     }
 
     virtual void drawCurrent(sf::RenderTarget& target,
@@ -215,5 +174,5 @@ public:
         if (exists) target.draw(m_sprite, states);
     }
 
-    Animation anim;
+    Animation* anim = nullptr;
 };

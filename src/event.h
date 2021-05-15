@@ -9,6 +9,7 @@
 enum class EventType
 {
     EVENT_PLAYER_COIN_PICKUP,
+    EVENT_PLAYER_RESPAWN,
     EVENT_PLAYER_DIED
 };
 
