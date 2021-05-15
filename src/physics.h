@@ -74,6 +74,11 @@ class PlayerContactListener : public b2ContactListener
         {
             if (!player->dead) player->lifeCount--;
             player->holding = nullptr;
+            if (!player->dead)
+            {
+                Event evn(EventType::EVENT_PLAYER_DIED);
+                EventSystem::sendEvent(evn);
+            }
             player->dead = true;
 
             // TODO(dan): hardcoded

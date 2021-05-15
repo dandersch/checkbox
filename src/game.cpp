@@ -33,11 +33,10 @@ Game::Game()
 
     m_text.setPosition(300, 800);
 
-    m_music.openFromFile("../res/intro.ogg");
+    m_music.openFromFile("../res/nescaline.wav");
+    m_music.setVolume(100.f);
     m_music.setLoop(true);
     m_music.play();
-    m_music.pause();
-    m_music.setVolume(1.f);
 
     menuInit(this, m_texs, m_fonts);
 }

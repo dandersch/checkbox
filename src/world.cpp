@@ -4,6 +4,7 @@
 #include "player.h"
 #include "command.h"
 #include "playercmds.h"
+#include "sound.h"
 
 //#define VIEW_HEIGHT 2560
 //#define VIEW_WIDTH  1440
@@ -30,6 +31,7 @@ World::World(const std::string& levelName, b32 menuMode)
 {
     EventSystem::subscribe(std::bind(&World::processEvent, this,
                                      std::placeholders::_1));
+    SoundSystem::get();
 
     // initialize nodes for every layer of the scene
     for (std::size_t i = 0; i < LAYER_COUNT; i++)
