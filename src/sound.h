@@ -49,7 +49,7 @@ private:
         EventSystem::subscribe(std::bind(&SoundSystem::processEvent, this,
                                          std::placeholders::_1));
         for (int i = 0; i < MAX_CONC_SOUNDS; i++)
-            sound[i].setVolume(80.f);
+            sound[i].setVolume(60.f);
     }
 
     ResourcePool<sf::SoundBuffer> m_sfx;

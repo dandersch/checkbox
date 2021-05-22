@@ -89,7 +89,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
 
                 if (sample == sf::Color::Red)
                 {
-                    spike->typeflags |= ENTITY_SPIKE_UP;
+                    spike->typeflags |= ENTITY_SPIKE;
                     spike->body = createBox(world, x * tile_width,
                                             y * tile_height, tile_width,
                                             tile_height/2, b2_staticBody,
@@ -98,7 +98,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                 }
                 else if (sample == sf::Color(121, 0, 130))
                 {
-                    spike->typeflags |= ENTITY_SPIKE_RIGHT;
+                    spike->typeflags |= ENTITY_SPIKE;
                     spike->body = createBox(world, x * tile_width,
                                             y * tile_height, tile_width/2,
                                             tile_height - 2, b2_staticBody,
@@ -107,7 +107,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                 }
                 else if (sample == sf::Color(130, 0, 65))
                 {
-                    spike->typeflags |= ENTITY_SPIKE_LEFT;
+                    spike->typeflags |= ENTITY_SPIKE;
                     spike->body = createBox(world, x * tile_width,
                                             y * tile_height, tile_width / 2,
                                             tile_height - 2, b2_staticBody,
@@ -116,7 +116,7 @@ void levelBuild(std::map<u32, Tile*>& tilemap, std::map<u32, Tile*>& tilemap_bg,
                 }
                 else if (sample == sf::Color(40, 0, 130))
                 {
-                    spike->typeflags |= ENTITY_SPIKE_DOWN;
+                    spike->typeflags |= ENTITY_SPIKE;
                     spike->body = createBox(world, x * tile_width,
                                             y * tile_height, tile_width,
                                             tile_height / 2, b2_staticBody,
