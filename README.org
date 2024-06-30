@@ -1,10 +1,15 @@
 * Checkbox
 A simple platformer, where the checkpoint is a box that the player can carry and
 throw. Respawning from the box is unlimited and part of the puzzle mechanic.
+Written in C++ using SFML and Box2D.
 
 [[./.github/preview.gif]]
 
-* Building
+** Dependencies
+- SFML 2.5.1 (~.so~ included)
+- Box2D 2.3.1 (~.a~ included)
+
+** Building
 #+begin_src
 mkdir build
 cd build
@@ -13,14 +18,14 @@ ninja
 #+end_src
 
 ** Features
-- physics using Box2D
-- levelgeneration from ~.png~ files
-- animated player character
-- tileMap culling for better performance
-- controller support
-- "demomode" running in background of menu
+- Physics using Box2D
+- Levelgeneration from ~.png~ files
+- Spritesheet animation
+- Tilemap culling
+- Controller support
+- /Demomode/ running in background of menu
 
 ** Credits
-- [[https://opengameart.org/content/boxy-bold-truetype-font][~Boxy-Bold.ttf~]]
-- [[https://opengameart.org/content/platformer-animations][~platformer_sprites_base.png~]]
+- [[https://opengameart.org/content/boxy-bold-truetype-font][Boxy-Bold.ttf]]
+- [[https://opengameart.org/content/platformer-animations][platformer_sprites_base.png]]
 - legacy_dungeon.png
