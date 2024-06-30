@@ -1,0 +1,16 @@
+* Checkbox
+A simple platformer, where the checkpoint is a box that the player can carry and
+throw. Respawning from the box is unlimited and part of the puzzle mechanic.
+
+** Features
+- physics using Box2D
+- levelgeneration from ~.png~ files
+- animated player character
+- tileMap culling for better performance
+- controller support
+- "demomode" running in background of menu
+
+** Credits
+- ~Boxy-Bold.ttf~:
+- ~legacy_dungeon.png~:
+- ~platformer_sprites_base.png~:
