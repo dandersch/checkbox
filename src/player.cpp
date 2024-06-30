@@ -33,8 +33,7 @@ static const float DISTANCE_TO_HOLD = 25000.f;
 static u32 playercount = 0; // workaround
 
 Player::Player(ResourcePool<sf::Texture>& textures)
-    //: m_sprite(textures.get("platformer_sprites_base.png"))
-  : m_sprite(textures.get("output.png"))
+  : m_sprite(textures.get("platformer_sprites_base.png"))
 {
     EventSystem::subscribe(std::bind(&Player::processEvent, this, std::placeholders::_1));
 

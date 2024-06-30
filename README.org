@@ -4,6 +4,14 @@ throw. Respawning from the box is unlimited and part of the puzzle mechanic.
 
 [[./.github/preview.gif]]
 
+* Building
+#+begin_src
+mkdir build
+cd build
+cmake -G Ninja ..
+ninja
+#+end_src
+
 ** Features
 - physics using Box2D
 - levelgeneration from ~.png~ files
@@ -13,6 +21,6 @@ throw. Respawning from the box is unlimited and part of the puzzle mechanic.
 - "demomode" running in background of menu
 
 ** Credits
-- ~Boxy-Bold.ttf~:
-- ~legacy_dungeon.png~:
-- ~platformer_sprites_base.png~:
+- [[https://opengameart.org/content/boxy-bold-truetype-font][~Boxy-Bold.ttf~]]
+- [[https://opengameart.org/content/platformer-animations][~platformer_sprites_base.png~]]
+- legacy_dungeon.png
