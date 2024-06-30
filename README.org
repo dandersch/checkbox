@@ -2,6 +2,8 @@
 A simple platformer, where the checkpoint is a box that the player can carry and
 throw. Respawning from the box is unlimited and part of the puzzle mechanic.
 
+[[./.github/preview.gif]]
+
 ** Features
 - physics using Box2D
 - levelgeneration from ~.png~ files

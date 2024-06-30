@@ -8,7 +8,7 @@ public:
     ResourcePool(const std::string& ext)
     {
         pool["missing"] = std::unique_ptr<Resource>(new Resource);
-        pool["missing"]->loadFromFile("../res/missing" + ext);
+        pool["missing"]->loadFromFile("./res/missing" + ext);
     }
 
     Resource& get(const std::string& file)
@@ -22,7 +22,7 @@ public:
         {
             // not found
             pool[file] = std::unique_ptr<Resource>(new Resource);
-            if (!pool[file]->loadFromFile("../res/" + file))
+            if (!pool[file]->loadFromFile("./res/" + file))
             {
                 return *(pool["missing"].get());
             }
